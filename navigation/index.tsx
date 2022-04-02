@@ -54,7 +54,7 @@ function RootNavigator() {
   const [{ signedIn }] = useUserContext();
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {signedIn ? (
         <>
           <Stack.Screen

@@ -1,8 +1,16 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Auth } from "aws-amplify";
 import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet } from "react-native";
-import { TextInput, View, Button, Text } from "../components/Themed";
+import { StyleSheet, View } from "react-native";
+import {
+  Button,
+  Container,
+  Tab,
+  Text,
+  TextInput,
+  Box,
+} from "../components/Themed";
+import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
 
@@ -76,48 +84,84 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
   );
 
   return (
-    <View style={styles.container}>
-      <View>
-        <View style={styles.switchTab}>
-          <Button title="Sign In" onPress={() => setType("SIGNIN")} />
-          <Button title="Sign Up" onPress={() => setType("SIGNUP")} />
-        </View>
+    <Box style={styles.pageContainer}>
+      <Container style={styles.container}>
         <View>
-          <TextInput
-            value={form.email}
-            autoCompleteType="email"
-            placeholder="Email"
-            autoCorrect={false}
-            onChangeText={(text) => setForm((cur) => ({ ...cur, email: text }))}
-          />
-          <TextInput
-            value={form.password}
-            autoCompleteType="password"
-            placeholder="Password"
-            autoCorrect={false}
-            textContentType="password"
-            secureTextEntry={true}
-            onChangeText={(text) =>
-              setForm((cur) => ({ ...cur, password: text }))
-            }
-          />
-          {type === "SIGNUP" ? (
+          <View style={styles.switchTabContainer}>
+            <Tab
+              selected={type === "SIGNIN"}
+              onPress={() => setType("SIGNIN")}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderTopLeftRadius: 5,
+                borderBottomLeftRadius: 5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text>Sign In</Text>
+            </Tab>
+            <Tab
+              selected={type === "SIGNUP"}
+              onPress={() => setType("SIGNUP")}
+              style={{
+                paddingVertical: 10,
+                paddingHorizontal: 20,
+                borderTopRightRadius: 5,
+                borderBottomRightRadius: 5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text>Sign Up</Text>
+            </Tab>
+          </View>
+          <View>
             <TextInput
-              value={form.repeatPassword}
-              placeholder="Repeat password"
+              value={form.email}
+              autoCompleteType="email"
+              placeholder="Email"
+              autoCorrect={false}
+              onChangeText={(text) =>
+                setForm((cur) => ({ ...cur, email: text }))
+              }
+            />
+            <TextInput
+              value={form.password}
+              autoCompleteType="password"
+              placeholder="Password"
               autoCorrect={false}
               textContentType="password"
               secureTextEntry={true}
               onChangeText={(text) =>
-                setForm((cur) => ({ ...cur, repeatPassword: text }))
+                setForm((cur) => ({ ...cur, password: text }))
               }
             />
-          ) : null}
-          {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
-          <Button title="Submit" onPress={() => handleSubmit()} />
+            {type === "SIGNUP" ? (
+              <TextInput
+                value={form.repeatPassword}
+                placeholder="Repeat password"
+                autoCorrect={false}
+                textContentType="password"
+                secureTextEntry={true}
+                onChangeText={(text) =>
+                  setForm((cur) => ({ ...cur, repeatPassword: text }))
+                }
+              />
+            ) : null}
+            {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
+            <View style={styles.submitBtnContainer}>
+              <Button style={styles.submitBtn} onPress={() => handleSubmit()}>
+                Submit
+              </Button>
+            </View>
+          </View>
         </View>
-      </View>
-    </View>
+      </Container>
+    </Box>
   );
 };
 
@@ -136,14 +180,29 @@ async function signUp(email: string, password: string) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+  pageContainer: {
+    display: "flex",
+    height: "100%",
+    width: "100%",
     alignItems: "center",
     justifyContent: "center",
   },
-  switchTab: {
+  container: {
+    padding: Styling.spacingLarge,
+    borderRadius: Styling.borderRadius,
+  },
+  switchTabContainer: {
     display: "flex",
     flexDirection: "row",
+    borderRadius: 5,
+    marginBottom: 20,
+    marginHorizontal: "auto",
+  },
+  submitBtnContainer: {
+    marginHorizontal: "auto",
+  },
+  submitBtn: {
+    marginTop: Styling.spacingMedium,
   },
 });
 

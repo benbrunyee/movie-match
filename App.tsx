@@ -12,7 +12,9 @@ import configureUser from "./utils/configureUser";
 Amplify.configure(awsconfig);
 
 export default function App() {
-  const isLoadingComplete = useCachedResources();
+  const [userLoading, setUserLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const cachedLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
 
   const [userContext, setUserContext] = useState<UserContextObject>({
@@ -25,12 +27,20 @@ export default function App() {
     async function onLoad() {
       const contextObj = await configureUser();
       setUserContext(contextObj);
+      setUserLoading(false);
     }
 
     onLoad();
   }, []);
 
-  if (!isLoadingComplete) {
+  useEffect(() => {
+    if (cachedLoadingComplete && !userLoading) {
+      setIsLoading(false);
+    }
+  }, [userLoading, cachedLoadingComplete])
+  
+
+  if (isLoading) {
     return null;
   } else {
     return (

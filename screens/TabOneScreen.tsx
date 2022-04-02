@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Text, View, TextInput, Button } from "../components/Themed";
+import { Text, Box, TextInput, Button } from "../components/Themed";
 import { RootTabScreenProps } from "../types";
 
 export interface Movie {
@@ -25,20 +25,20 @@ export default function TabOneScreen({
   const [searchValue, setSearchValue] = useState("");
 
   return (
-    <View style={styles.container}>
+    <Box style={styles.container}>
       <Text style={styles.title}>Daisy you stink!!!</Text>
-      <View
+      <Box
         style={styles.separator}
         lightColor="#eee"
         darkColor="rgba(255,255,255,0.1)"
       />
-      <View>
+      <Box>
         <TextInput
           onChangeText={(text) => setSearchValue(text)}
           placeholder="Enter a movie to search"
         />
-      </View>
-      <View>
+      </Box>
+      <Box>
         <Button
           title="Search"
           onPress={async () => {
@@ -56,14 +56,14 @@ export default function TabOneScreen({
             setMovies(json?.results || []);
           }}
         />
-      </View>
-      <View>
+      </Box>
+      <Box>
         {movies.map((movie) => (
           <Text key={movie.id}>{movie.title}</Text>
         ))}
-      </View>
+      </Box>
       {/* <EditScreenInfo path="/screens/TabOneScreen.tsx" /> */}
-    </View>
+    </Box>
   );
 }
 

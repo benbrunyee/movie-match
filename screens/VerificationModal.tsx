@@ -2,7 +2,7 @@ import AsyncStorageLib from "@react-native-async-storage/async-storage";
 import { Auth } from "aws-amplify";
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button, Text, TextInput, View } from "../components/Themed";
+import { Button, Text, TextInput, Box } from "../components/Themed";
 import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
 import configureUser from "../utils/configureUser";
@@ -15,7 +15,7 @@ const VerificationModal: React.FC<RootStackScreenProps<"Verification">> = ({
   const [, setUserContext] = useUserContext();
 
   return (
-    <View style={style.container}>
+    <Box style={style.container}>
       <TextInput
         placeholder="Enter your verification code"
         value={code}
@@ -41,7 +41,7 @@ const VerificationModal: React.FC<RootStackScreenProps<"Verification">> = ({
         }}
         title="Submit"
       />
-    </View>
+    </Box>
   );
 };
 
