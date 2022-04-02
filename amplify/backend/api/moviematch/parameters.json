@@ -1,0 +1,11 @@
+{
+  "AppSyncApiName": "moviematch",
+  "DynamoDBBillingMode": "PAY_PER_REQUEST",
+  "DynamoDBEnableServerSideEncryption": false,
+  "AuthCognitoUserPoolId": {
+    "Fn::GetAtt": [
+      "authmoviematch0d4270d1",
+      "Outputs.UserPoolId"
+    ]
+  }
+}
