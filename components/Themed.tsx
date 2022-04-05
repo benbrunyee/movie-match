@@ -22,11 +22,7 @@ export function useThemeColor(
   const theme = useColorScheme();
   const colorFromProps = props[theme];
 
-  if (colorFromProps) {
-    return colorFromProps;
-  } else {
-    return Colors[theme][colorName];
-  }
+  return colorFromProps || Colors[theme][colorName];
 }
 
 export function useFontSize(variant?: keyof typeof sizes) {
@@ -42,23 +38,24 @@ type FontProps = {
   variant?: keyof typeof sizes;
 };
 
-export type TextProps = ThemeProps & FontProps & DefaultText["props"];
+export type TextProps = ThemeProps &
+  FontProps &
+  DefaultText["props"] & { disabled?: boolean };
 export type ViewProps = ThemeProps & DefaultView["props"];
 export type TextInputProps = ThemeProps & FontProps & DefaultTextInput["props"];
-export type ButtonProps = ThemeProps &
-  FontProps &
-  DefaultView["props"] &
-  Pick<PressableProps, "onPress">;
-export type TabProps = ThemeProps &
-  DefaultView["props"] & { selected?: boolean } & Pick<
-    PressableProps,
-    "onPress"
-  >;
+export type ButtonProps = ThemeProps & PressableProps;
+export type TabProps = ThemeProps & { selected?: boolean } & PressableProps;
 export type ContainerProps = ThemeProps & DefaultView["props"];
+export type MenuItemProps = ThemeProps &
+  PressableProps & { topBorder?: boolean; bottomBorder?: boolean };
 
 export function Text(props: TextProps) {
-  const { variant, style, lightColor, darkColor, ...otherProps } = props;
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
+  const { disabled, variant, style, lightColor, darkColor, ...otherProps } =
+    props;
+  const color = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    disabled ? "textDisabled" : "text"
+  );
   const fontSize = useFontSize(variant);
 
   return <DefaultText style={[{ color, fontSize }, style]} {...otherProps} />;
@@ -93,43 +90,29 @@ export function TextInput(props: TextInputProps) {
 }
 
 export function Button(props: ButtonProps) {
-  const {
-    onPress,
-    style,
-    children,
-    variant,
-    lightColor,
-    darkColor,
-    ...otherProps
-  } = props;
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
-  const fontSize = useFontSize(variant);
+  const { disabled, style, lightColor, darkColor, ...otherProps } = props;
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },
-    "buttonBackground"
+    "buttonBackgroundDefault"
+  );
+  const backgroundColorPressed = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "buttonBackgroundPressed"
   );
 
   return (
-    <Pressable onPress={onPress}>
-      <DefaultView
-        style={[
-          {
-            backgroundColor,
-            width: "fit-content",
-            paddingVertical: Styling.spacingSmall,
-            paddingHorizontal: Styling.spacingMedium,
-            borderRadius: Styling.borderRadius,
-          },
-          style,
-        ]}
-        {...otherProps}
-      >
-        <DefaultText
-          style={[{ color, fontSize, textAlign: "center" }]}
-          children={children}
-        />
-      </DefaultView>
-    </Pressable>
+    <Pressable
+      style={({ pressed }) => [
+        {
+          backgroundColor: pressed ? backgroundColorPressed : backgroundColor,
+          paddingVertical: Styling.spacingSmall,
+          paddingHorizontal: Styling.spacingMedium,
+          borderRadius: Styling.borderRadius,
+        },
+        typeof style === "function" ? style({ pressed }) : style,
+      ]}
+      {...otherProps}
+    />
   );
 }
 
@@ -140,19 +123,22 @@ export function Tab(props: TabProps) {
     { light: lightColor, dark: darkColor },
     selected ? "tabBackgroundSelected" : "tabBackgroundDefault"
   );
+  const pressedBackgroundColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "tabBackgroundPressed"
+  );
 
   return (
-    <Pressable onPress={onPress}>
-      <DefaultView
-        style={[
-          {
-            backgroundColor,
-          },
-          style,
-        ]}
-        {...otherProps}
-      />
-    </Pressable>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [
+        {
+          backgroundColor: pressed ? pressedBackgroundColor : backgroundColor,
+        },
+        typeof style === "function" ? style({ pressed }) : style,
+      ]}
+      {...otherProps}
+    />
   );
 }
 
@@ -160,8 +146,49 @@ export function Container(props: ContainerProps) {
   const { style, lightColor, darkColor, ...otherProps } = props;
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },
-    "containerBackground"
+    "containerBackgroundDefault"
   );
 
   return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
+}
+
+export function MenuItem(props: MenuItemProps) {
+  const {
+    bottomBorder,
+    topBorder,
+    lightColor,
+    darkColor,
+    style,
+    ...otherProps
+  } = props;
+  const backgroundColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "containerBackgroundDefault"
+  );
+  const backgroundColorPressed = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "containerBackgroundPressed"
+  );
+  const borderColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "borderColor"
+  );
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        {
+          backgroundColor: pressed ? backgroundColorPressed : backgroundColor,
+          ...(bottomBorder && {
+            borderBottomWidth: 1,
+            borderBottomColor: borderColor,
+          }),
+          ...(topBorder && { borderTopWidth: 1, borderTopColor: borderColor }),
+          padding: Styling.spacingMedium,
+        },
+        typeof style === "function" ? style({ pressed }) : style,
+      ]}
+      {...otherProps}
+    />
+  );
 }

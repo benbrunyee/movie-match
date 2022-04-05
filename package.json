@@ -8,7 +8,12 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "eject": "expo eject",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll",
+    "build-function": "yarn amplify:movieMatchLambdaFunction",
+    "amplify:movieMatchLambdaFunction": "yarn codegen && yarn yarn-function && yarn compile-function",
+    "codegen": "cp -f ./src/API.ts amplify/backend/function/movieMatchLambdaFunction/lib/lib/API.ts && cp -fr ./src/graphql amplify/backend/function/movieMatchLambdaFunction/lib/lib/",
+    "yarn-function": "[ -d amplify\\backend\\function\\movieMatchLambdaFunction\\src ] || mkdir amplify\\backend\\function\\movieMatchLambdaFunction\\src && cp -f amplify/backend/function/movieMatchLambdaFunction/lib/package.json amplify/backend/function/movieMatchLambdaFunction/src/package.json && cd amplify/backend/function/movieMatchLambdaFunction/src/ && yarn",
+    "compile-function": "cd amplify/backend/function/movieMatchLambdaFunction && tsc -p ./tsconfig.json"
   },
   "jest": {
     "preset": "jest-expo"
@@ -25,7 +30,9 @@
     "aws-amplify-react-native": "^6.0.4",
     "expo": "~44.0.0",
     "expo-asset": "~8.4.4",
+    "expo-barcode-scanner": "~11.2.0",
     "expo-constants": "~13.0.0",
+    "expo-device": "~4.1.0",
     "expo-font": "~10.0.4",
     "expo-linking": "~3.0.0",
     "expo-splash-screen": "~0.14.0",
@@ -34,8 +41,11 @@
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-native": "0.64.3",
+    "react-native-qrcode-svg": "^6.1.2",
     "react-native-safe-area-context": "3.3.2",
     "react-native-screens": "~3.10.1",
+    "react-native-svg": "12.1.1",
+    "react-native-vision-camera": "^2.13.1",
     "react-native-web": "0.17.1"
   },
   "devDependencies": {

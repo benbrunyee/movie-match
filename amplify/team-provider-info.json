@@ -12,8 +12,14 @@
       "AmplifyAppId": "d59o1f6g6pglv"
     },
     "categories": {
+      "function": {
+        "movieMatchLambdaFunction": {
+          "deploymentBucketName": "amplify-moviematch-dev-215326-deployment",
+          "s3Key": "amplify-builds/movieMatchLambdaFunction-6b586f302f4d674f565a-build.zip"
+        }
+      },
       "auth": {
-        "moviematch0d4270d1": {}
+        "moviematchfdfc7c2e": {}
       }
     }
   }

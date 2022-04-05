@@ -1,6 +1,6 @@
 {
   "auth": {
-    "moviematch0d4270d1": {
+    "moviematchfdfc7c2e": {
       "service": "Cognito",
       "providerPlugin": "awscloudformation",
       "dependsOn": [],
@@ -36,24 +36,33 @@
           "defaultAuthentication": {
             "authenticationType": "AMAZON_COGNITO_USER_POOLS",
             "userPoolConfig": {
-              "userPoolId": "authmoviematch0d4270d1"
+              "userPoolId": "authmoviematchfdfc7c2e"
             }
           },
           "additionalAuthenticationProviders": [
-            {
-              "authenticationType": "API_KEY",
-              "apiKeyConfig": {
-                "apiKeyExpirationDays": 7,
-                "apiKeyExpirationDate": "2022-04-09T12:43:19.308Z",
-                "description": ""
-              }
-            },
             {
               "authenticationType": "AWS_IAM"
             }
           ]
         }
       }
+    }
+  },
+  "function": {
+    "movieMatchLambdaFunction": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [
+        {
+          "category": "api",
+          "resourceName": "moviematch",
+          "attributes": [
+            "GraphQLAPIIdOutput",
+            "GraphQLAPIEndpointOutput"
+          ]
+        }
+      ]
     }
   }
 }

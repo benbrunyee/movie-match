@@ -15,6 +15,7 @@ const linking: LinkingOptions<RootStackParamList> = {
     screens: {
       Login: 'login',
       Verification: "verification",
+      ConnectParter: "connect-partner",
       Root: {
         screens: {
           TabOne: {

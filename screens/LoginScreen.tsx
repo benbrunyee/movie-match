@@ -3,16 +3,17 @@ import { Auth } from "aws-amplify";
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import {
+  Box,
   Button,
   Container,
   Tab,
   Text,
   TextInput,
-  Box,
 } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
+import configureUser from "../utils/configureUser";
 
 export type LoginType = "SIGNIN" | "SIGNUP";
 
@@ -28,13 +29,14 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
   });
   const [error, setError] = useState("");
   const [, setUserContext] = useUserContext();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { fromVerification } = route.params || {};
 
   useEffect(() => {
     if (fromVerification) {
       // Sign the user in automatically
-      handleSubmit("SIGNIN");
+      handleSubmitWrapper("SIGNIN");
     }
   }, [fromVerification]);
 
@@ -46,10 +48,8 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
         // Sign the user in
         try {
           await signIn(form.email, form.password);
-          setUserContext((cur) => ({
-            ...cur,
-            signedIn: true,
-          }));
+          const userData = await configureUser();
+          setUserContext(userData);
         } catch (e) {
           console.error(e);
           setError("Failed to log in");
@@ -81,6 +81,14 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
       }
     },
     [type, form]
+  );
+
+  const handleSubmitWrapper = useCallback(
+    (providedType?: LoginType | undefined) => {
+      setIsSubmitting(true);
+      handleSubmit(providedType);
+    },
+    [handleSubmit]
   );
 
   return (
@@ -154,8 +162,12 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
             ) : null}
             {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
             <View style={styles.submitBtnContainer}>
-              <Button style={styles.submitBtn} onPress={() => handleSubmit()}>
-                Submit
+              <Button
+                disabled={isSubmitting}
+                style={styles.submitBtn}
+                onPress={() => handleSubmitWrapper()}
+              >
+                <Text disabled={isSubmitting}>Submit</Text>
               </Button>
             </View>
           </View>
@@ -181,9 +193,8 @@ async function signUp(email: string, password: string) {
 
 const styles = StyleSheet.create({
   pageContainer: {
-    display: "flex",
-    height: "100%",
-    width: "100%",
+    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -192,14 +203,13 @@ const styles = StyleSheet.create({
     borderRadius: Styling.borderRadius,
   },
   switchTabContainer: {
-    display: "flex",
     flexDirection: "row",
     borderRadius: 5,
     marginBottom: 20,
-    marginHorizontal: "auto",
+    justifyContent: "center",
   },
   submitBtnContainer: {
-    marginHorizontal: "auto",
+    alignItems: "center",
   },
   submitBtn: {
     marginTop: Styling.spacingMedium,

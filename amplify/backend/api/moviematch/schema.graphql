@@ -1,9 +1,86 @@
-# This "input" configures a global authorization rule to enable public access to
-# all models in this schema. Learn more about authorization rules here: https://docs.amplify.aws/cli/graphql/authorization-rules
-input AMPLIFY { globalAuthRule: AuthRule = { allow: public } } # FOR TESTING ONLY!
+# Lamdba Functions
 
-type User @model @auth(rules: [{ allow: owner }, { allow: private, provider: userPools, operations: [read] }]) {
-  id: ID!
+type Mutation {
+  acceptRequest(input: AcceptRequestInput!): AWSJSON
+    @function(name: "movieMatchLambdaFunction-${env}")
+}
+
+# Models
+
+type User
+  @model
+  @auth(
+    rules: [
+      { allow: owner, operations: [create, read, update] }
+      { allow: private, provider: iam, operations: [read] }
+    ]
+  ) {
+  id: ID! @primaryKey
   sub: String!
   email: String!
+  requests: [ConnectionRequest!] @hasMany
+  likedMovies: [MovieReaction!] @hasMany
+  movieMatches: [Movie!] @hasMany
+  connectedUser: String
+    @auth(
+      rules: [
+        { allow: owner, operations: [read] }
+        # Only allow the lambda function to update this field
+        { allow: private, provider: iam, operations: [read, update] }
+      ]
+    )
+}
+
+type ConnectionRequest
+  @model
+  @auth(
+    rules: [
+      { allow: owner, operations: [create, read, update, delete] }
+      {
+        allow: owner
+        ownerField: "receiver"
+        operations: [read, update, delete]
+      }
+      { allow: private, provider: iam }
+    ]
+  ) {
+  id: ID! @primaryKey
+  receiver: ID!
+  status: ConnectionRequestStatus!
+}
+
+type Movie @model @auth(rules: [{ allow: owner, operations: [create] }]) {
+  id: ID! @primaryKey
+  name: String!
+  identifier: String!
+  coverUri: String
+  rating: Int
+  ratingCount: Int
+  description: String!
+  categories: [String!]!
+  trailerUri: String
+}
+
+type MovieReaction @model @auth(rules: [{ allow: owner }]) {
+  id: ID! @primaryKey
+  movie: Movie! @hasOne
+  reaction: Reaction!
+}
+
+# Inputs
+
+input AcceptRequestInput {
+  requestId: ID!
+}
+
+# Enums
+
+enum ConnectionRequestStatus {
+  PENDING
+  ACCEPTED
+}
+
+enum Reaction {
+  LIKE
+  DISLIKE
 }

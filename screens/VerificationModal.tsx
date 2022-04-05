@@ -2,10 +2,9 @@ import AsyncStorageLib from "@react-native-async-storage/async-storage";
 import { Auth } from "aws-amplify";
 import React, { useState } from "react";
 import { StyleSheet } from "react-native";
-import { Button, Text, TextInput, Box } from "../components/Themed";
+import { Box, Button, Text, TextInput } from "../components/Themed";
 import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
-import configureUser from "../utils/configureUser";
 
 const VerificationModal: React.FC<RootStackScreenProps<"Verification">> = ({
   navigation,
@@ -39,8 +38,9 @@ const VerificationModal: React.FC<RootStackScreenProps<"Verification">> = ({
               setError("Could not verify user");
             });
         }}
-        title="Submit"
-      />
+      >
+        <Text>Submit</Text>
+      </Button>
     </Box>
   );
 };

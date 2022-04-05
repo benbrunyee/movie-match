@@ -40,7 +40,6 @@ export default function TabOneScreen({
       </Box>
       <Box>
         <Button
-          title="Search"
           onPress={async () => {
             if (!searchValue) {
               return;
@@ -55,7 +54,9 @@ export default function TabOneScreen({
 
             setMovies(json?.results || []);
           }}
-        />
+        >
+          <Text>Search</Text>
+        </Button>
       </Box>
       <Box>
         {movies.map((movie) => (

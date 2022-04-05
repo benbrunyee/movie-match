@@ -25,20 +25,26 @@ export default function App() {
 
   useEffect(() => {
     async function onLoad() {
-      const contextObj = await configureUser();
-      setUserContext(contextObj);
-      setUserLoading(false);
+      try {
+        const contextObj = await configureUser();
+        // TODO: Remove
+        console.log(contextObj);
+        setUserContext(contextObj);
+      } catch (e) {
+        console.error(e);
+      }
     }
 
-    onLoad();
+    onLoad().finally(() => {
+      setUserLoading(false);
+    });
   }, []);
 
   useEffect(() => {
     if (cachedLoadingComplete && !userLoading) {
       setIsLoading(false);
     }
-  }, [userLoading, cachedLoadingComplete])
-  
+  }, [userLoading, cachedLoadingComplete]);
 
   if (isLoading) {
     return null;

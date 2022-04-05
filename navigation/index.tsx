@@ -13,7 +13,7 @@ import {
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Auth } from "aws-amplify";
 import * as React from "react";
-import { Alert, ColorSchemeName, Pressable } from "react-native";
+import { Alert, ColorSchemeName, NativeModules, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 import { useUserContext } from "../context/UserContext";
 import useColorScheme from "../hooks/useColorScheme";
@@ -28,6 +28,9 @@ import {
   RootTabScreenProps,
 } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
+import * as Device from "expo-device";
+import ConnectPartnerModal from "../screens/ConnectPartnerModal";
+import AsyncStorageLib from "@react-native-async-storage/async-storage";
 
 export default function Navigation({
   colorScheme,
@@ -57,16 +60,18 @@ function RootNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {signedIn ? (
         <>
-          <Stack.Screen
-            name="Root"
-            component={BottomTabNavigator}
-            options={{ headerShown: false }}
-          />
+          <Stack.Screen name="Root" component={BottomTabNavigator} />
           <Stack.Screen
             name="NotFound"
             component={NotFoundScreen}
             options={{ title: "Oops!" }}
           />
+          <Stack.Group screenOptions={{ presentation: "modal" }}>
+            <Stack.Screen
+              name="ConnectParter"
+              component={ConnectPartnerModal}
+            />
+          </Stack.Group>
         </>
       ) : (
         <>
@@ -91,10 +96,11 @@ const BottomTab = createBottomTabNavigator<RootTabParamList>();
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
   const [, setUserContext] = useUserContext();
+  const { brand } = Device;
 
   return (
     <BottomTab.Navigator
-      initialRouteName="TabOne"
+      initialRouteName="Settings"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}
@@ -115,25 +121,37 @@ function BottomTabNavigator() {
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
           headerRight: () => (
             <Pressable
-              onPress={() =>
+              onPress={() => {
+                const onPress = () =>
+                  Auth.forgetDevice().then(() => {
+                    Auth.signOut().then(async () => {
+                      await AsyncStorageLib.clear();
+
+                      setUserContext({
+                        email: "",
+                        sub: "",
+                        signedIn: false,
+                      });
+                    });
+                  });
+
+                // Brand returns null if on web
+                if (!brand) {
+                  // If web, just sign out
+                  onPress();
+                  return;
+                }
+
                 Alert.alert("Sign Out", "Are you sure you want to sign out?", [
                   {
                     text: "Yes",
-                    onPress: () => {
-                      Auth.signOut().then(() => {
-                        setUserContext({
-                          email: "",
-                          sub: "",
-                          signedIn: false,
-                        });
-                      });
-                    },
+                    onPress,
                   },
                   {
                     text: "No",
                   },
-                ])
-              }
+                ]);
+              }}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.5 : 1,
               })}

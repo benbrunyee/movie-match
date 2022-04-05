@@ -1,4 +1,4 @@
-import { API, Auth, graphqlOperation } from "aws-amplify";
+import { Auth } from "aws-amplify";
 import { UserContextObject } from "../context/UserContext";
 import {
   CreateUserInput,
@@ -19,7 +19,14 @@ export default async function configureUser(): Promise<UserContextObject> {
     // Check the database object
     const dbItems = await callGraphQL<ListUsersQuery>(listUsers);
 
-    if (dbItems.data?.listUsers?.items.length || 0 <= 0) {
+    if (!dbItems.data?.listUsers?.items) {
+      throw new Error("Could not list Users");
+    }
+
+    // TODO: Remove
+    console.log(dbItems);
+
+    if (dbItems.data.listUsers.items.length === 0) {
       // Create the database object since this is first login
       await createDbOj({
         email: authStatus.attributes.email,
