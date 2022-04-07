@@ -11,12 +11,12 @@ export const getUser = /* GraphQL */ `
       requests {
         items {
           id
+          sender
           receiver
           status
           createdAt
           updatedAt
           userRequestsId
-          owner
         }
         nextToken
       }
@@ -35,7 +35,7 @@ export const getUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMatchesId
+            userMovieMatchesId
             owner
           }
           reaction
@@ -47,7 +47,7 @@ export const getUser = /* GraphQL */ `
         }
         nextToken
       }
-      matches {
+      movieMatches {
         items {
           id
           name
@@ -60,7 +60,7 @@ export const getUser = /* GraphQL */ `
           trailerUri
           createdAt
           updatedAt
-          userMatchesId
+          userMovieMatchesId
           owner
         }
         nextToken
@@ -94,18 +94,33 @@ export const listUsers = /* GraphQL */ `
         requests {
           items {
             id
+            sender
             receiver
             status
             createdAt
             updatedAt
             userRequestsId
-            owner
           }
           nextToken
         }
         likedMovies {
           items {
             id
+            movie {
+              id
+              name
+              identifier
+              coverUri
+              rating
+              ratingCount
+              description
+              categories
+              trailerUri
+              createdAt
+              updatedAt
+              userMovieMatchesId
+              owner
+            }
             reaction
             createdAt
             updatedAt
@@ -115,7 +130,7 @@ export const listUsers = /* GraphQL */ `
           }
           nextToken
         }
-        matches {
+        movieMatches {
           items {
             id
             name
@@ -128,7 +143,7 @@ export const listUsers = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMatchesId
+            userMovieMatchesId
             owner
           }
           nextToken
@@ -146,12 +161,12 @@ export const getConnectionRequest = /* GraphQL */ `
   query GetConnectionRequest($id: ID!) {
     getConnectionRequest(id: $id) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;
@@ -172,12 +187,12 @@ export const listConnectionRequests = /* GraphQL */ `
     ) {
       items {
         id
+        sender
         receiver
         status
         createdAt
         updatedAt
         userRequestsId
-        owner
       }
       nextToken
     }
@@ -197,7 +212,7 @@ export const getMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMatchesId
+      userMovieMatchesId
       owner
     }
   }
@@ -229,7 +244,7 @@ export const listMovies = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMatchesId
+        userMovieMatchesId
         owner
       }
       nextToken
@@ -252,7 +267,7 @@ export const getMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMatchesId
+        userMovieMatchesId
         owner
       }
       reaction
@@ -293,7 +308,7 @@ export const listMovieReactions = /* GraphQL */ `
           trailerUri
           createdAt
           updatedAt
-          userMatchesId
+          userMovieMatchesId
           owner
         }
         reaction

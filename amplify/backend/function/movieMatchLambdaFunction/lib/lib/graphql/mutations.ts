@@ -2,11 +2,6 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const acceptRequest = /* GraphQL */ `
-  mutation AcceptRequest($input: AcceptRequestInput!) {
-    acceptRequest(input: $input)
-  }
-`;
 export const createUser = /* GraphQL */ `
   mutation CreateUser(
     $input: CreateUserInput!
@@ -19,12 +14,12 @@ export const createUser = /* GraphQL */ `
       requests {
         items {
           id
+          sender
           receiver
           status
           createdAt
           updatedAt
           userRequestsId
-          owner
         }
         nextToken
       }
@@ -43,7 +38,7 @@ export const createUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMatchesId
+            userMovieMatchesId
             owner
           }
           reaction
@@ -55,7 +50,7 @@ export const createUser = /* GraphQL */ `
         }
         nextToken
       }
-      matches {
+      movieMatches {
         items {
           id
           name
@@ -68,7 +63,7 @@ export const createUser = /* GraphQL */ `
           trailerUri
           createdAt
           updatedAt
-          userMatchesId
+          userMovieMatchesId
           owner
         }
         nextToken
@@ -92,12 +87,12 @@ export const updateUser = /* GraphQL */ `
       requests {
         items {
           id
+          sender
           receiver
           status
           createdAt
           updatedAt
           userRequestsId
-          owner
         }
         nextToken
       }
@@ -116,7 +111,7 @@ export const updateUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMatchesId
+            userMovieMatchesId
             owner
           }
           reaction
@@ -128,7 +123,7 @@ export const updateUser = /* GraphQL */ `
         }
         nextToken
       }
-      matches {
+      movieMatches {
         items {
           id
           name
@@ -141,7 +136,7 @@ export const updateUser = /* GraphQL */ `
           trailerUri
           createdAt
           updatedAt
-          userMatchesId
+          userMovieMatchesId
           owner
         }
         nextToken
@@ -165,12 +160,12 @@ export const deleteUser = /* GraphQL */ `
       requests {
         items {
           id
+          sender
           receiver
           status
           createdAt
           updatedAt
           userRequestsId
-          owner
         }
         nextToken
       }
@@ -189,7 +184,7 @@ export const deleteUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMatchesId
+            userMovieMatchesId
             owner
           }
           reaction
@@ -201,7 +196,7 @@ export const deleteUser = /* GraphQL */ `
         }
         nextToken
       }
-      matches {
+      movieMatches {
         items {
           id
           name
@@ -214,7 +209,7 @@ export const deleteUser = /* GraphQL */ `
           trailerUri
           createdAt
           updatedAt
-          userMatchesId
+          userMovieMatchesId
           owner
         }
         nextToken
@@ -233,12 +228,12 @@ export const createConnectionRequest = /* GraphQL */ `
   ) {
     createConnectionRequest(input: $input, condition: $condition) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;
@@ -249,12 +244,12 @@ export const updateConnectionRequest = /* GraphQL */ `
   ) {
     updateConnectionRequest(input: $input, condition: $condition) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;
@@ -265,12 +260,12 @@ export const deleteConnectionRequest = /* GraphQL */ `
   ) {
     deleteConnectionRequest(input: $input, condition: $condition) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;
@@ -291,7 +286,7 @@ export const createMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMatchesId
+      userMovieMatchesId
       owner
     }
   }
@@ -313,7 +308,7 @@ export const updateMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMatchesId
+      userMovieMatchesId
       owner
     }
   }
@@ -335,7 +330,7 @@ export const deleteMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMatchesId
+      userMovieMatchesId
       owner
     }
   }
@@ -359,7 +354,7 @@ export const createMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMatchesId
+        userMovieMatchesId
         owner
       }
       reaction
@@ -390,7 +385,7 @@ export const updateMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMatchesId
+        userMovieMatchesId
         owner
       }
       reaction
@@ -421,7 +416,7 @@ export const deleteMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMatchesId
+        userMovieMatchesId
         owner
       }
       reaction
@@ -431,5 +426,10 @@ export const deleteMovieReaction = /* GraphQL */ `
       movieReactionMovieId
       owner
     }
+  }
+`;
+export const acceptRequest = /* GraphQL */ `
+  mutation AcceptRequest($input: AcceptRequestInput!) {
+    acceptRequest(input: $input)
   }
 `;

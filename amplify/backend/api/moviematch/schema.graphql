@@ -3,20 +3,26 @@
 type Mutation {
   acceptRequest(input: AcceptRequestInput!): AWSJSON
     @function(name: "movieMatchLambdaFunction-${env}")
+    @auth(
+      rules: [
+        { allow: private, provider: iam }
+        { allow: private, provider: userPools }
+      ]
+    )
 }
 
 # Models
 
 type User
-  @model
+  @model(subscriptions: { level: off })
   @auth(
     rules: [
       { allow: owner, operations: [create, read, update] }
-      { allow: private, provider: iam, operations: [read] }
+      { allow: private, provider: iam, operations: [read, update] }
     ]
   ) {
   id: ID! @primaryKey
-  sub: String!
+  sub: ID!
   email: String!
   requests: [ConnectionRequest!] @hasMany
   likedMovies: [MovieReaction!] @hasMany
@@ -35,21 +41,33 @@ type ConnectionRequest
   @model
   @auth(
     rules: [
-      { allow: owner, operations: [create, read, update, delete] }
+      {
+        allow: owner
+        ownerField: "sender"
+        operations: [create, read, update, delete]
+      }
       {
         allow: owner
         ownerField: "receiver"
         operations: [read, update, delete]
       }
-      { allow: private, provider: iam }
+      { allow: private, provider: iam, operations: [read, update, delete] }
     ]
   ) {
   id: ID! @primaryKey
+  sender: ID!
   receiver: ID!
   status: ConnectionRequestStatus!
 }
 
-type Movie @model @auth(rules: [{ allow: owner, operations: [create] }]) {
+type Movie
+  @model
+  @auth(
+    rules: [
+      { allow: owner, operations: [create] }
+      { allow: private, provider: iam }
+    ]
+  ) {
   id: ID! @primaryKey
   name: String!
   identifier: String!
@@ -61,7 +79,9 @@ type Movie @model @auth(rules: [{ allow: owner, operations: [create] }]) {
   trailerUri: String
 }
 
-type MovieReaction @model @auth(rules: [{ allow: owner }]) {
+type MovieReaction
+  @model
+  @auth(rules: [{ allow: owner }, { allow: private, provider: iam }]) {
   id: ID! @primaryKey
   movie: Movie! @hasOne
   reaction: Reaction!

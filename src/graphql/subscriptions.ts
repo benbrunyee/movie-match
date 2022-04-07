@@ -2,252 +2,42 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
-export const onCreateUser = /* GraphQL */ `
-  subscription OnCreateUser($owner: String) {
-    onCreateUser(owner: $owner) {
-      id
-      sub
-      email
-      requests {
-        items {
-          id
-          receiver
-          status
-          createdAt
-          updatedAt
-          userRequestsId
-          owner
-        }
-        nextToken
-      }
-      likedMovies {
-        items {
-          id
-          movie {
-            id
-            name
-            identifier
-            coverUri
-            rating
-            ratingCount
-            description
-            categories
-            trailerUri
-            createdAt
-            updatedAt
-            userMovieMatchesId
-            owner
-          }
-          reaction
-          createdAt
-          updatedAt
-          userLikedMoviesId
-          movieReactionMovieId
-          owner
-        }
-        nextToken
-      }
-      movieMatches {
-        items {
-          id
-          name
-          identifier
-          coverUri
-          rating
-          ratingCount
-          description
-          categories
-          trailerUri
-          createdAt
-          updatedAt
-          userMovieMatchesId
-          owner
-        }
-        nextToken
-      }
-      connectedUser
-      createdAt
-      updatedAt
-      owner
-    }
-  }
-`;
-export const onUpdateUser = /* GraphQL */ `
-  subscription OnUpdateUser($owner: String) {
-    onUpdateUser(owner: $owner) {
-      id
-      sub
-      email
-      requests {
-        items {
-          id
-          receiver
-          status
-          createdAt
-          updatedAt
-          userRequestsId
-          owner
-        }
-        nextToken
-      }
-      likedMovies {
-        items {
-          id
-          movie {
-            id
-            name
-            identifier
-            coverUri
-            rating
-            ratingCount
-            description
-            categories
-            trailerUri
-            createdAt
-            updatedAt
-            userMovieMatchesId
-            owner
-          }
-          reaction
-          createdAt
-          updatedAt
-          userLikedMoviesId
-          movieReactionMovieId
-          owner
-        }
-        nextToken
-      }
-      movieMatches {
-        items {
-          id
-          name
-          identifier
-          coverUri
-          rating
-          ratingCount
-          description
-          categories
-          trailerUri
-          createdAt
-          updatedAt
-          userMovieMatchesId
-          owner
-        }
-        nextToken
-      }
-      connectedUser
-      createdAt
-      updatedAt
-      owner
-    }
-  }
-`;
-export const onDeleteUser = /* GraphQL */ `
-  subscription OnDeleteUser($owner: String) {
-    onDeleteUser(owner: $owner) {
-      id
-      sub
-      email
-      requests {
-        items {
-          id
-          receiver
-          status
-          createdAt
-          updatedAt
-          userRequestsId
-          owner
-        }
-        nextToken
-      }
-      likedMovies {
-        items {
-          id
-          movie {
-            id
-            name
-            identifier
-            coverUri
-            rating
-            ratingCount
-            description
-            categories
-            trailerUri
-            createdAt
-            updatedAt
-            userMovieMatchesId
-            owner
-          }
-          reaction
-          createdAt
-          updatedAt
-          userLikedMoviesId
-          movieReactionMovieId
-          owner
-        }
-        nextToken
-      }
-      movieMatches {
-        items {
-          id
-          name
-          identifier
-          coverUri
-          rating
-          ratingCount
-          description
-          categories
-          trailerUri
-          createdAt
-          updatedAt
-          userMovieMatchesId
-          owner
-        }
-        nextToken
-      }
-      connectedUser
-      createdAt
-      updatedAt
-      owner
-    }
-  }
-`;
 export const onCreateConnectionRequest = /* GraphQL */ `
-  subscription OnCreateConnectionRequest($owner: String, $receiver: String) {
-    onCreateConnectionRequest(owner: $owner, receiver: $receiver) {
+  subscription OnCreateConnectionRequest($sender: String, $receiver: String) {
+    onCreateConnectionRequest(sender: $sender, receiver: $receiver) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;
 export const onUpdateConnectionRequest = /* GraphQL */ `
-  subscription OnUpdateConnectionRequest($owner: String, $receiver: String) {
-    onUpdateConnectionRequest(owner: $owner, receiver: $receiver) {
+  subscription OnUpdateConnectionRequest($sender: String, $receiver: String) {
+    onUpdateConnectionRequest(sender: $sender, receiver: $receiver) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;
 export const onDeleteConnectionRequest = /* GraphQL */ `
-  subscription OnDeleteConnectionRequest($owner: String, $receiver: String) {
-    onDeleteConnectionRequest(owner: $owner, receiver: $receiver) {
+  subscription OnDeleteConnectionRequest($sender: String, $receiver: String) {
+    onDeleteConnectionRequest(sender: $sender, receiver: $receiver) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;

@@ -6,7 +6,7 @@ import QRCode from "react-native-qrcode-svg";
 import BarCodeScanner from "../components/BarCodeScanner";
 import { Text, useThemeColor } from "../components/Themed";
 import Styling from "../constants/Styling";
-import { useUserContext } from "../context/UserContext";
+import { UserContext, useUserContext } from "../context/UserContext";
 import {
   ConnectionRequestStatus,
   CreateConnectionRequestMutation,
@@ -48,7 +48,7 @@ const ConnectPartnerModal: React.FC<RootStackScreenProps<"ConnectParter">> = ({
           throw new Error("Could not find user object");
         }
 
-        setUserData(userObj);
+        setUserData(userObj as User);
       } catch (e) {
         console.error(e);
         setError("Failed to load data");
@@ -82,7 +82,7 @@ const ConnectPartnerModal: React.FC<RootStackScreenProps<"ConnectParter">> = ({
       return;
     }
 
-    createConnectRequest(data)
+    createConnectRequest(userContext.sub, data)
       .then(() => {
         // setStatus("CONNECTED");
         alert("Sent request");
@@ -151,7 +151,7 @@ const ConnectPartnerModal: React.FC<RootStackScreenProps<"ConnectParter">> = ({
   );
 };
 
-async function createConnectRequest(receiverSub: string) {
+async function createConnectRequest(senderSub: string, receiverSub: string) {
   // Check if there is an existing entry
   const existingEntries = (
     await callGraphQL<
@@ -178,6 +178,7 @@ async function createConnectRequest(receiverSub: string) {
     CreateConnectionRequestMutationVariables
   >(createConnectionRequest, {
     input: {
+      sender: senderSub,
       receiver: receiverSub,
       status: ConnectionRequestStatus.PENDING,
     },

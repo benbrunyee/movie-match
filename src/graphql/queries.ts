@@ -11,12 +11,12 @@ export const getUser = /* GraphQL */ `
       requests {
         items {
           id
+          sender
           receiver
           status
           createdAt
           updatedAt
           userRequestsId
-          owner
         }
         nextToken
       }
@@ -94,12 +94,12 @@ export const listUsers = /* GraphQL */ `
         requests {
           items {
             id
+            sender
             receiver
             status
             createdAt
             updatedAt
             userRequestsId
-            owner
           }
           nextToken
         }
@@ -161,12 +161,12 @@ export const getConnectionRequest = /* GraphQL */ `
   query GetConnectionRequest($id: ID!) {
     getConnectionRequest(id: $id) {
       id
+      sender
       receiver
       status
       createdAt
       updatedAt
       userRequestsId
-      owner
     }
   }
 `;
@@ -187,12 +187,12 @@ export const listConnectionRequests = /* GraphQL */ `
     ) {
       items {
         id
+        sender
         receiver
         status
         createdAt
         updatedAt
         userRequestsId
-        owner
       }
       nextToken
     }

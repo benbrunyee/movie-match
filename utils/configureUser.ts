@@ -29,6 +29,7 @@ export default async function configureUser(): Promise<UserContextObject> {
     if (dbItems.data.listUsers.items.length === 0) {
       // Create the database object since this is first login
       await createDbOj({
+        id: authStatus.attributes.sub,
         email: authStatus.attributes.email,
         sub: authStatus.attributes.sub,
       });

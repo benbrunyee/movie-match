@@ -16,10 +16,8 @@ var ModelAttributeTypes;
 })(ModelAttributeTypes = exports.ModelAttributeTypes || (exports.ModelAttributeTypes = {}));
 var ConnectionRequestStatus;
 (function (ConnectionRequestStatus) {
-    ConnectionRequestStatus["OPEN"] = "OPEN";
+    ConnectionRequestStatus["PENDING"] = "PENDING";
     ConnectionRequestStatus["ACCEPTED"] = "ACCEPTED";
-    ConnectionRequestStatus["REJECTED"] = "REJECTED";
-    ConnectionRequestStatus["DELETED"] = "DELETED";
 })(ConnectionRequestStatus = exports.ConnectionRequestStatus || (exports.ConnectionRequestStatus = {}));
 var Reaction;
 (function (Reaction) {

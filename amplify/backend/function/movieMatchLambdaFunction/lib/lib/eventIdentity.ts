@@ -1,10 +1,9 @@
 export default interface EventIdentity {
   identity: {
-    username: string;
+    username?: string;
     sub: string;
     claims: {
-      sub: string;
-      username: string;
+      "cognito:username"?: string;
     };
   };
   request: {
