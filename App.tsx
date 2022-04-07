@@ -27,8 +27,6 @@ export default function App() {
     async function onLoad() {
       try {
         const contextObj = await configureUser();
-        // TODO: Remove
-        console.log(contextObj);
         setUserContext(contextObj);
       } catch (e) {
         console.error(e);

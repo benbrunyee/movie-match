@@ -4,6 +4,7 @@
  *
  */
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorageLib from "@react-native-async-storage/async-storage";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   DarkTheme,
@@ -12,11 +13,13 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Auth } from "aws-amplify";
+import * as Device from "expo-device";
 import * as React from "react";
-import { Alert, ColorSchemeName, NativeModules, Pressable } from "react-native";
+import { Alert, ColorSchemeName, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 import { useUserContext } from "../context/UserContext";
 import useColorScheme from "../hooks/useColorScheme";
+import ConnectPartnerModal from "../screens/ConnectPartnerModal";
 import LoginScreen from "../screens/LoginScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import SettingsScreen from "../screens/SettingsScreen";
@@ -28,9 +31,6 @@ import {
   RootTabScreenProps,
 } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
-import * as Device from "expo-device";
-import ConnectPartnerModal from "../screens/ConnectPartnerModal";
-import AsyncStorageLib from "@react-native-async-storage/async-storage";
 
 export default function Navigation({
   colorScheme,

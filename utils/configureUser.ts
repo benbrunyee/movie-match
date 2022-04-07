@@ -23,9 +23,6 @@ export default async function configureUser(): Promise<UserContextObject> {
       throw new Error("Could not list Users");
     }
 
-    // TODO: Remove
-    console.log(dbItems);
-
     if (dbItems.data.listUsers.items.length === 0) {
       // Create the database object since this is first login
       await createDbOj({
