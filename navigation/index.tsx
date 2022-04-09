@@ -23,13 +23,9 @@ import ConnectPartnerModal from "../screens/ConnectPartnerModal";
 import LoginScreen from "../screens/LoginScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import SettingsScreen from "../screens/SettingsScreen";
-import TabOneScreen from "../screens/TabOneScreen";
+import Discover from "../screens/DiscoverScreen";
 import VerificationModal from "../screens/VerificationModal";
-import {
-  RootStackParamList,
-  RootTabParamList,
-  RootTabScreenProps,
-} from "../types";
+import { RootStackParamList, RootTabParamList } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
 
 export default function Navigation({
@@ -100,18 +96,18 @@ function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="Settings"
+      initialRouteName="Discover"
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}
     >
       <BottomTab.Screen
-        name="TabOne"
-        component={TabOneScreen}
-        options={({ navigation }: RootTabScreenProps<"TabOne">) => ({
+        name="Discover"
+        component={Discover}
+        options={{
           title: "Daisy Smells",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
-        })}
+        }}
       />
       <BottomTab.Screen
         name="Settings"

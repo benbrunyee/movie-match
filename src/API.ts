@@ -6,12 +6,14 @@ export type CreateUserInput = {
   id?: string | null,
   sub: string,
   email: string,
+  movieMatches?: Array< number > | null,
   connectedUser?: string | null,
 };
 
 export type ModelUserConditionInput = {
   sub?: ModelIDInput | null,
   email?: ModelStringInput | null,
+  movieMatches?: ModelIntInput | null,
   connectedUser?: ModelStringInput | null,
   and?: Array< ModelUserConditionInput | null > | null,
   or?: Array< ModelUserConditionInput | null > | null,
@@ -74,14 +76,26 @@ export type ModelStringInput = {
   size?: ModelSizeInput | null,
 };
 
+export type ModelIntInput = {
+  ne?: number | null,
+  eq?: number | null,
+  le?: number | null,
+  lt?: number | null,
+  ge?: number | null,
+  gt?: number | null,
+  between?: Array< number | null > | null,
+  attributeExists?: boolean | null,
+  attributeType?: ModelAttributeTypes | null,
+};
+
 export type User = {
   __typename: "User",
   id: string,
   sub: string,
   email: string,
   requests?: ModelConnectionRequestConnection | null,
-  likedMovies?: ModelMovieReactionConnection | null,
-  movieMatches?: ModelMovieConnection | null,
+  movieReactions?: ModelMovieReactionConnection | null,
+  movieMatches?: Array< number > | null,
   connectedUser?: string | null,
   createdAt: string,
   updatedAt: string,
@@ -124,16 +138,15 @@ export type MovieReaction = {
   reaction: Reaction,
   createdAt: string,
   updatedAt: string,
-  userLikedMoviesId?: string | null,
+  userMovieReactionsId?: string | null,
   movieReactionMovieId: string,
   owner?: string | null,
 };
 
 export type Movie = {
   __typename: "Movie",
-  id: string,
+  id: number,
   name: string,
-  identifier: string,
   coverUri?: string | null,
   rating?: number | null,
   ratingCount?: number | null,
@@ -142,7 +155,6 @@ export type Movie = {
   trailerUri?: string | null,
   createdAt: string,
   updatedAt: string,
-  userMovieMatchesId?: string | null,
   owner?: string | null,
 };
 
@@ -152,16 +164,11 @@ export enum Reaction {
 }
 
 
-export type ModelMovieConnection = {
-  __typename: "ModelMovieConnection",
-  items:  Array<Movie | null >,
-  nextToken?: string | null,
-};
-
 export type UpdateUserInput = {
   id: string,
   sub?: string | null,
   email?: string | null,
+  movieMatches?: Array< number > | null,
   connectedUser?: string | null,
 };
 
@@ -205,23 +212,20 @@ export type DeleteConnectionRequestInput = {
 };
 
 export type CreateMovieInput = {
-  id?: string | null,
+  id?: number | null,
   name: string,
-  identifier: string,
   coverUri?: string | null,
   rating?: number | null,
   ratingCount?: number | null,
   description: string,
   categories: Array< string >,
   trailerUri?: string | null,
-  userMovieMatchesId?: string | null,
 };
 
 export type ModelMovieConditionInput = {
   name?: ModelStringInput | null,
-  identifier?: ModelStringInput | null,
   coverUri?: ModelStringInput | null,
-  rating?: ModelIntInput | null,
+  rating?: ModelFloatInput | null,
   ratingCount?: ModelIntInput | null,
   description?: ModelStringInput | null,
   categories?: ModelStringInput | null,
@@ -229,10 +233,9 @@ export type ModelMovieConditionInput = {
   and?: Array< ModelMovieConditionInput | null > | null,
   or?: Array< ModelMovieConditionInput | null > | null,
   not?: ModelMovieConditionInput | null,
-  userMovieMatchesId?: ModelIDInput | null,
 };
 
-export type ModelIntInput = {
+export type ModelFloatInput = {
   ne?: number | null,
   eq?: number | null,
   le?: number | null,
@@ -245,26 +248,24 @@ export type ModelIntInput = {
 };
 
 export type UpdateMovieInput = {
-  id: string,
+  id: number,
   name?: string | null,
-  identifier?: string | null,
   coverUri?: string | null,
   rating?: number | null,
   ratingCount?: number | null,
   description?: string | null,
   categories?: Array< string > | null,
   trailerUri?: string | null,
-  userMovieMatchesId?: string | null,
 };
 
 export type DeleteMovieInput = {
-  id: string,
+  id: number,
 };
 
 export type CreateMovieReactionInput = {
   id?: string | null,
   reaction: Reaction,
-  userLikedMoviesId?: string | null,
+  userMovieReactionsId?: string | null,
   movieReactionMovieId: string,
 };
 
@@ -273,7 +274,7 @@ export type ModelMovieReactionConditionInput = {
   and?: Array< ModelMovieReactionConditionInput | null > | null,
   or?: Array< ModelMovieReactionConditionInput | null > | null,
   not?: ModelMovieReactionConditionInput | null,
-  userLikedMoviesId?: ModelIDInput | null,
+  userMovieReactionsId?: ModelIDInput | null,
   movieReactionMovieId?: ModelIDInput | null,
 };
 
@@ -285,7 +286,7 @@ export type ModelReactionInput = {
 export type UpdateMovieReactionInput = {
   id: string,
   reaction?: Reaction | null,
-  userLikedMoviesId?: string | null,
+  userMovieReactionsId?: string | null,
   movieReactionMovieId?: string | null,
 };
 
@@ -301,6 +302,7 @@ export type ModelUserFilterInput = {
   id?: ModelIDInput | null,
   sub?: ModelIDInput | null,
   email?: ModelStringInput | null,
+  movieMatches?: ModelIntInput | null,
   connectedUser?: ModelStringInput | null,
   and?: Array< ModelUserFilterInput | null > | null,
   or?: Array< ModelUserFilterInput | null > | null,
@@ -331,11 +333,10 @@ export type ModelConnectionRequestFilterInput = {
 };
 
 export type ModelMovieFilterInput = {
-  id?: ModelIDInput | null,
+  id?: ModelIntInput | null,
   name?: ModelStringInput | null,
-  identifier?: ModelStringInput | null,
   coverUri?: ModelStringInput | null,
-  rating?: ModelIntInput | null,
+  rating?: ModelFloatInput | null,
   ratingCount?: ModelIntInput | null,
   description?: ModelStringInput | null,
   categories?: ModelStringInput | null,
@@ -343,7 +344,12 @@ export type ModelMovieFilterInput = {
   and?: Array< ModelMovieFilterInput | null > | null,
   or?: Array< ModelMovieFilterInput | null > | null,
   not?: ModelMovieFilterInput | null,
-  userMovieMatchesId?: ModelIDInput | null,
+};
+
+export type ModelMovieConnection = {
+  __typename: "ModelMovieConnection",
+  items:  Array<Movie | null >,
+  nextToken?: string | null,
 };
 
 export type ModelMovieReactionFilterInput = {
@@ -352,8 +358,38 @@ export type ModelMovieReactionFilterInput = {
   and?: Array< ModelMovieReactionFilterInput | null > | null,
   or?: Array< ModelMovieReactionFilterInput | null > | null,
   not?: ModelMovieReactionFilterInput | null,
-  userLikedMoviesId?: ModelIDInput | null,
+  userMovieReactionsId?: ModelIDInput | null,
   movieReactionMovieId?: ModelIDInput | null,
+};
+
+export type DiscoverMoviesInput = {
+  page?: number | null,
+};
+
+export type DiscoverMovieApi = {
+  __typename: "DiscoverMovieApi",
+  page: number,
+  results:  Array<MovieApi >,
+  total_results: number,
+  total_pages: number,
+};
+
+export type MovieApi = {
+  __typename: "MovieApi",
+  id: number,
+  poster_path?: string | null,
+  adult: boolean,
+  overview: string,
+  release_date: string,
+  genre_ids: Array< number >,
+  original_title: string,
+  original_language: string,
+  title: string,
+  backdrop_path?: string | null,
+  popularity: number,
+  vote_count: number,
+  video: boolean,
+  vote_average: number,
 };
 
 export type CreateUserMutationVariables = {
@@ -381,16 +417,15 @@ export type CreateUserMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
-    likedMovies?:  {
+    movieReactions?:  {
       __typename: "ModelMovieReactionConnection",
       items:  Array< {
         __typename: "MovieReaction",
         id: string,
         movie:  {
           __typename: "Movie",
-          id: string,
+          id: number,
           name: string,
-          identifier: string,
           coverUri?: string | null,
           rating?: number | null,
           ratingCount?: number | null,
@@ -399,38 +434,18 @@ export type CreateUserMutation = {
           trailerUri?: string | null,
           createdAt: string,
           updatedAt: string,
-          userMovieMatchesId?: string | null,
           owner?: string | null,
         },
         reaction: Reaction,
         createdAt: string,
         updatedAt: string,
-        userLikedMoviesId?: string | null,
+        userMovieReactionsId?: string | null,
         movieReactionMovieId: string,
         owner?: string | null,
       } | null >,
       nextToken?: string | null,
     } | null,
-    movieMatches?:  {
-      __typename: "ModelMovieConnection",
-      items:  Array< {
-        __typename: "Movie",
-        id: string,
-        name: string,
-        identifier: string,
-        coverUri?: string | null,
-        rating?: number | null,
-        ratingCount?: number | null,
-        description: string,
-        categories: Array< string >,
-        trailerUri?: string | null,
-        createdAt: string,
-        updatedAt: string,
-        userMovieMatchesId?: string | null,
-        owner?: string | null,
-      } | null >,
-      nextToken?: string | null,
-    } | null,
+    movieMatches?: Array< number > | null,
     connectedUser?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -463,16 +478,15 @@ export type UpdateUserMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
-    likedMovies?:  {
+    movieReactions?:  {
       __typename: "ModelMovieReactionConnection",
       items:  Array< {
         __typename: "MovieReaction",
         id: string,
         movie:  {
           __typename: "Movie",
-          id: string,
+          id: number,
           name: string,
-          identifier: string,
           coverUri?: string | null,
           rating?: number | null,
           ratingCount?: number | null,
@@ -481,38 +495,18 @@ export type UpdateUserMutation = {
           trailerUri?: string | null,
           createdAt: string,
           updatedAt: string,
-          userMovieMatchesId?: string | null,
           owner?: string | null,
         },
         reaction: Reaction,
         createdAt: string,
         updatedAt: string,
-        userLikedMoviesId?: string | null,
+        userMovieReactionsId?: string | null,
         movieReactionMovieId: string,
         owner?: string | null,
       } | null >,
       nextToken?: string | null,
     } | null,
-    movieMatches?:  {
-      __typename: "ModelMovieConnection",
-      items:  Array< {
-        __typename: "Movie",
-        id: string,
-        name: string,
-        identifier: string,
-        coverUri?: string | null,
-        rating?: number | null,
-        ratingCount?: number | null,
-        description: string,
-        categories: Array< string >,
-        trailerUri?: string | null,
-        createdAt: string,
-        updatedAt: string,
-        userMovieMatchesId?: string | null,
-        owner?: string | null,
-      } | null >,
-      nextToken?: string | null,
-    } | null,
+    movieMatches?: Array< number > | null,
     connectedUser?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -545,16 +539,15 @@ export type DeleteUserMutation = {
       } | null >,
       nextToken?: string | null,
     } | null,
-    likedMovies?:  {
+    movieReactions?:  {
       __typename: "ModelMovieReactionConnection",
       items:  Array< {
         __typename: "MovieReaction",
         id: string,
         movie:  {
           __typename: "Movie",
-          id: string,
+          id: number,
           name: string,
-          identifier: string,
           coverUri?: string | null,
           rating?: number | null,
           ratingCount?: number | null,
@@ -563,38 +556,18 @@ export type DeleteUserMutation = {
           trailerUri?: string | null,
           createdAt: string,
           updatedAt: string,
-          userMovieMatchesId?: string | null,
           owner?: string | null,
         },
         reaction: Reaction,
         createdAt: string,
         updatedAt: string,
-        userLikedMoviesId?: string | null,
+        userMovieReactionsId?: string | null,
         movieReactionMovieId: string,
         owner?: string | null,
       } | null >,
       nextToken?: string | null,
     } | null,
-    movieMatches?:  {
-      __typename: "ModelMovieConnection",
-      items:  Array< {
-        __typename: "Movie",
-        id: string,
-        name: string,
-        identifier: string,
-        coverUri?: string | null,
-        rating?: number | null,
-        ratingCount?: number | null,
-        description: string,
-        categories: Array< string >,
-        trailerUri?: string | null,
-        createdAt: string,
-        updatedAt: string,
-        userMovieMatchesId?: string | null,
-        owner?: string | null,
-      } | null >,
-      nextToken?: string | null,
-    } | null,
+    movieMatches?: Array< number > | null,
     connectedUser?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -664,9 +637,8 @@ export type CreateMovieMutationVariables = {
 export type CreateMovieMutation = {
   createMovie?:  {
     __typename: "Movie",
-    id: string,
+    id: number,
     name: string,
-    identifier: string,
     coverUri?: string | null,
     rating?: number | null,
     ratingCount?: number | null,
@@ -675,7 +647,6 @@ export type CreateMovieMutation = {
     trailerUri?: string | null,
     createdAt: string,
     updatedAt: string,
-    userMovieMatchesId?: string | null,
     owner?: string | null,
   } | null,
 };
@@ -688,9 +659,8 @@ export type UpdateMovieMutationVariables = {
 export type UpdateMovieMutation = {
   updateMovie?:  {
     __typename: "Movie",
-    id: string,
+    id: number,
     name: string,
-    identifier: string,
     coverUri?: string | null,
     rating?: number | null,
     ratingCount?: number | null,
@@ -699,7 +669,6 @@ export type UpdateMovieMutation = {
     trailerUri?: string | null,
     createdAt: string,
     updatedAt: string,
-    userMovieMatchesId?: string | null,
     owner?: string | null,
   } | null,
 };
@@ -712,9 +681,8 @@ export type DeleteMovieMutationVariables = {
 export type DeleteMovieMutation = {
   deleteMovie?:  {
     __typename: "Movie",
-    id: string,
+    id: number,
     name: string,
-    identifier: string,
     coverUri?: string | null,
     rating?: number | null,
     ratingCount?: number | null,
@@ -723,7 +691,6 @@ export type DeleteMovieMutation = {
     trailerUri?: string | null,
     createdAt: string,
     updatedAt: string,
-    userMovieMatchesId?: string | null,
     owner?: string | null,
   } | null,
 };
@@ -739,9 +706,8 @@ export type CreateMovieReactionMutation = {
     id: string,
     movie:  {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -750,13 +716,12 @@ export type CreateMovieReactionMutation = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     },
     reaction: Reaction,
     createdAt: string,
     updatedAt: string,
-    userLikedMoviesId?: string | null,
+    userMovieReactionsId?: string | null,
     movieReactionMovieId: string,
     owner?: string | null,
   } | null,
@@ -773,9 +738,8 @@ export type UpdateMovieReactionMutation = {
     id: string,
     movie:  {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -784,13 +748,12 @@ export type UpdateMovieReactionMutation = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     },
     reaction: Reaction,
     createdAt: string,
     updatedAt: string,
-    userLikedMoviesId?: string | null,
+    userMovieReactionsId?: string | null,
     movieReactionMovieId: string,
     owner?: string | null,
   } | null,
@@ -807,9 +770,8 @@ export type DeleteMovieReactionMutation = {
     id: string,
     movie:  {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -818,13 +780,12 @@ export type DeleteMovieReactionMutation = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     },
     reaction: Reaction,
     createdAt: string,
     updatedAt: string,
-    userLikedMoviesId?: string | null,
+    userMovieReactionsId?: string | null,
     movieReactionMovieId: string,
     owner?: string | null,
   } | null,
@@ -862,16 +823,15 @@ export type GetUserQuery = {
       } | null >,
       nextToken?: string | null,
     } | null,
-    likedMovies?:  {
+    movieReactions?:  {
       __typename: "ModelMovieReactionConnection",
       items:  Array< {
         __typename: "MovieReaction",
         id: string,
         movie:  {
           __typename: "Movie",
-          id: string,
+          id: number,
           name: string,
-          identifier: string,
           coverUri?: string | null,
           rating?: number | null,
           ratingCount?: number | null,
@@ -880,38 +840,18 @@ export type GetUserQuery = {
           trailerUri?: string | null,
           createdAt: string,
           updatedAt: string,
-          userMovieMatchesId?: string | null,
           owner?: string | null,
         },
         reaction: Reaction,
         createdAt: string,
         updatedAt: string,
-        userLikedMoviesId?: string | null,
+        userMovieReactionsId?: string | null,
         movieReactionMovieId: string,
         owner?: string | null,
       } | null >,
       nextToken?: string | null,
     } | null,
-    movieMatches?:  {
-      __typename: "ModelMovieConnection",
-      items:  Array< {
-        __typename: "Movie",
-        id: string,
-        name: string,
-        identifier: string,
-        coverUri?: string | null,
-        rating?: number | null,
-        ratingCount?: number | null,
-        description: string,
-        categories: Array< string >,
-        trailerUri?: string | null,
-        createdAt: string,
-        updatedAt: string,
-        userMovieMatchesId?: string | null,
-        owner?: string | null,
-      } | null >,
-      nextToken?: string | null,
-    } | null,
+    movieMatches?: Array< number > | null,
     connectedUser?: string | null,
     createdAt: string,
     updatedAt: string,
@@ -949,16 +889,15 @@ export type ListUsersQuery = {
         } | null >,
         nextToken?: string | null,
       } | null,
-      likedMovies?:  {
+      movieReactions?:  {
         __typename: "ModelMovieReactionConnection",
         items:  Array< {
           __typename: "MovieReaction",
           id: string,
           movie:  {
             __typename: "Movie",
-            id: string,
+            id: number,
             name: string,
-            identifier: string,
             coverUri?: string | null,
             rating?: number | null,
             ratingCount?: number | null,
@@ -967,38 +906,18 @@ export type ListUsersQuery = {
             trailerUri?: string | null,
             createdAt: string,
             updatedAt: string,
-            userMovieMatchesId?: string | null,
             owner?: string | null,
           },
           reaction: Reaction,
           createdAt: string,
           updatedAt: string,
-          userLikedMoviesId?: string | null,
+          userMovieReactionsId?: string | null,
           movieReactionMovieId: string,
           owner?: string | null,
         } | null >,
         nextToken?: string | null,
       } | null,
-      movieMatches?:  {
-        __typename: "ModelMovieConnection",
-        items:  Array< {
-          __typename: "Movie",
-          id: string,
-          name: string,
-          identifier: string,
-          coverUri?: string | null,
-          rating?: number | null,
-          ratingCount?: number | null,
-          description: string,
-          categories: Array< string >,
-          trailerUri?: string | null,
-          createdAt: string,
-          updatedAt: string,
-          userMovieMatchesId?: string | null,
-          owner?: string | null,
-        } | null >,
-        nextToken?: string | null,
-      } | null,
+      movieMatches?: Array< number > | null,
       connectedUser?: string | null,
       createdAt: string,
       updatedAt: string,
@@ -1051,15 +970,14 @@ export type ListConnectionRequestsQuery = {
 };
 
 export type GetMovieQueryVariables = {
-  id: string,
+  id: number,
 };
 
 export type GetMovieQuery = {
   getMovie?:  {
     __typename: "Movie",
-    id: string,
+    id: number,
     name: string,
-    identifier: string,
     coverUri?: string | null,
     rating?: number | null,
     ratingCount?: number | null,
@@ -1068,13 +986,12 @@ export type GetMovieQuery = {
     trailerUri?: string | null,
     createdAt: string,
     updatedAt: string,
-    userMovieMatchesId?: string | null,
     owner?: string | null,
   } | null,
 };
 
 export type ListMoviesQueryVariables = {
-  id?: string | null,
+  id?: number | null,
   filter?: ModelMovieFilterInput | null,
   limit?: number | null,
   nextToken?: string | null,
@@ -1086,9 +1003,8 @@ export type ListMoviesQuery = {
     __typename: "ModelMovieConnection",
     items:  Array< {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -1097,7 +1013,6 @@ export type ListMoviesQuery = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     } | null >,
     nextToken?: string | null,
@@ -1114,9 +1029,8 @@ export type GetMovieReactionQuery = {
     id: string,
     movie:  {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -1125,13 +1039,12 @@ export type GetMovieReactionQuery = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     },
     reaction: Reaction,
     createdAt: string,
     updatedAt: string,
-    userLikedMoviesId?: string | null,
+    userMovieReactionsId?: string | null,
     movieReactionMovieId: string,
     owner?: string | null,
   } | null,
@@ -1153,9 +1066,8 @@ export type ListMovieReactionsQuery = {
       id: string,
       movie:  {
         __typename: "Movie",
-        id: string,
+        id: number,
         name: string,
-        identifier: string,
         coverUri?: string | null,
         rating?: number | null,
         ratingCount?: number | null,
@@ -1164,17 +1076,46 @@ export type ListMovieReactionsQuery = {
         trailerUri?: string | null,
         createdAt: string,
         updatedAt: string,
-        userMovieMatchesId?: string | null,
         owner?: string | null,
       },
       reaction: Reaction,
       createdAt: string,
       updatedAt: string,
-      userLikedMoviesId?: string | null,
+      userMovieReactionsId?: string | null,
       movieReactionMovieId: string,
       owner?: string | null,
     } | null >,
     nextToken?: string | null,
+  } | null,
+};
+
+export type DiscoverMoviesQueryVariables = {
+  input?: DiscoverMoviesInput | null,
+};
+
+export type DiscoverMoviesQuery = {
+  discoverMovies?:  {
+    __typename: "DiscoverMovieApi",
+    page: number,
+    results:  Array< {
+      __typename: "MovieApi",
+      id: number,
+      poster_path?: string | null,
+      adult: boolean,
+      overview: string,
+      release_date: string,
+      genre_ids: Array< number >,
+      original_title: string,
+      original_language: string,
+      title: string,
+      backdrop_path?: string | null,
+      popularity: number,
+      vote_count: number,
+      video: boolean,
+      vote_average: number,
+    } >,
+    total_results: number,
+    total_pages: number,
   } | null,
 };
 
@@ -1235,9 +1176,8 @@ export type OnDeleteConnectionRequestSubscription = {
 export type OnCreateMovieSubscription = {
   onCreateMovie?:  {
     __typename: "Movie",
-    id: string,
+    id: number,
     name: string,
-    identifier: string,
     coverUri?: string | null,
     rating?: number | null,
     ratingCount?: number | null,
@@ -1246,7 +1186,6 @@ export type OnCreateMovieSubscription = {
     trailerUri?: string | null,
     createdAt: string,
     updatedAt: string,
-    userMovieMatchesId?: string | null,
     owner?: string | null,
   } | null,
 };
@@ -1254,9 +1193,8 @@ export type OnCreateMovieSubscription = {
 export type OnUpdateMovieSubscription = {
   onUpdateMovie?:  {
     __typename: "Movie",
-    id: string,
+    id: number,
     name: string,
-    identifier: string,
     coverUri?: string | null,
     rating?: number | null,
     ratingCount?: number | null,
@@ -1265,7 +1203,6 @@ export type OnUpdateMovieSubscription = {
     trailerUri?: string | null,
     createdAt: string,
     updatedAt: string,
-    userMovieMatchesId?: string | null,
     owner?: string | null,
   } | null,
 };
@@ -1273,9 +1210,8 @@ export type OnUpdateMovieSubscription = {
 export type OnDeleteMovieSubscription = {
   onDeleteMovie?:  {
     __typename: "Movie",
-    id: string,
+    id: number,
     name: string,
-    identifier: string,
     coverUri?: string | null,
     rating?: number | null,
     ratingCount?: number | null,
@@ -1284,7 +1220,6 @@ export type OnDeleteMovieSubscription = {
     trailerUri?: string | null,
     createdAt: string,
     updatedAt: string,
-    userMovieMatchesId?: string | null,
     owner?: string | null,
   } | null,
 };
@@ -1299,9 +1234,8 @@ export type OnCreateMovieReactionSubscription = {
     id: string,
     movie:  {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -1310,13 +1244,12 @@ export type OnCreateMovieReactionSubscription = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     },
     reaction: Reaction,
     createdAt: string,
     updatedAt: string,
-    userLikedMoviesId?: string | null,
+    userMovieReactionsId?: string | null,
     movieReactionMovieId: string,
     owner?: string | null,
   } | null,
@@ -1332,9 +1265,8 @@ export type OnUpdateMovieReactionSubscription = {
     id: string,
     movie:  {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -1343,13 +1275,12 @@ export type OnUpdateMovieReactionSubscription = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     },
     reaction: Reaction,
     createdAt: string,
     updatedAt: string,
-    userLikedMoviesId?: string | null,
+    userMovieReactionsId?: string | null,
     movieReactionMovieId: string,
     owner?: string | null,
   } | null,
@@ -1365,9 +1296,8 @@ export type OnDeleteMovieReactionSubscription = {
     id: string,
     movie:  {
       __typename: "Movie",
-      id: string,
+      id: number,
       name: string,
-      identifier: string,
       coverUri?: string | null,
       rating?: number | null,
       ratingCount?: number | null,
@@ -1376,13 +1306,12 @@ export type OnDeleteMovieReactionSubscription = {
       trailerUri?: string | null,
       createdAt: string,
       updatedAt: string,
-      userMovieMatchesId?: string | null,
       owner?: string | null,
     },
     reaction: Reaction,
     createdAt: string,
     updatedAt: string,
-    userLikedMoviesId?: string | null,
+    userMovieReactionsId?: string | null,
     movieReactionMovieId: string,
     owner?: string | null,
   } | null,

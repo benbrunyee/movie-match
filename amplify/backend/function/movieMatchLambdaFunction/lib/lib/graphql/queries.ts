@@ -20,13 +20,12 @@ export const getUser = /* GraphQL */ `
         }
         nextToken
       }
-      likedMovies {
+      movieReactions {
         items {
           id
           movie {
             id
             name
-            identifier
             coverUri
             rating
             ratingCount
@@ -35,36 +34,18 @@ export const getUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMovieMatchesId
             owner
           }
           reaction
           createdAt
           updatedAt
-          userLikedMoviesId
+          userMovieReactionsId
           movieReactionMovieId
           owner
         }
         nextToken
       }
-      movieMatches {
-        items {
-          id
-          name
-          identifier
-          coverUri
-          rating
-          ratingCount
-          description
-          categories
-          trailerUri
-          createdAt
-          updatedAt
-          userMovieMatchesId
-          owner
-        }
-        nextToken
-      }
+      movieMatches
       connectedUser
       createdAt
       updatedAt
@@ -103,13 +84,12 @@ export const listUsers = /* GraphQL */ `
           }
           nextToken
         }
-        likedMovies {
+        movieReactions {
           items {
             id
             movie {
               id
               name
-              identifier
               coverUri
               rating
               ratingCount
@@ -118,36 +98,18 @@ export const listUsers = /* GraphQL */ `
               trailerUri
               createdAt
               updatedAt
-              userMovieMatchesId
               owner
             }
             reaction
             createdAt
             updatedAt
-            userLikedMoviesId
+            userMovieReactionsId
             movieReactionMovieId
             owner
           }
           nextToken
         }
-        movieMatches {
-          items {
-            id
-            name
-            identifier
-            coverUri
-            rating
-            ratingCount
-            description
-            categories
-            trailerUri
-            createdAt
-            updatedAt
-            userMovieMatchesId
-            owner
-          }
-          nextToken
-        }
+        movieMatches
         connectedUser
         createdAt
         updatedAt
@@ -199,11 +161,10 @@ export const listConnectionRequests = /* GraphQL */ `
   }
 `;
 export const getMovie = /* GraphQL */ `
-  query GetMovie($id: ID!) {
+  query GetMovie($id: Int!) {
     getMovie(id: $id) {
       id
       name
-      identifier
       coverUri
       rating
       ratingCount
@@ -212,14 +173,13 @@ export const getMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMovieMatchesId
       owner
     }
   }
 `;
 export const listMovies = /* GraphQL */ `
   query ListMovies(
-    $id: ID
+    $id: Int
     $filter: ModelMovieFilterInput
     $limit: Int
     $nextToken: String
@@ -235,7 +195,6 @@ export const listMovies = /* GraphQL */ `
       items {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -244,7 +203,6 @@ export const listMovies = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       nextToken
@@ -258,7 +216,6 @@ export const getMovieReaction = /* GraphQL */ `
       movie {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -267,13 +224,12 @@ export const getMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       reaction
       createdAt
       updatedAt
-      userLikedMoviesId
+      userMovieReactionsId
       movieReactionMovieId
       owner
     }
@@ -299,7 +255,6 @@ export const listMovieReactions = /* GraphQL */ `
         movie {
           id
           name
-          identifier
           coverUri
           rating
           ratingCount
@@ -308,17 +263,41 @@ export const listMovieReactions = /* GraphQL */ `
           trailerUri
           createdAt
           updatedAt
-          userMovieMatchesId
           owner
         }
         reaction
         createdAt
         updatedAt
-        userLikedMoviesId
+        userMovieReactionsId
         movieReactionMovieId
         owner
       }
       nextToken
+    }
+  }
+`;
+export const discoverMovies = /* GraphQL */ `
+  query DiscoverMovies($input: DiscoverMoviesInput) {
+    discoverMovies(input: $input) {
+      page
+      results {
+        id
+        poster_path
+        adult
+        overview
+        release_date
+        genre_ids
+        original_title
+        original_language
+        title
+        backdrop_path
+        popularity
+        vote_count
+        video
+        vote_average
+      }
+      total_results
+      total_pages
     }
   }
 `;

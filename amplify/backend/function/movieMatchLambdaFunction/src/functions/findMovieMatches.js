@@ -36,82 +36,83 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+var API_1 = require("../lib/API");
 var appSync_1 = require("../lib/appSync");
 var common_1 = require("../lib/common");
 var mutations_1 = require("../lib/graphql/mutations");
 exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestId, request;
+    var requestee, user, connectedUserId, connectedUserObj, movieMatches, movieIds, newMatches;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                requestId = event.arguments.input.requestId;
-                console.debug("Connection Request ID: " + requestId);
-                return [4, common_1.getConnectionRequest(requestId)];
-            case 1:
-                request = _a.sent();
-                if (!request.sender) {
-                    throw new Error("Could not find sender of the request");
+                requestee = event.identity.username;
+                if (!requestee) {
+                    throw new Error("Could not find requestee. Please call this function as a logged in user.");
                 }
-                validateRequest(event, request);
-                return [4, common_1.acceptRequest(requestId)];
+                return [4, common_1.getUser(requestee)];
+            case 1:
+                user = _a.sent();
+                connectedUserId = user.connectedUser;
+                if (!connectedUserId) {
+                    throw new Error("Could not find connected user for user database obj: " + requestee);
+                }
+                return [4, common_1.getUser(connectedUserId)];
             case 2:
-                _a.sent();
-                return [4, updateUsers(request.sender, request.receiver)];
+                connectedUserObj = _a.sent();
+                if (!(user.movieReactions && connectedUserObj.movieReactions)) {
+                    console.warn("Movie reactions for one or both user's are not present");
+                    console.debug("Returning an empty array");
+                    return [2, []];
+                }
+                movieMatches = findMovieMatches(user.movieReactions.items, connectedUserObj.movieReactions.items);
+                movieIds = getMovieIdsFromReactions(movieMatches);
+                return [4, updateUserMovieMatches(requestee, movieIds)];
             case 3:
                 _a.sent();
-                return [2, {
-                        status: true
-                    }];
+                return [4, updateUserMovieMatches(connectedUserId, movieIds)];
+            case 4:
+                _a.sent();
+                newMatches = getNewMatches(user.movieMatches || [], movieIds);
+                return [2, { allMatches: movieIds, newMatches: newMatches }];
         }
     });
 }); });
-function updateUsers(senderId, receiverId) {
+function getNewMatches(currentMovieMatches, newMovieMatches) {
+    return newMovieMatches.filter(function (x) { return !currentMovieMatches.includes(x); });
+}
+function getMovieIdsFromReactions(movieReactions) {
+    return movieReactions.map(function (reaction) { return reaction.movie.id; });
+}
+function updateUserMovieMatches(id, movieIds) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4, appSync_1["default"]({
-                        updateUser: mutations_1.updateUser
-                    }, {
+                case 0: return [4, appSync_1["default"]({ updateUser: mutations_1.updateUser }, {
                         input: {
-                            id: receiverId,
-                            connectedUser: senderId
+                            id: id,
+                            movieMatches: movieIds
                         }
                     })];
                 case 1:
                     _a.sent();
-                    console.debug("Successfully updated the receiver's user obj");
-                    return [4, appSync_1["default"]({
-                            updateUser: mutations_1.updateUser
-                        }, {
-                            input: {
-                                id: senderId,
-                                connectedUser: receiverId
-                            }
-                        })];
-                case 2:
-                    _a.sent();
-                    console.debug("Successfully updated the sender's user obj");
                     return [2];
             }
         });
     });
 }
-function validateRequest(event, request) {
-    var sender = request.sender;
-    var receiver = request.receiver;
-    if (!event.identity.username) {
-        throw new Error("Call this function as a logged in user");
-    }
-    if (!sender) {
-        throw new Error("Could not find sender associated with connection request");
-    }
-    if (receiver !== event.identity.username) {
-        throw new Error("Cannot accept connection request that was not sent to you");
-    }
-    console.debug("Sender ID: " + sender);
-    console.debug("Receiver ID: " + receiver);
-    if (sender === receiver) {
-        throw new Error("Cannot accept a request to yourself");
-    }
-    console.debug("Request to accept connection request is valid");
+function findMovieMatches(arr1, arr2) {
+    var likeFilter = function (movieReaction) {
+        return movieReaction.reaction === API_1.Reaction.LIKE;
+    };
+    arr1 = arr1.filter(likeFilter);
+    arr2 = arr2.filter(likeFilter);
+    var _a = arr1.length >= arr2.length ? [arr1, arr2] : [arr2, arr1], largestArr = _a[0], smallestArr = _a[1];
+    var match = function (movieReaction1, movieReaction2) { return movieReaction1.movie.id === movieReaction2.movie.id; };
+    var matches = largestArr.reduce(function (r, movieReaction) {
+        if (smallestArr.some(function (reaction) { return match(reaction, movieReaction); })) {
+            r.push(movieReaction);
+        }
+        return r;
+    }, []);
+    return matches;
 }

@@ -1,17 +1,12 @@
 import {
   ConnectionRequest,
-  ConnectionRequestStatus,
-  GetConnectionRequestQuery,
-  GetConnectionRequestQueryVariables,
-  UpdateConnectionRequestMutation,
-  UpdateConnectionRequestMutationVariables,
   UpdateUserMutation,
   UpdateUserMutationVariables,
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
+import { acceptRequest, getConnectionRequest } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
-import { updateConnectionRequest, updateUser } from "../lib/graphql/mutations";
-import { getConnectionRequest } from "../lib/graphql/queries";
+import { updateUser } from "../lib/graphql/mutations";
 
 export interface EventInterface extends EventIdentity {
   arguments: {
@@ -27,7 +22,7 @@ export default async (event: EventInterface) => {
   console.debug(`Connection Request ID: ${requestId}`);
 
   // Get the request
-  const request = await getRequest(requestId);
+  const request = await getConnectionRequest(requestId);
 
   // Just for TS validation
   if (!request.sender) {
@@ -80,27 +75,6 @@ async function updateUsers(senderId: string, receiverId: string) {
   console.debug("Successfully updated the sender's user obj");
 }
 
-async function acceptRequest(id: string) {
-  const status = ConnectionRequestStatus.ACCEPTED;
-
-  const res = await callGraphQl<
-    UpdateConnectionRequestMutation,
-    UpdateConnectionRequestMutationVariables
-  >(
-    { updateConnectionRequest },
-    {
-      input: {
-        id,
-        status,
-      },
-    }
-  );
-
-  console.debug(`Successfully updated connection request to: ${status}`);
-
-  return res;
-}
-
 function validateRequest(event: EventInterface, request: ConnectionRequest) {
   const sender = request.sender;
   const receiver = request.receiver;
@@ -127,24 +101,4 @@ function validateRequest(event: EventInterface, request: ConnectionRequest) {
   }
 
   console.debug("Request to accept connection request is valid");
-}
-
-async function getRequest(id: string) {
-  const request = await callGraphQl<
-    GetConnectionRequestQuery,
-    GetConnectionRequestQueryVariables
-  >(
-    { getConnectionRequest },
-    {
-      id,
-    }
-  );
-
-  if (!request.data?.getConnectionRequest) {
-    throw new Error("Couldn't find connection request");
-  }
-
-  console.debug("Successfully got the connection request database obj");
-
-  return request.data.getConnectionRequest;
 }

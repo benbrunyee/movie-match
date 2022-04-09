@@ -46,7 +46,6 @@ export const onCreateMovie = /* GraphQL */ `
     onCreateMovie {
       id
       name
-      identifier
       coverUri
       rating
       ratingCount
@@ -55,7 +54,6 @@ export const onCreateMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMovieMatchesId
       owner
     }
   }
@@ -65,7 +63,6 @@ export const onUpdateMovie = /* GraphQL */ `
     onUpdateMovie {
       id
       name
-      identifier
       coverUri
       rating
       ratingCount
@@ -74,7 +71,6 @@ export const onUpdateMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMovieMatchesId
       owner
     }
   }
@@ -84,7 +80,6 @@ export const onDeleteMovie = /* GraphQL */ `
     onDeleteMovie {
       id
       name
-      identifier
       coverUri
       rating
       ratingCount
@@ -93,7 +88,6 @@ export const onDeleteMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMovieMatchesId
       owner
     }
   }
@@ -105,7 +99,6 @@ export const onCreateMovieReaction = /* GraphQL */ `
       movie {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -114,13 +107,12 @@ export const onCreateMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       reaction
       createdAt
       updatedAt
-      userLikedMoviesId
+      userMovieReactionsId
       movieReactionMovieId
       owner
     }
@@ -133,7 +125,6 @@ export const onUpdateMovieReaction = /* GraphQL */ `
       movie {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -142,13 +133,12 @@ export const onUpdateMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       reaction
       createdAt
       updatedAt
-      userLikedMoviesId
+      userMovieReactionsId
       movieReactionMovieId
       owner
     }
@@ -161,7 +151,6 @@ export const onDeleteMovieReaction = /* GraphQL */ `
       movie {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -170,13 +159,12 @@ export const onDeleteMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       reaction
       createdAt
       updatedAt
-      userLikedMoviesId
+      userMovieReactionsId
       movieReactionMovieId
       owner
     }

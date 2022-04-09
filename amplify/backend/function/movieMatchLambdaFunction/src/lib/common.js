@@ -36,82 +36,72 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var appSync_1 = require("../lib/appSync");
-var common_1 = require("../lib/common");
-var mutations_1 = require("../lib/graphql/mutations");
-exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestId, request;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                requestId = event.arguments.input.requestId;
-                console.debug("Connection Request ID: " + requestId);
-                return [4, common_1.getConnectionRequest(requestId)];
-            case 1:
-                request = _a.sent();
-                if (!request.sender) {
-                    throw new Error("Could not find sender of the request");
-                }
-                validateRequest(event, request);
-                return [4, common_1.acceptRequest(requestId)];
-            case 2:
-                _a.sent();
-                return [4, updateUsers(request.sender, request.receiver)];
-            case 3:
-                _a.sent();
-                return [2, {
-                        status: true
-                    }];
-        }
-    });
-}); });
-function updateUsers(senderId, receiverId) {
+exports.getConnectionRequest = exports.acceptRequest = exports.getUser = void 0;
+var API_1 = require("./API");
+var appSync_1 = require("./appSync");
+var mutations_1 = require("./graphql/mutations");
+var queries_1 = require("./graphql/queries");
+function getUser(id) {
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4, appSync_1["default"]({
-                        updateUser: mutations_1.updateUser
-                    }, {
-                        input: {
-                            id: receiverId,
-                            connectedUser: senderId
-                        }
+        var request;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4, appSync_1["default"]({ getGraphUser: queries_1.getUser }, {
+                        id: id
                     })];
                 case 1:
-                    _a.sent();
-                    console.debug("Successfully updated the receiver's user obj");
-                    return [4, appSync_1["default"]({
-                            updateUser: mutations_1.updateUser
-                        }, {
-                            input: {
-                                id: senderId,
-                                connectedUser: receiverId
-                            }
-                        })];
-                case 2:
-                    _a.sent();
-                    console.debug("Successfully updated the sender's user obj");
-                    return [2];
+                    request = _b.sent();
+                    if (!((_a = request.data) === null || _a === void 0 ? void 0 : _a.getUser)) {
+                        throw new Error("Couldn't find user database obj: " + id);
+                    }
+                    console.debug("Successfully got user database obj: " + id);
+                    return [2, request.data.getUser];
             }
         });
     });
 }
-function validateRequest(event, request) {
-    var sender = request.sender;
-    var receiver = request.receiver;
-    if (!event.identity.username) {
-        throw new Error("Call this function as a logged in user");
-    }
-    if (!sender) {
-        throw new Error("Could not find sender associated with connection request");
-    }
-    if (receiver !== event.identity.username) {
-        throw new Error("Cannot accept connection request that was not sent to you");
-    }
-    console.debug("Sender ID: " + sender);
-    console.debug("Receiver ID: " + receiver);
-    if (sender === receiver) {
-        throw new Error("Cannot accept a request to yourself");
-    }
-    console.debug("Request to accept connection request is valid");
+exports.getUser = getUser;
+function acceptRequest(id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var status, res;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    status = API_1.ConnectionRequestStatus.ACCEPTED;
+                    return [4, appSync_1["default"]({ updateConnectionRequest: mutations_1.updateConnectionRequest }, {
+                            input: {
+                                id: id,
+                                status: status
+                            }
+                        })];
+                case 1:
+                    res = _a.sent();
+                    console.debug("Successfully updated connection request to: " + status);
+                    return [2, res];
+            }
+        });
+    });
 }
+exports.acceptRequest = acceptRequest;
+function getConnectionRequest(id) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function () {
+        var request;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4, appSync_1["default"]({ getConnectionRequest: queries_1.getConnectionRequest }, {
+                        id: id
+                    })];
+                case 1:
+                    request = _b.sent();
+                    if (!((_a = request.data) === null || _a === void 0 ? void 0 : _a.getConnectionRequest)) {
+                        throw new Error("Couldn't find connection request: " + id);
+                    }
+                    console.debug("Successfully got the connection request database obj: " + id);
+                    return [2, request.data.getConnectionRequest];
+            }
+        });
+    });
+}
+exports.getConnectionRequest = getConnectionRequest;

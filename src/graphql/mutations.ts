@@ -23,13 +23,12 @@ export const createUser = /* GraphQL */ `
         }
         nextToken
       }
-      likedMovies {
+      movieReactions {
         items {
           id
           movie {
             id
             name
-            identifier
             coverUri
             rating
             ratingCount
@@ -38,36 +37,18 @@ export const createUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMovieMatchesId
             owner
           }
           reaction
           createdAt
           updatedAt
-          userLikedMoviesId
+          userMovieReactionsId
           movieReactionMovieId
           owner
         }
         nextToken
       }
-      movieMatches {
-        items {
-          id
-          name
-          identifier
-          coverUri
-          rating
-          ratingCount
-          description
-          categories
-          trailerUri
-          createdAt
-          updatedAt
-          userMovieMatchesId
-          owner
-        }
-        nextToken
-      }
+      movieMatches
       connectedUser
       createdAt
       updatedAt
@@ -96,13 +77,12 @@ export const updateUser = /* GraphQL */ `
         }
         nextToken
       }
-      likedMovies {
+      movieReactions {
         items {
           id
           movie {
             id
             name
-            identifier
             coverUri
             rating
             ratingCount
@@ -111,36 +91,18 @@ export const updateUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMovieMatchesId
             owner
           }
           reaction
           createdAt
           updatedAt
-          userLikedMoviesId
+          userMovieReactionsId
           movieReactionMovieId
           owner
         }
         nextToken
       }
-      movieMatches {
-        items {
-          id
-          name
-          identifier
-          coverUri
-          rating
-          ratingCount
-          description
-          categories
-          trailerUri
-          createdAt
-          updatedAt
-          userMovieMatchesId
-          owner
-        }
-        nextToken
-      }
+      movieMatches
       connectedUser
       createdAt
       updatedAt
@@ -169,13 +131,12 @@ export const deleteUser = /* GraphQL */ `
         }
         nextToken
       }
-      likedMovies {
+      movieReactions {
         items {
           id
           movie {
             id
             name
-            identifier
             coverUri
             rating
             ratingCount
@@ -184,36 +145,18 @@ export const deleteUser = /* GraphQL */ `
             trailerUri
             createdAt
             updatedAt
-            userMovieMatchesId
             owner
           }
           reaction
           createdAt
           updatedAt
-          userLikedMoviesId
+          userMovieReactionsId
           movieReactionMovieId
           owner
         }
         nextToken
       }
-      movieMatches {
-        items {
-          id
-          name
-          identifier
-          coverUri
-          rating
-          ratingCount
-          description
-          categories
-          trailerUri
-          createdAt
-          updatedAt
-          userMovieMatchesId
-          owner
-        }
-        nextToken
-      }
+      movieMatches
       connectedUser
       createdAt
       updatedAt
@@ -277,7 +220,6 @@ export const createMovie = /* GraphQL */ `
     createMovie(input: $input, condition: $condition) {
       id
       name
-      identifier
       coverUri
       rating
       ratingCount
@@ -286,7 +228,6 @@ export const createMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMovieMatchesId
       owner
     }
   }
@@ -299,7 +240,6 @@ export const updateMovie = /* GraphQL */ `
     updateMovie(input: $input, condition: $condition) {
       id
       name
-      identifier
       coverUri
       rating
       ratingCount
@@ -308,7 +248,6 @@ export const updateMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMovieMatchesId
       owner
     }
   }
@@ -321,7 +260,6 @@ export const deleteMovie = /* GraphQL */ `
     deleteMovie(input: $input, condition: $condition) {
       id
       name
-      identifier
       coverUri
       rating
       ratingCount
@@ -330,7 +268,6 @@ export const deleteMovie = /* GraphQL */ `
       trailerUri
       createdAt
       updatedAt
-      userMovieMatchesId
       owner
     }
   }
@@ -345,7 +282,6 @@ export const createMovieReaction = /* GraphQL */ `
       movie {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -354,13 +290,12 @@ export const createMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       reaction
       createdAt
       updatedAt
-      userLikedMoviesId
+      userMovieReactionsId
       movieReactionMovieId
       owner
     }
@@ -376,7 +311,6 @@ export const updateMovieReaction = /* GraphQL */ `
       movie {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -385,13 +319,12 @@ export const updateMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       reaction
       createdAt
       updatedAt
-      userLikedMoviesId
+      userMovieReactionsId
       movieReactionMovieId
       owner
     }
@@ -407,7 +340,6 @@ export const deleteMovieReaction = /* GraphQL */ `
       movie {
         id
         name
-        identifier
         coverUri
         rating
         ratingCount
@@ -416,13 +348,12 @@ export const deleteMovieReaction = /* GraphQL */ `
         trailerUri
         createdAt
         updatedAt
-        userMovieMatchesId
         owner
       }
       reaction
       createdAt
       updatedAt
-      userLikedMoviesId
+      userMovieReactionsId
       movieReactionMovieId
       owner
     }

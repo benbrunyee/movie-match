@@ -36,41 +36,22 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var acceptRequest_1 = require("./functions/acceptRequest");
-var findMovieMatches_1 = require("./functions/findMovieMatches");
-var discoverMovies_1 = require("./functions/discoverMovies");
-var resolvers = {
-    Query: { discoverMovies: discoverMovies_1["default"] },
-    Mutation: { acceptRequest: acceptRequest_1["default"], findMovieMatches: findMovieMatches_1["default"] }
-};
-exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var typeHandler, resolver, result, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                console.log("Event: " + JSON.stringify(event, null, 2));
-                typeHandler = event.typeName ? resolvers[event.typeName] : null;
-                resolver =
-                    event.fieldName && typeHandler ? typeHandler[event.fieldName] : null;
-                console.log("Type Handler: " + event.typeName + ", Field Name: " + event.fieldName);
-                if (!typeHandler) {
-                    throw new Error("Type handler not found.");
-                }
-                if (!resolver) {
-                    throw new Error("Resolver not found.");
-                }
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4, resolver(event)];
-            case 2:
-                result = _a.sent();
-                return [2, result];
-            case 3:
-                e_1 = _a.sent();
-                console.log(e_1);
-                throw e_1;
-            case 4: return [2];
-        }
+function default_1(event) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function () {
+        var page;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    page = ((_b = (_a = event.arguments) === null || _a === void 0 ? void 0 : _a.input) === null || _b === void 0 ? void 0 : _b.page) || 0;
+                    if (page < 1) {
+                        page = undefined;
+                    }
+                    return [4, fetch("https://api.themoviedb.org/3/discover/movie?api_key=0dd0cb2ac703e890ab3573c95612498a" + (page ? "&page=" + page : ""))];
+                case 1: return [4, (_c.sent()).json()];
+                case 2: return [2, _c.sent()];
+            }
+        });
     });
-}); };
+}
+exports["default"] = default_1;

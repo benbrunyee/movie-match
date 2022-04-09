@@ -1,5 +1,18 @@
 # Lamdba Functions
 
+type Query {
+  # TODO: https://github.com/aws-amplify/amplify-cli/issues/5151
+  # discoverMovies: DiscoverMovieApi @http(url: "https://api.themoviedb.org/3/discover/movie?api_key=0dd0cb2ac703e890ab3573c95612498a")
+  discoverMovies(input: DiscoverMoviesInput): DiscoverMovieApi
+    @function(name: "movieMatchLambdaFunction-${env}")
+    @auth(
+      rules: [
+        { allow: private, provider: iam }
+        { allow: private, provider: userPools }
+      ]
+    )
+}
+
 type Mutation {
   acceptRequest(input: AcceptRequestInput!): AWSJSON
     @function(name: "movieMatchLambdaFunction-${env}")
@@ -25,8 +38,8 @@ type User
   sub: ID!
   email: String!
   requests: [ConnectionRequest!] @hasMany
-  likedMovies: [MovieReaction!] @hasMany
-  movieMatches: [Movie!] @hasMany
+  movieReactions: [MovieReaction!] @hasMany
+  movieMatches: [Int!]
   connectedUser: String
     @auth(
       rules: [
@@ -68,11 +81,10 @@ type Movie
       { allow: private, provider: iam }
     ]
   ) {
-  id: ID! @primaryKey
+  id: Int! @primaryKey
   name: String!
-  identifier: String!
   coverUri: String
-  rating: Int
+  rating: Float
   ratingCount: Int
   description: String!
   categories: [String!]!
@@ -87,10 +99,40 @@ type MovieReaction
   reaction: Reaction!
 }
 
+# Types
+
+type DiscoverMovieApi {
+  page: Int!
+  results: [MovieApi!]!
+  total_results: Int!
+  total_pages: Int!
+}
+
+type MovieApi {
+  id: Int!
+  poster_path: String
+  adult: Boolean!
+  overview: String!
+  release_date: String!
+  genre_ids: [Int!]!
+  original_title: String!
+  original_language: String!
+  title: String!
+  backdrop_path: String
+  popularity: Float!
+  vote_count: Int!
+  video: Boolean!
+  vote_average: Float!
+}
+
 # Inputs
 
 input AcceptRequestInput {
   requestId: ID!
+}
+
+input DiscoverMoviesInput {
+  page: Int
 }
 
 # Enums

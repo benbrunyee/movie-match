@@ -18,9 +18,9 @@ const linking: LinkingOptions<RootStackParamList> = {
       ConnectParter: "connect-partner",
       Root: {
         screens: {
-          TabOne: {
+          Discover: {
             screens: {
-              TabOneScreen: 'one',
+              DiscoverScreen: 'discover',
             },
           },
           Settings: {
