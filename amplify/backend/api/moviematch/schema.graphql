@@ -3,7 +3,31 @@
 type Query {
   # TODO: https://github.com/aws-amplify/amplify-cli/issues/5151
   # discoverMovies: DiscoverMovieApi @http(url: "https://api.themoviedb.org/3/discover/movie?api_key=0dd0cb2ac703e890ab3573c95612498a")
-  discoverMovies(input: DiscoverMoviesInput): DiscoverMovieApi
+  discoverMovies(input: DiscoverMoviesInput): QueryMovieList
+    @function(name: "movieMatchLambdaFunction-${env}")
+    @auth(
+      rules: [
+        { allow: private, provider: iam }
+        { allow: private, provider: userPools }
+      ]
+    )
+  getApiMovie(input: GetApiMoviesInput): MovieApi
+    @function(name: "movieMatchLambdaFunction-${env}")
+    @auth(
+      rules: [
+        { allow: private, provider: iam }
+        { allow: private, provider: userPools }
+      ]
+    )
+  findMovieMatches: FindMovieMatchesQuery
+    @function(name: "movieMatchLambdaFunction-${env}")
+    @auth(
+      rules: [
+        { allow: private, provider: iam }
+        { allow: private, provider: userPools }
+      ]
+    )
+  listPartnerPendingMovieMatches: QueryMovieList
     @function(name: "movieMatchLambdaFunction-${env}")
     @auth(
       rules: [
@@ -39,7 +63,7 @@ type User
   email: String!
   requests: [ConnectionRequest!] @hasMany
   movieReactions: [MovieReaction!] @hasMany
-  movieMatches: [Int!]
+  movieMatches: [ID!]
   connectedUser: String
     @auth(
       rules: [
@@ -79,9 +103,12 @@ type Movie
     rules: [
       { allow: owner, operations: [create] }
       { allow: private, provider: iam }
+      { allow: private, provider: userPools, operations: [read] }
     ]
   ) {
-  id: Int! @primaryKey
+  id: ID! @primaryKey
+  identifier: Int! @index(name: "byIdentifier", queryField: "movieByIdentifier")
+  createdAt: AWSDateTime!
   name: String!
   coverUri: String
   rating: Float
@@ -96,16 +123,19 @@ type MovieReaction
   @auth(rules: [{ allow: owner }, { allow: private, provider: iam }]) {
   id: ID! @primaryKey
   movie: Movie! @hasOne
+  createdAt: AWSDateTime!
   reaction: Reaction!
 }
 
 # Types
 
-type DiscoverMovieApi {
-  page: Int!
-  results: [MovieApi!]!
-  total_results: Int!
-  total_pages: Int!
+type FindMovieMatchesQuery {
+  allMatches: [String!]!
+  newMatches: [String!]!
+}
+
+type QueryMovieList {
+  items: [Movie!]!
 }
 
 type MovieApi {
@@ -126,6 +156,10 @@ type MovieApi {
 }
 
 # Inputs
+
+input GetApiMoviesInput {
+  id: Int!
+}
 
 input AcceptRequestInput {
   requestId: ID!

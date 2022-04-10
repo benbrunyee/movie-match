@@ -37,11 +37,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 exports.__esModule = true;
 var acceptRequest_1 = require("./functions/acceptRequest");
-var findMovieMatches_1 = require("./functions/findMovieMatches");
 var discoverMovies_1 = require("./functions/discoverMovies");
+var findMovieMatches_1 = require("./functions/findMovieMatches");
+var listPartnerPendingMovieMatches_1 = require("./functions/listPartnerPendingMovieMatches");
 var resolvers = {
-    Query: { discoverMovies: discoverMovies_1["default"] },
-    Mutation: { acceptRequest: acceptRequest_1["default"], findMovieMatches: findMovieMatches_1["default"] }
+    Query: { discoverMovies: discoverMovies_1["default"], listPartnerPendingMovieMatches: listPartnerPendingMovieMatches_1["default"], findMovieMatches: findMovieMatches_1["default"] },
+    Mutation: { acceptRequest: acceptRequest_1["default"] }
 };
 exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, function () {
     var typeHandler, resolver, result, e_1;

@@ -36,38 +36,61 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var appSync_1 = require("../lib/appSync");
-var queries_1 = require("../lib/graphql/queries");
+var common_1 = require("../lib/common");
 function default_1(event) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var alreadyExists, code, usersWithCode;
+        var username, user, connectedPartner, userReactions, partnerReactions, userMovieIds, partnerMovieIds, unmatchedPartnerMovies, movieData;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
-                    alreadyExists = true;
-                    code = 0;
-                    _c.label = 1;
+                    username = event.identity.username;
+                    if (!username) {
+                        throw new Error("Can only get partner pending matches from a user. Could not determine username from call.");
+                    }
+                    return [4, common_1.getUser(username)];
                 case 1:
-                    if (!alreadyExists) return [3, 3];
-                    code = generateRandomNumber();
-                    return [4, appSync_1["default"]({ listUsers: queries_1.listUsers }, {
+                    user = _c.sent();
+                    if (!user.connectedUser) {
+                        throw new Error("User does not have a connected partner");
+                    }
+                    return [4, common_1.getUser(user.connectedUser)];
+                case 2:
+                    connectedPartner = _c.sent();
+                    userReactions = (_a = user.movieReactions) === null || _a === void 0 ? void 0 : _a.items;
+                    partnerReactions = (_b = connectedPartner.movieReactions) === null || _b === void 0 ? void 0 : _b.items;
+                    if (!(partnerReactions && userReactions)) {
+                        throw new Error("Could not find movie reactions for partner and/or user");
+                    }
+                    userMovieIds = getMovieIds(userReactions);
+                    partnerMovieIds = getMovieIds(partnerReactions);
+                    unmatchedPartnerMovies = removeOverlap(partnerMovieIds, userMovieIds);
+                    if (unmatchedPartnerMovies.length === 0) {
+                        return [2, { items: [] }];
+                    }
+                    return [4, common_1.listMovies({
                             filter: {
-                                connectionCode: { eq: code }
+                                or: unmatchedPartnerMovies.map(function (id) { return ({ identifier: { eq: id } }); })
                             }
                         })];
-                case 2:
-                    usersWithCode = _c.sent();
-                    if (((_b = (_a = usersWithCode.data) === null || _a === void 0 ? void 0 : _a.listUsers) === null || _b === void 0 ? void 0 : _b.items.length) === 0) {
-                        alreadyExists = false;
-                    }
-                    return [3, 1];
-                case 3: return [2, code];
+                case 3:
+                    movieData = _c.sent();
+                    return [2, { items: movieData }];
             }
         });
     });
 }
 exports["default"] = default_1;
-function generateRandomNumber() {
-    return Math.round(Math.random() * 100000);
+function removeOverlap(base, matches) {
+    var newArr = [];
+    for (var _i = 0, base_1 = base; _i < base_1.length; _i++) {
+        var v = base_1[_i];
+        if (!matches.includes(v) && !newArr.includes(v)) {
+            newArr.push(v);
+        }
+    }
+    return newArr;
+}
+function getMovieIds(movieReactions) {
+    return movieReactions.map(function (reaction) { return reaction.movie.identifier; });
 }

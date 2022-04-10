@@ -25,6 +25,8 @@ export const getUser = /* GraphQL */ `
           id
           movie {
             id
+            identifier
+            createdAt
             name
             coverUri
             rating
@@ -32,12 +34,11 @@ export const getUser = /* GraphQL */ `
             description
             categories
             trailerUri
-            createdAt
             updatedAt
             owner
           }
-          reaction
           createdAt
+          reaction
           updatedAt
           userMovieReactionsId
           movieReactionMovieId
@@ -89,6 +90,8 @@ export const listUsers = /* GraphQL */ `
             id
             movie {
               id
+              identifier
+              createdAt
               name
               coverUri
               rating
@@ -96,12 +99,11 @@ export const listUsers = /* GraphQL */ `
               description
               categories
               trailerUri
-              createdAt
               updatedAt
               owner
             }
-            reaction
             createdAt
+            reaction
             updatedAt
             userMovieReactionsId
             movieReactionMovieId
@@ -161,9 +163,11 @@ export const listConnectionRequests = /* GraphQL */ `
   }
 `;
 export const getMovie = /* GraphQL */ `
-  query GetMovie($id: Int!) {
+  query GetMovie($id: ID!) {
     getMovie(id: $id) {
       id
+      identifier
+      createdAt
       name
       coverUri
       rating
@@ -171,7 +175,6 @@ export const getMovie = /* GraphQL */ `
       description
       categories
       trailerUri
-      createdAt
       updatedAt
       owner
     }
@@ -179,7 +182,7 @@ export const getMovie = /* GraphQL */ `
 `;
 export const listMovies = /* GraphQL */ `
   query ListMovies(
-    $id: Int
+    $id: ID
     $filter: ModelMovieFilterInput
     $limit: Int
     $nextToken: String
@@ -194,6 +197,8 @@ export const listMovies = /* GraphQL */ `
     ) {
       items {
         id
+        identifier
+        createdAt
         name
         coverUri
         rating
@@ -201,7 +206,39 @@ export const listMovies = /* GraphQL */ `
         description
         categories
         trailerUri
+        updatedAt
+        owner
+      }
+      nextToken
+    }
+  }
+`;
+export const movieByIdentifier = /* GraphQL */ `
+  query MovieByIdentifier(
+    $identifier: Int!
+    $sortDirection: ModelSortDirection
+    $filter: ModelMovieFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    movieByIdentifier(
+      identifier: $identifier
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        identifier
         createdAt
+        name
+        coverUri
+        rating
+        ratingCount
+        description
+        categories
+        trailerUri
         updatedAt
         owner
       }
@@ -215,6 +252,8 @@ export const getMovieReaction = /* GraphQL */ `
       id
       movie {
         id
+        identifier
+        createdAt
         name
         coverUri
         rating
@@ -222,12 +261,11 @@ export const getMovieReaction = /* GraphQL */ `
         description
         categories
         trailerUri
-        createdAt
         updatedAt
         owner
       }
-      reaction
       createdAt
+      reaction
       updatedAt
       userMovieReactionsId
       movieReactionMovieId
@@ -254,6 +292,8 @@ export const listMovieReactions = /* GraphQL */ `
         id
         movie {
           id
+          identifier
+          createdAt
           name
           coverUri
           rating
@@ -261,12 +301,11 @@ export const listMovieReactions = /* GraphQL */ `
           description
           categories
           trailerUri
-          createdAt
           updatedAt
           owner
         }
-        reaction
         createdAt
+        reaction
         updatedAt
         userMovieReactionsId
         movieReactionMovieId
@@ -279,25 +318,80 @@ export const listMovieReactions = /* GraphQL */ `
 export const discoverMovies = /* GraphQL */ `
   query DiscoverMovies($input: DiscoverMoviesInput) {
     discoverMovies(input: $input) {
-      page
-      results {
+      items {
         id
-        poster_path
-        adult
-        overview
-        release_date
-        genre_ids
-        original_title
-        original_language
-        title
-        backdrop_path
-        popularity
-        vote_count
-        video
-        vote_average
+        identifier
+        createdAt
+        name
+        coverUri
+        rating
+        ratingCount
+        description
+        categories
+        trailerUri
+        updatedAt
+        owner
       }
-      total_results
-      total_pages
+    }
+  }
+`;
+export const getApiMovie = /* GraphQL */ `
+  query GetApiMovie($input: GetApiMoviesInput) {
+    getApiMovie(input: $input) {
+      id
+      poster_path
+      adult
+      overview
+      release_date
+      genre_ids
+      original_title
+      original_language
+      title
+      backdrop_path
+      popularity
+      vote_count
+      video
+      vote_average
+    }
+  }
+`;
+export const findMovieMatches = /* GraphQL */ `
+  query FindMovieMatches {
+    findMovieMatches {
+      items {
+        id
+        identifier
+        createdAt
+        name
+        coverUri
+        rating
+        ratingCount
+        description
+        categories
+        trailerUri
+        updatedAt
+        owner
+      }
+    }
+  }
+`;
+export const listPartnerPendingMovieMatches = /* GraphQL */ `
+  query ListPartnerPendingMovieMatches {
+    listPartnerPendingMovieMatches {
+      items {
+        id
+        identifier
+        createdAt
+        name
+        coverUri
+        rating
+        ratingCount
+        description
+        categories
+        trailerUri
+        updatedAt
+        owner
+      }
     }
   }
 `;

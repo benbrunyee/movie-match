@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -36,10 +47,13 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+var appSync_1 = require("../lib/appSync");
+var common_1 = require("../lib/common");
+var mutations_1 = require("../lib/graphql/mutations");
 function default_1(event) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var page;
+        var page, movies, movieEntries;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -47,11 +61,64 @@ function default_1(event) {
                     if (page < 1) {
                         page = undefined;
                     }
-                    return [4, fetch("https://api.themoviedb.org/3/discover/movie?api_key=0dd0cb2ac703e890ab3573c95612498a" + (page ? "&page=" + page : ""))];
+                    return [4, fetch(common_1.API_URL + "/discover/movie?api_key=" + common_1.API_KEY + (page ? "&page=" + page : ""))];
                 case 1: return [4, (_c.sent()).json()];
-                case 2: return [2, _c.sent()];
+                case 2:
+                    movies = (_c.sent());
+                    return [4, addMoviesToDb(movies)];
+                case 3:
+                    movieEntries = _c.sent();
+                    return [2, { items: movieEntries }];
             }
         });
     });
 }
 exports["default"] = default_1;
+function addMoviesToDb(discoveredMovies) {
+    return __awaiter(this, void 0, void 0, function () {
+        var newMovies, promises, _loop_1, _i, newMovies_1, movie, dbMovies;
+        var _this = this;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    newMovies = discoveredMovies.results.map(function (movie) { return (__assign({ identifier: movie.id, categories: movie.genre_ids.map(function (id) { return id.toString(); }), description: movie.overview, name: movie.title, rating: movie.vote_average, ratingCount: movie.vote_count }, (movie.poster_path && { coverUri: movie.poster_path }))); });
+                    promises = [];
+                    _loop_1 = function (movie) {
+                        promises.push(new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
+                            var movieObj, creation;
+                            var _a;
+                            return __generator(this, function (_b) {
+                                switch (_b.label) {
+                                    case 0: return [4, common_1.getMovieByIdentifier(movie.identifier)];
+                                    case 1:
+                                        movieObj = _b.sent();
+                                        if (!!(movieObj === null || movieObj === void 0 ? void 0 : movieObj.id)) return [3, 3];
+                                        return [4, appSync_1["default"]({ createMovie: mutations_1.createMovie }, {
+                                                input: movie
+                                            })];
+                                    case 2:
+                                        creation = _b.sent();
+                                        if (!((_a = creation.data) === null || _a === void 0 ? void 0 : _a.createMovie)) {
+                                            throw new Error("Failed to create movie for identifier: " + movie.identifier);
+                                        }
+                                        return [2, resolve(creation.data.createMovie)];
+                                    case 3: return [2, resolve(movieObj)];
+                                }
+                            });
+                        }); }));
+                    };
+                    for (_i = 0, newMovies_1 = newMovies; _i < newMovies_1.length; _i++) {
+                        movie = newMovies_1[_i];
+                        _loop_1(movie);
+                    }
+                    return [4, Promise.all(promises)["catch"](function (e) { })];
+                case 1:
+                    dbMovies = _a.sent();
+                    if (!dbMovies) {
+                        throw new Error("Failed to create all movies in database");
+                    }
+                    return [2, dbMovies];
+            }
+        });
+    });
+}

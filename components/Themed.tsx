@@ -149,7 +149,12 @@ export function Container(props: ContainerProps) {
     "containerBackgroundDefault"
   );
 
-  return <DefaultView style={[{ backgroundColor }, style]} {...otherProps} />;
+  return (
+    <DefaultView
+      style={[{ backgroundColor, borderRadius: Styling.borderRadius }, style]}
+      {...otherProps}
+    />
+  );
 }
 
 export function MenuItem(props: MenuItemProps) {

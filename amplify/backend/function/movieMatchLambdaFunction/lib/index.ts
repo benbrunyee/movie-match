@@ -12,15 +12,16 @@ Amplify Params - DO NOT EDIT */
  */
 
 import acceptRequest from "./functions/acceptRequest";
-import findMovieMatches from "./functions/findMovieMatches";
 import discoverMovies from "./functions/discoverMovies";
+import findMovieMatches from "./functions/findMovieMatches";
+import listPartnerPendingMovieMatches from "./functions/listPartnerPendingMovieMatches";
 
 const resolvers: {
   Query: { [key: string]: any };
   Mutation: { [key: string]: any };
 } = {
-  Query: { discoverMovies },
-  Mutation: { acceptRequest, findMovieMatches },
+  Query: { discoverMovies, listPartnerPendingMovieMatches, findMovieMatches },
+  Mutation: { acceptRequest },
 };
 
 export interface ExternalProviderInterface {

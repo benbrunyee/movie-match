@@ -28,6 +28,8 @@ export const createUser = /* GraphQL */ `
           id
           movie {
             id
+            identifier
+            createdAt
             name
             coverUri
             rating
@@ -35,12 +37,11 @@ export const createUser = /* GraphQL */ `
             description
             categories
             trailerUri
-            createdAt
             updatedAt
             owner
           }
-          reaction
           createdAt
+          reaction
           updatedAt
           userMovieReactionsId
           movieReactionMovieId
@@ -82,6 +83,8 @@ export const updateUser = /* GraphQL */ `
           id
           movie {
             id
+            identifier
+            createdAt
             name
             coverUri
             rating
@@ -89,12 +92,11 @@ export const updateUser = /* GraphQL */ `
             description
             categories
             trailerUri
-            createdAt
             updatedAt
             owner
           }
-          reaction
           createdAt
+          reaction
           updatedAt
           userMovieReactionsId
           movieReactionMovieId
@@ -136,6 +138,8 @@ export const deleteUser = /* GraphQL */ `
           id
           movie {
             id
+            identifier
+            createdAt
             name
             coverUri
             rating
@@ -143,12 +147,11 @@ export const deleteUser = /* GraphQL */ `
             description
             categories
             trailerUri
-            createdAt
             updatedAt
             owner
           }
-          reaction
           createdAt
+          reaction
           updatedAt
           userMovieReactionsId
           movieReactionMovieId
@@ -219,6 +222,8 @@ export const createMovie = /* GraphQL */ `
   ) {
     createMovie(input: $input, condition: $condition) {
       id
+      identifier
+      createdAt
       name
       coverUri
       rating
@@ -226,7 +231,6 @@ export const createMovie = /* GraphQL */ `
       description
       categories
       trailerUri
-      createdAt
       updatedAt
       owner
     }
@@ -239,6 +243,8 @@ export const updateMovie = /* GraphQL */ `
   ) {
     updateMovie(input: $input, condition: $condition) {
       id
+      identifier
+      createdAt
       name
       coverUri
       rating
@@ -246,7 +252,6 @@ export const updateMovie = /* GraphQL */ `
       description
       categories
       trailerUri
-      createdAt
       updatedAt
       owner
     }
@@ -259,6 +264,8 @@ export const deleteMovie = /* GraphQL */ `
   ) {
     deleteMovie(input: $input, condition: $condition) {
       id
+      identifier
+      createdAt
       name
       coverUri
       rating
@@ -266,7 +273,6 @@ export const deleteMovie = /* GraphQL */ `
       description
       categories
       trailerUri
-      createdAt
       updatedAt
       owner
     }
@@ -281,6 +287,8 @@ export const createMovieReaction = /* GraphQL */ `
       id
       movie {
         id
+        identifier
+        createdAt
         name
         coverUri
         rating
@@ -288,12 +296,11 @@ export const createMovieReaction = /* GraphQL */ `
         description
         categories
         trailerUri
-        createdAt
         updatedAt
         owner
       }
-      reaction
       createdAt
+      reaction
       updatedAt
       userMovieReactionsId
       movieReactionMovieId
@@ -310,6 +317,8 @@ export const updateMovieReaction = /* GraphQL */ `
       id
       movie {
         id
+        identifier
+        createdAt
         name
         coverUri
         rating
@@ -317,12 +326,11 @@ export const updateMovieReaction = /* GraphQL */ `
         description
         categories
         trailerUri
-        createdAt
         updatedAt
         owner
       }
-      reaction
       createdAt
+      reaction
       updatedAt
       userMovieReactionsId
       movieReactionMovieId
@@ -339,6 +347,8 @@ export const deleteMovieReaction = /* GraphQL */ `
       id
       movie {
         id
+        identifier
+        createdAt
         name
         coverUri
         rating
@@ -346,12 +356,11 @@ export const deleteMovieReaction = /* GraphQL */ `
         description
         categories
         trailerUri
-        createdAt
         updatedAt
         owner
       }
-      reaction
       createdAt
+      reaction
       updatedAt
       userMovieReactionsId
       movieReactionMovieId

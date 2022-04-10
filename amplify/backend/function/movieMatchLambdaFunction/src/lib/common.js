@@ -36,11 +36,72 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getConnectionRequest = exports.acceptRequest = exports.getUser = void 0;
+exports.getConnectionRequest = exports.acceptRequest = exports.getUser = exports.getApiMovie = exports.listMovies = exports.getMovieByIdentifier = exports.removeDuplicates = exports.API_KEY = exports.API_URL = void 0;
 var API_1 = require("./API");
 var appSync_1 = require("./appSync");
 var mutations_1 = require("./graphql/mutations");
 var queries_1 = require("./graphql/queries");
+exports.API_URL = "https://api.themoviedb.org/3";
+exports.API_KEY = "0dd0cb2ac703e890ab3573c95612498a";
+function removeDuplicates(arr) {
+    return Array.from(new Set(arr));
+}
+exports.removeDuplicates = removeDuplicates;
+function getMovieByIdentifier(identifier) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function () {
+        var movie;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0: return [4, appSync_1["default"]({ movieByIdentifier: queries_1.movieByIdentifier }, {
+                        identifier: identifier
+                    })];
+                case 1:
+                    movie = _d.sent();
+                    if (!((_c = (_b = (_a = movie.data) === null || _a === void 0 ? void 0 : _a.movieByIdentifier) === null || _b === void 0 ? void 0 : _b.items) === null || _c === void 0 ? void 0 : _c[0])) {
+                        console.warn("Could find movie by identifier: " + identifier);
+                        return [2];
+                    }
+                    return [2, movie.data.movieByIdentifier.items[0]];
+            }
+        });
+    });
+}
+exports.getMovieByIdentifier = getMovieByIdentifier;
+function listMovies(vars) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function () {
+        var movies;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0: return [4, (typeof vars !== "undefined"
+                        ? appSync_1["default"]({ listGraphMovies: queries_1.listMovies }, vars)
+                        : appSync_1["default"]({ listGraphMovies: queries_1.listMovies }))];
+                case 1:
+                    movies = _c.sent();
+                    if (!((_b = (_a = movies.data) === null || _a === void 0 ? void 0 : _a.listMovies) === null || _b === void 0 ? void 0 : _b.items)) {
+                        throw new Error("Failed to list movies");
+                    }
+                    return [2, movies.data.listMovies.items];
+            }
+        });
+    });
+}
+exports.listMovies = listMovies;
+function getApiMovie(id) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    console.debug("Attempting to get movie: " + id + " from the movie api");
+                    return [4, fetch(exports.API_URL + "/movie/" + id + "?api_key=" + exports.API_KEY)];
+                case 1: return [4, (_a.sent()).json()];
+                case 2: return [2, _a.sent()];
+            }
+        });
+    });
+}
+exports.getApiMovie = getApiMovie;
 function getUser(id) {
     var _a;
     return __awaiter(this, void 0, void 0, function () {
@@ -55,7 +116,6 @@ function getUser(id) {
                     if (!((_a = request.data) === null || _a === void 0 ? void 0 : _a.getUser)) {
                         throw new Error("Couldn't find user database obj: " + id);
                     }
-                    console.debug("Successfully got user database obj: " + id);
                     return [2, request.data.getUser];
             }
         });
@@ -98,7 +158,6 @@ function getConnectionRequest(id) {
                     if (!((_a = request.data) === null || _a === void 0 ? void 0 : _a.getConnectionRequest)) {
                         throw new Error("Couldn't find connection request: " + id);
                     }
-                    console.debug("Successfully got the connection request database obj: " + id);
                     return [2, request.data.getConnectionRequest];
             }
         });

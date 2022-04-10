@@ -9,7 +9,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   DarkTheme,
   DefaultTheme,
-  NavigationContainer,
+  NavigationContainer
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Auth } from "aws-amplify";
@@ -20,10 +20,10 @@ import Colors from "../constants/Colors";
 import { useUserContext } from "../context/UserContext";
 import useColorScheme from "../hooks/useColorScheme";
 import ConnectPartnerModal from "../screens/ConnectPartnerModal";
+import Discover from "../screens/DiscoverScreen";
 import LoginScreen from "../screens/LoginScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import SettingsScreen from "../screens/SettingsScreen";
-import Discover from "../screens/DiscoverScreen";
 import VerificationModal from "../screens/VerificationModal";
 import { RootStackParamList, RootTabParamList } from "../types";
 import LinkingConfiguration from "./LinkingConfiguration";
@@ -119,17 +119,19 @@ function BottomTabNavigator() {
             <Pressable
               onPress={() => {
                 const onPress = () =>
-                  Auth.forgetDevice().then(() => {
-                    Auth.signOut().then(async () => {
-                      await AsyncStorageLib.clear();
+                  Auth.forgetDevice()
+                    .catch(() => {})
+                    .finally(() => {
+                      Auth.signOut().then(async () => {
+                        await AsyncStorageLib.clear();
 
-                      setUserContext({
-                        email: "",
-                        sub: "",
-                        signedIn: false,
+                        setUserContext({
+                          email: "",
+                          sub: "",
+                          signedIn: false,
+                        });
                       });
                     });
-                  });
 
                 // Brand returns null if on web
                 if (!brand) {

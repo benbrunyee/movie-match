@@ -2,10 +2,10 @@ import {
   MovieReaction,
   Reaction,
   UpdateUserMutation,
-  UpdateUserMutationVariables,
+  UpdateUserMutationVariables
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
-import { getUser } from "../lib/common";
+import { getUser, removeDuplicates } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 import { updateUser } from "../lib/graphql/mutations";
 
@@ -43,7 +43,7 @@ export default async (event: EventInterface) => {
     connectedUserObj.movieReactions.items as MovieReaction[]
   );
 
-  const movieIds = getMovieIdsFromReactions(movieMatches);
+  const movieIds = removeDuplicates(getMovieIdsFromReactions(movieMatches));
 
   await updateUserMovieMatches(requestee, movieIds);
   await updateUserMovieMatches(connectedUserId, movieIds);
@@ -53,9 +53,10 @@ export default async (event: EventInterface) => {
   return { allMatches: movieIds, newMatches: newMatches };
 };
 
+// TODO: Fix
 function getNewMatches(
-  currentMovieMatches: number[],
-  newMovieMatches: number[]
+  currentMovieMatches: string[],
+  newMovieMatches: string[]
 ) {
   return newMovieMatches.filter((x) => !currentMovieMatches.includes(x));
 }
@@ -64,7 +65,7 @@ function getMovieIdsFromReactions(movieReactions: MovieReaction[]) {
   return movieReactions.map((reaction) => reaction.movie.id);
 }
 
-async function updateUserMovieMatches(id: string, movieIds: number[]) {
+async function updateUserMovieMatches(id: string, movieIds: string[]) {
   await callGraphQl<UpdateUserMutation, UpdateUserMutationVariables>(
     { updateUser },
     {

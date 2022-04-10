@@ -65,7 +65,7 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                     return [2, []];
                 }
                 movieMatches = findMovieMatches(user.movieReactions.items, connectedUserObj.movieReactions.items);
-                movieIds = getMovieIdsFromReactions(movieMatches);
+                movieIds = common_1.removeDuplicates(getMovieIdsFromReactions(movieMatches));
                 return [4, updateUserMovieMatches(requestee, movieIds)];
             case 3:
                 _a.sent();
