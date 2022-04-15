@@ -8,7 +8,7 @@ import {
   PressableProps,
   Text as DefaultText,
   TextInput as DefaultTextInput,
-  View as DefaultView,
+  View as DefaultView
 } from "react-native";
 import Colors from "../constants/Colors";
 import { sizes } from "../constants/Font";
@@ -41,7 +41,7 @@ type FontProps = {
 export type TextProps = ThemeProps &
   FontProps &
   DefaultText["props"] & { disabled?: boolean };
-export type ViewProps = ThemeProps & DefaultView["props"];
+export type BoxProps = ThemeProps & DefaultView["props"];
 export type TextInputProps = ThemeProps & FontProps & DefaultTextInput["props"];
 export type ButtonProps = ThemeProps & PressableProps;
 export type TabProps = ThemeProps & { selected?: boolean } & PressableProps;
@@ -61,7 +61,7 @@ export function Text(props: TextProps) {
   return <DefaultText style={[{ color, fontSize }, style]} {...otherProps} />;
 }
 
-export function Box(props: ViewProps) {
+export function Box(props: BoxProps) {
   const { style, lightColor, darkColor, ...otherProps } = props;
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },

@@ -8,7 +8,7 @@ import {
   Container,
   Tab,
   Text,
-  TextInput,
+  TextInput
 } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
@@ -86,7 +86,10 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
   const handleSubmitWrapper = useCallback(
     (providedType?: LoginType | undefined) => {
       setIsSubmitting(true);
-      handleSubmit(providedType);
+      handleSubmit(providedType).catch((e) => {
+        console.error(e);
+        setIsSubmitting(false);
+      });
     },
     [handleSubmit]
   );

@@ -58,13 +58,11 @@ function default_1(event) {
             switch (_c.label) {
                 case 0:
                     page = ((_b = (_a = event.arguments) === null || _a === void 0 ? void 0 : _a.input) === null || _b === void 0 ? void 0 : _b.page) || 0;
-                    if (page < 1) {
-                        page = undefined;
-                    }
-                    return [4, fetch(common_1.API_URL + "/discover/movie?api_key=" + common_1.API_KEY + (page ? "&page=" + page : ""))];
+                    return [4, fetch(common_1.API_URL + "/discover/movie?api_key=" + common_1.API_KEY + (page > 0 ? "&page=" + page : ""))];
                 case 1: return [4, (_c.sent()).json()];
                 case 2:
                     movies = (_c.sent());
+                    console.debug("Movies found: " + JSON.stringify(movies, null, 2));
                     return [4, addMoviesToDb(movies)];
                 case 3:
                     movieEntries = _c.sent();
@@ -93,6 +91,7 @@ function addMoviesToDb(discoveredMovies) {
                                     case 1:
                                         movieObj = _b.sent();
                                         if (!!(movieObj === null || movieObj === void 0 ? void 0 : movieObj.id)) return [3, 3];
+                                        console.debug("Movie not found so creating movie entry now for: " + movie.name + ", Idenfifier: " + movie.identifier);
                                         return [4, appSync_1["default"]({ createMovie: mutations_1.createMovie }, {
                                                 input: movie
                                             })];

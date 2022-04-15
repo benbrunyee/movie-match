@@ -8,48 +8,116 @@ import {
   CreateMovieReactionMutationVariables,
   DiscoverMoviesQuery,
   DiscoverMoviesQueryVariables,
-  Movie,
+  ListPartnerPendingMovieMatchesQuery,
+  Movie as MovieApi,
   Reaction
 } from "../src/API";
 import { createMovieReaction } from "../src/graphql/mutations";
-import { discoverMovies as discoverMoviesApi } from "../src/graphql/queries";
+import {
+  discoverMovies as discoverMoviesApi,
+  listPartnerPendingMovieMatches
+} from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
 
 const IMAGE_PREFIX = "https://image.tmdb.org/t/p/w220_and_h330_face";
 
+const MIN_PAGE = 1;
+const MAX_PAGE = 500;
+
+export interface Movie extends MovieApi {
+  isPartnerMovie?: boolean;
+}
+
 export default function Discover({
   navigation,
 }: RootTabScreenProps<"Discover">) {
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [index, setIndex] = useState(0);
-  const [page, setPage] = useState(1);
   const [userContext] = useUserContext();
 
-  const findMovies = useCallback(async () => {
-    const movies = await discoverMovies(page);
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [index, setIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    // Next search to be on the next page
-    setPage((cur) => cur + 1);
+  // Use a random page
+  const [page, setPage] = useState(generateRandomNumber(MIN_PAGE, MAX_PAGE));
+
+  const findMovies = useCallback(async () => {
+    let movies: Movie[] = [];
+    let partnerMovies: Movie[] = [];
+
+    try {
+      movies = await discoverMovies(page);
+
+      if (userContext.connectedPartner) {
+        partnerMovies = await loadPartnerPendingMatches();
+      }
+
+      // Mark all parter movies as partner movies
+      partnerMovies = partnerMovies.map((movie) => ({
+        ...movie,
+        isPartnerMovie: true,
+      }));
+    } catch (e) {
+      console.error(e);
+      setError("Failed to load movies");
+      return;
+    }
+
+    // Use another random number
+    setPage(generateRandomNumber(MIN_PAGE, MAX_PAGE));
 
     // Set the movies
-    setMovies(movies);
+    // Partner movies come first
+    setMovies([...partnerMovies, ...movies]);
 
     // Reset the index
     setIndex(0);
   }, [page]);
 
-  // Load movies on mount
-  useEffect(() => {
-    findMovies();
+  const likeMovie = useCallback((movie: Movie) => {
+    addReaction(userContext.sub, movie.id, Reaction.LIKE).then(() => {
+      if (movie.isPartnerMovie) {
+        // TODO: Configure pop up
+        alert("You found a match!");
+      }
+    });
+    setIndex((cur) => cur + 1);
   }, []);
 
+  const dislikeMovie = useCallback((movie: Movie) => {
+    addReaction(userContext.sub, movie.id, Reaction.DISLIKE);
+    setIndex((cur) => cur + 1);
+  }, []);
+
+  // This will load movies on mount as well
   useEffect(() => {
+    console.debug("Loading because of index");
     // Load more movies if we are at the end
     if (index === movies.length) {
-      findMovies();
+      findMovies().then(() => {
+        if (isLoading) {
+          setIsLoading(false);
+        }
+      });
     }
   }, [index]);
+
+  if (isLoading) {
+    return (
+      <Box style={styles.container}>
+        <Text variant="title">Loading...</Text>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box style={styles.container}>
+        <Text variant="body">{error}</Text>
+      </Box>
+    );
+  }
 
   return (
     <Box style={styles.container}>
@@ -73,21 +141,20 @@ export default function Discover({
                 />
               ) : null}
               <Text variant="subtitle" style={styles.movieTitle}>
-                {movies[index].name}
+                {selectedMovie.name}
+              </Text>
+              <Text
+                numberOfLines={2}
+                ellipsizeMode="tail"
+                variant="smallCaption"
+                style={styles.movieDescription}
+              >
+                {selectedMovie.description}
               </Text>
               <View style={styles.buttonControls}>
                 <Button
                   onPress={() => {
-                    const movie = movies[index];
-
-                    if (!movie.id) {
-                      console.warn("Could not find ID from movie");
-                      return;
-                    }
-
-                    addReaction(userContext.sub, movie.id, Reaction.DISLIKE);
-
-                    setIndex((cur) => cur + 1);
+                    dislikeMovie(selectedMovie);
                   }}
                   style={{ backgroundColor: "#DC143C" }}
                 >
@@ -95,15 +162,7 @@ export default function Discover({
                 </Button>
                 <Button
                   onPress={() => {
-                    const movie = movies[index];
-
-                    if (!movie.id) {
-                      console.warn("Could not find ID from movie");
-                      return;
-                    }
-
-                    addReaction(userContext.sub, movie.id, Reaction.LIKE);
-                    setIndex((cur) => cur + 1);
+                    likeMovie(selectedMovie);
                   }}
                   style={{ backgroundColor: "#7FFFD4" }}
                 >
@@ -117,6 +176,22 @@ export default function Discover({
       {/* <EditScreenInfo path="/screens/TabOneScreen.tsx" /> */}
     </Box>
   );
+}
+
+async function loadPartnerPendingMatches(): Promise<Movie[]> {
+  const movies = await callGraphQL<ListPartnerPendingMovieMatchesQuery>(
+    listPartnerPendingMovieMatches
+  );
+
+  if (!movies.data?.listPartnerPendingMovieMatches?.items) {
+    throw new Error("Failed to list partner pending movies");
+  }
+
+  return movies.data.listPartnerPendingMovieMatches.items;
+}
+
+function generateRandomNumber(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
 // TODO: Shouldn't create mulitple reactions per movie
@@ -138,7 +213,7 @@ async function addReaction(
 }
 
 // TODO: First load movies that the connected partner has liked
-async function discoverMovies(page?: number) {
+async function discoverMovies(page?: number): Promise<Movie[]> {
   const movies = await callGraphQL<
     DiscoverMoviesQuery,
     DiscoverMoviesQueryVariables
@@ -181,5 +256,9 @@ const styles = StyleSheet.create({
   buttonControls: {
     flexDirection: "row",
     justifyContent: "space-around",
+  },
+  movieDescription: {
+    maxWidth: 220,
+    marginBottom: Styling.spacingSmall,
   },
 });

@@ -56,6 +56,7 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                 return [4, common_1.acceptRequest(requestId)];
             case 2:
                 _a.sent();
+                console.debug("Successfully accepted connection request");
                 return [4, updateUsers(request.sender, request.receiver)];
             case 3:
                 _a.sent();

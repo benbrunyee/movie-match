@@ -66,6 +66,7 @@ exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, fu
                 return [4, resolver(event)];
             case 2:
                 result = _a.sent();
+                console.debug("Returning: " + JSON.stringify(result, null, 2));
                 return [2, result];
             case 3:
                 e_1 = _a.sent();

@@ -4,10 +4,11 @@ import {
   CreateUserInput,
   CreateUserMutation,
   CreateUserMutationVariables,
-  ListUsersQuery,
+  FindMovieMatchesQuery,
+  ListUsersQuery
 } from "../src/API";
 import { createUser } from "../src/graphql/mutations";
-import { listUsers } from "../src/graphql/queries";
+import { findMovieMatches, listUsers } from "../src/graphql/queries";
 import { callGraphQL } from "./amplify";
 
 export default async function configureUser(): Promise<UserContextObject> {
@@ -32,10 +33,16 @@ export default async function configureUser(): Promise<UserContextObject> {
       });
     }
 
+    if (dbItems.data.listUsers.items[0]?.connectedUser) {
+      // Refresh matches on load
+      await callGraphQL<FindMovieMatchesQuery>(findMovieMatches);
+    }
+
     return {
       signedIn: true,
       sub: authStatus.attributes.sub,
       email: authStatus.attributes.email,
+      connectedPartner: dbItems.data.listUsers.items[0]?.connectedUser || "",
     };
   } catch (e) {
     console.warn(e);
@@ -44,6 +51,7 @@ export default async function configureUser(): Promise<UserContextObject> {
       email: "",
       sub: "",
       signedIn: false,
+      connectedPartner: "",
     };
   }
 }

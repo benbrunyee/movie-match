@@ -17,9 +17,9 @@ async function callGraphQL<T, TV>(
   variables?: TV | object
 ): Promise<GraphQLResult<T>> {
   try {
-    const result = (await API.graphql(
+    const result = await (API.graphql(
       graphqlOperation(query, variables)
-    )) as GraphQLResult<T>;
+    ) as Promise<GraphQLResult<T>>);
 
     return result;
   } catch (e) {
@@ -69,3 +69,4 @@ function subscribeGraphQL<T, TV>(
 }
 
 export { callGraphQL, subscribeGraphQL };
+

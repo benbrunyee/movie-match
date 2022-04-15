@@ -105,7 +105,7 @@ function BottomTabNavigator() {
         name="Discover"
         component={Discover}
         options={{
-          title: "Daisy Smells",
+          title: "Discover",
           tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
         }}
       />
@@ -129,6 +129,7 @@ function BottomTabNavigator() {
                           email: "",
                           sub: "",
                           signedIn: false,
+                          connectedPartner: "",
                         });
                       });
                     });

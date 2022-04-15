@@ -388,8 +388,8 @@ export type GetApiMoviesInput = {
   id: number,
 };
 
-export type MovieApi = {
-  __typename: "MovieApi",
+export type MovieApiOutput = {
+  __typename: "MovieApiOutput",
   id: number,
   poster_path?: string | null,
   adult: boolean,
@@ -404,6 +404,12 @@ export type MovieApi = {
   vote_count: number,
   video: boolean,
   vote_average: number,
+};
+
+export type FindMovieMatchesList = {
+  __typename: "FindMovieMatchesList",
+  allMatches: Array< string >,
+  newMatches: Array< string >,
 };
 
 export type CreateUserMutationVariables = {
@@ -1179,7 +1185,7 @@ export type GetApiMovieQueryVariables = {
 
 export type GetApiMovieQuery = {
   getApiMovie?:  {
-    __typename: "MovieApi",
+    __typename: "MovieApiOutput",
     id: number,
     poster_path?: string | null,
     adult: boolean,
@@ -1199,22 +1205,9 @@ export type GetApiMovieQuery = {
 
 export type FindMovieMatchesQuery = {
   findMovieMatches?:  {
-    __typename: "QueryMovieList",
-    items:  Array< {
-      __typename: "Movie",
-      id: string,
-      identifier: number,
-      createdAt: string,
-      name: string,
-      coverUri?: string | null,
-      rating?: number | null,
-      ratingCount?: number | null,
-      description: string,
-      categories: Array< string >,
-      trailerUri?: string | null,
-      updatedAt: string,
-      owner?: string | null,
-    } >,
+    __typename: "FindMovieMatchesList",
+    allMatches: Array< string >,
+    newMatches: Array< string >,
   } | null,
 };
 

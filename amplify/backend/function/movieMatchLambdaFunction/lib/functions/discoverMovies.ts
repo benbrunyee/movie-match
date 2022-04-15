@@ -3,7 +3,7 @@ import {
   CreateMovieMutation,
   CreateMovieMutationVariables,
   Movie,
-  MovieApi
+  MovieApiOutput
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
 import { API_KEY, API_URL, getMovieByIdentifier } from "../lib/common";
@@ -20,26 +20,24 @@ export interface EventInterface extends EventIdentity {
 
 export interface DiscoverMovieApi {
   page: number;
-  results: MovieApi[];
+  results: MovieApiOutput[];
   total_results: number;
   total_pages: number;
 }
 
 export default async function (event: EventInterface) {
-  let page: number | undefined = event.arguments?.input?.page || 0;
-
-  if (page < 1) {
-    page = undefined;
-  }
+  let page: number = event.arguments?.input?.page || 0;
 
   // Get the movies
   const movies = (await (
     await fetch(
       `${API_URL}/discover/movie?api_key=${API_KEY}${
-        page ? `&page=${page}` : ""
+        page > 0 ? `&page=${page}` : ""
       }`
     )
   ).json()) as DiscoverMovieApi;
+
+  console.debug(`Movies found: ${JSON.stringify(movies, null, 2)}`);
 
   // Add them to the database
   const movieEntries = await addMoviesToDb(movies);
@@ -68,6 +66,10 @@ async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
 
         // If the movie doesn't exist then add it
         if (!movieObj?.id) {
+          console.debug(
+            `Movie not found so creating movie entry now for: ${movie.name}, Idenfifier: ${movie.identifier}`
+          );
+
           const creation = await callGraphQl<
             CreateMovieMutation,
             CreateMovieMutationVariables

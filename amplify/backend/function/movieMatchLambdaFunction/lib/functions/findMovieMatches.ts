@@ -21,8 +21,10 @@ export default async (event: EventInterface) => {
   }
 
   const user = await getUser(requestee);
+  console.debug(`Successfully got user obj for ID: ${requestee}`);
 
   const connectedUserId = user.connectedUser;
+  console.debug(`Got connected partner user ID: ${connectedUserId}`);
 
   if (!connectedUserId) {
     throw new Error(
@@ -31,10 +33,13 @@ export default async (event: EventInterface) => {
   }
 
   const connectedUserObj = await getUser(connectedUserId);
+  console.debug(
+    `Successfully got connected partner user obj for ID: ${connectedUserId}`
+  );
 
   if (!(user.movieReactions && connectedUserObj.movieReactions)) {
     console.warn("Movie reactions for one or both user's are not present");
-    console.debug("Returning an empty array");
+    console.warn("Returning an empty array");
     return [];
   }
 
@@ -44,11 +49,15 @@ export default async (event: EventInterface) => {
   );
 
   const movieIds = removeDuplicates(getMovieIdsFromReactions(movieMatches));
+  console.debug(
+    `Found matches for the following movie IDs: ${JSON.stringify(movieIds, null, 2)}`
+  );
 
   await updateUserMovieMatches(requestee, movieIds);
   await updateUserMovieMatches(connectedUserId, movieIds);
 
   const newMatches = getNewMatches(user.movieMatches || [], movieIds);
+  console.debug(`Found new movie matches: ${JSON.stringify(newMatches, null, 2)}`);
 
   return { allMatches: movieIds, newMatches: newMatches };
 };

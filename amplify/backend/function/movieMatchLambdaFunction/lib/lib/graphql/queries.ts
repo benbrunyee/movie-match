@@ -358,20 +358,8 @@ export const getApiMovie = /* GraphQL */ `
 export const findMovieMatches = /* GraphQL */ `
   query FindMovieMatches {
     findMovieMatches {
-      items {
-        id
-        identifier
-        createdAt
-        name
-        coverUri
-        rating
-        ratingCount
-        description
-        categories
-        trailerUri
-        updatedAt
-        owner
-      }
+      allMatches
+      newMatches
     }
   }
 `;

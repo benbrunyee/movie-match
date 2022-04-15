@@ -1,5 +1,5 @@
 import { MovieReaction } from "../lib/API";
-import { getUser, listMovies } from "../lib/common";
+import { getMoviesByIdentifier, getUser } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 
 export interface EventInterface extends EventIdentity {}
@@ -22,6 +22,7 @@ export default async function (event: EventInterface) {
 
   // Get the user's info
   const user = await getUser(username);
+  console.debug(`Successfully got user info for: ${username}`);
 
   if (!user.connectedUser) {
     throw new Error("User does not have a connected partner");
@@ -29,6 +30,9 @@ export default async function (event: EventInterface) {
 
   // Get the partner's info
   const connectedPartner = await getUser(user.connectedUser);
+  console.debug(
+    `Successfully got connected partner's info: ${user.connectedUser}`
+  );
 
   // Get both of their reactions
   const userReactions = user.movieReactions?.items;
@@ -38,22 +42,48 @@ export default async function (event: EventInterface) {
     throw new Error("Could not find movie reactions for partner and/or user");
   }
 
+  console.debug(
+    `User movie reactions: ${JSON.stringify(userReactions, null, 2)}`
+  );
+  console.debug(
+    `Partner movie reactions: ${JSON.stringify(partnerReactions, null, 2)}`
+  );
+
   // Get the identifiers since that is what we will be using to compare
   const userMovieIds = getMovieIds(userReactions as MovieReaction[]);
   const partnerMovieIds = getMovieIds(partnerReactions as MovieReaction[]);
 
-  const unmatchedPartnerMovies = removeOverlap(partnerMovieIds, userMovieIds);
+  console.debug(
+    `User movie ID reactions: ${JSON.stringify(userReactions, null, 2)}`
+  );
+  console.debug(
+    `Partner movie ID reactions: ${JSON.stringify(partnerReactions, null, 2)}`
+  );
+
+  const unmatchedMovieIdentifiers = removeOverlap(
+    partnerMovieIds,
+    userMovieIds
+  );
+
+  console.debug(
+    `Result after removing overlap: ${JSON.stringify(
+      unmatchedMovieIdentifiers,
+      null,
+      2
+    )}`
+  );
 
   // Prevents us from doing a filter with no conditional
-  if (unmatchedPartnerMovies.length === 0) {
+  if (unmatchedMovieIdentifiers.length === 0) {
+    console.debug("Found no remaining identifiers after removing overlap");
     return { items: [] };
   }
 
-  const movieData = await listMovies({
-    filter: {
-      or: unmatchedPartnerMovies.map((id) => ({ identifier: { eq: id } })),
-    },
-  });
+  const movieData = await getMoviesByIdentifier(unmatchedMovieIdentifiers);
+
+  console.debug(
+    `Listed movies from IDs in overlap: ${JSON.stringify(movieData, null, 2)}`
+  );
 
   return { items: movieData };
 }

@@ -11,7 +11,7 @@ type Query {
         { allow: private, provider: userPools }
       ]
     )
-  getApiMovie(input: GetApiMoviesInput): MovieApi
+  getApiMovie(input: GetApiMoviesInput): MovieApiOutput
     @function(name: "movieMatchLambdaFunction-${env}")
     @auth(
       rules: [
@@ -19,7 +19,7 @@ type Query {
         { allow: private, provider: userPools }
       ]
     )
-  findMovieMatches: FindMovieMatchesQuery
+  findMovieMatches: FindMovieMatchesList
     @function(name: "movieMatchLambdaFunction-${env}")
     @auth(
       rules: [
@@ -129,7 +129,7 @@ type MovieReaction
 
 # Types
 
-type FindMovieMatchesQuery {
+type FindMovieMatchesList {
   allMatches: [String!]!
   newMatches: [String!]!
 }
@@ -138,7 +138,7 @@ type QueryMovieList {
   items: [Movie!]!
 }
 
-type MovieApi {
+type MovieApiOutput {
   id: Int!
   poster_path: String
   adult: Boolean!

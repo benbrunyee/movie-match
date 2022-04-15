@@ -1,4 +1,4 @@
-import { Amplify, Auth } from "aws-amplify";
+import { Amplify } from "aws-amplify";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -21,6 +21,7 @@ export default function App() {
     email: "",
     sub: "",
     signedIn: false,
+    connectedPartner: "",
   });
 
   useEffect(() => {

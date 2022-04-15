@@ -40,7 +40,7 @@ var common_1 = require("../lib/common");
 function default_1(event) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var username, user, connectedPartner, userReactions, partnerReactions, userMovieIds, partnerMovieIds, unmatchedPartnerMovies, movieData;
+        var username, user, connectedPartner, userReactions, partnerReactions, userMovieIds, partnerMovieIds, unmatchedMovieIdentifiers, movieData;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -51,30 +51,35 @@ function default_1(event) {
                     return [4, common_1.getUser(username)];
                 case 1:
                     user = _c.sent();
+                    console.debug("Successfully got user info for: " + username);
                     if (!user.connectedUser) {
                         throw new Error("User does not have a connected partner");
                     }
                     return [4, common_1.getUser(user.connectedUser)];
                 case 2:
                     connectedPartner = _c.sent();
+                    console.debug("Successfully got connected partner's info: " + user.connectedUser);
                     userReactions = (_a = user.movieReactions) === null || _a === void 0 ? void 0 : _a.items;
                     partnerReactions = (_b = connectedPartner.movieReactions) === null || _b === void 0 ? void 0 : _b.items;
                     if (!(partnerReactions && userReactions)) {
                         throw new Error("Could not find movie reactions for partner and/or user");
                     }
+                    console.debug("User movie reactions: " + JSON.stringify(userReactions, null, 2));
+                    console.debug("Partner movie reactions: " + JSON.stringify(partnerReactions, null, 2));
                     userMovieIds = getMovieIds(userReactions);
                     partnerMovieIds = getMovieIds(partnerReactions);
-                    unmatchedPartnerMovies = removeOverlap(partnerMovieIds, userMovieIds);
-                    if (unmatchedPartnerMovies.length === 0) {
+                    console.debug("User movie ID reactions: " + JSON.stringify(userReactions, null, 2));
+                    console.debug("Partner movie ID reactions: " + JSON.stringify(partnerReactions, null, 2));
+                    unmatchedMovieIdentifiers = removeOverlap(partnerMovieIds, userMovieIds);
+                    console.debug("Result after removing overlap: " + JSON.stringify(unmatchedMovieIdentifiers, null, 2));
+                    if (unmatchedMovieIdentifiers.length === 0) {
+                        console.debug("Found no remaining identifiers after removing overlap");
                         return [2, { items: [] }];
                     }
-                    return [4, common_1.listMovies({
-                            filter: {
-                                or: unmatchedPartnerMovies.map(function (id) { return ({ identifier: { eq: id } }); })
-                            }
-                        })];
+                    return [4, common_1.getMoviesByIdentifier(unmatchedMovieIdentifiers)];
                 case 3:
                     movieData = _c.sent();
+                    console.debug("Listed movies from IDs in overlap: " + JSON.stringify(movieData, null, 2));
                     return [2, { items: movieData }];
             }
         });

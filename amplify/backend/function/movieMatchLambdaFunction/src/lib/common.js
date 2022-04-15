@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getConnectionRequest = exports.acceptRequest = exports.getUser = exports.getApiMovie = exports.listMovies = exports.getMovieByIdentifier = exports.removeDuplicates = exports.API_KEY = exports.API_URL = void 0;
+exports.getConnectionRequest = exports.acceptRequest = exports.getUser = exports.getApiMovie = exports.listMovies = exports.getMoviesByIdentifier = exports.getMovieByIdentifier = exports.removeDuplicates = exports.API_KEY = exports.API_URL = void 0;
 var API_1 = require("./API");
 var appSync_1 = require("./appSync");
 var mutations_1 = require("./graphql/mutations");
@@ -68,6 +68,31 @@ function getMovieByIdentifier(identifier) {
     });
 }
 exports.getMovieByIdentifier = getMovieByIdentifier;
+function getMoviesByIdentifier(identifiers) {
+    return __awaiter(this, void 0, void 0, function () {
+        var promises, _i, identifiers_1, identifier, result;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    promises = [];
+                    for (_i = 0, identifiers_1 = identifiers; _i < identifiers_1.length; _i++) {
+                        identifier = identifiers_1[_i];
+                        promises.push(getMovieByIdentifier(identifier));
+                    }
+                    return [4, Promise.all(promises)];
+                case 1:
+                    result = (_a.sent()).reduce(function (r, movie) {
+                        if (movie) {
+                            r.push(movie);
+                        }
+                        return r;
+                    }, []);
+                    return [2, result];
+            }
+        });
+    });
+}
+exports.getMoviesByIdentifier = getMoviesByIdentifier;
 function listMovies(vars) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
@@ -137,7 +162,6 @@ function acceptRequest(id) {
                         })];
                 case 1:
                     res = _a.sent();
-                    console.debug("Successfully updated connection request to: " + status);
                     return [2, res];
             }
         });

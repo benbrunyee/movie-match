@@ -3,7 +3,8 @@ import { createContext, useContext } from "react";
 export interface UserContextObject {
   sub: string;
   email: string;
-  signedIn?: boolean;
+  signedIn: boolean;
+  connectedPartner: string;
 }
 
 export const UserContext = createContext<
@@ -12,7 +13,8 @@ export const UserContext = createContext<
   {
     email: "",
     sub: "",
-    signedIn: true,
+    signedIn: false,
+    connectedPartner: "",
   },
   () => {},
 ]);

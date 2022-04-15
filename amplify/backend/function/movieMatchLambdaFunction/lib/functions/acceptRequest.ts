@@ -1,7 +1,7 @@
 import {
   ConnectionRequest,
   UpdateUserMutation,
-  UpdateUserMutationVariables,
+  UpdateUserMutationVariables
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
 import { acceptRequest, getConnectionRequest } from "../lib/common";
@@ -34,6 +34,8 @@ export default async (event: EventInterface) => {
 
   // Accept the request
   await acceptRequest(requestId);
+
+  console.debug("Successfully accepted connection request");
 
   // Update the users
   await updateUsers(request.sender, request.receiver);

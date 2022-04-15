@@ -15,7 +15,7 @@
       "function": {
         "movieMatchLambdaFunction": {
           "deploymentBucketName": "amplify-moviematch-dev-215326-deployment",
-          "s3Key": "amplify-builds/movieMatchLambdaFunction-6b586f302f4d674f565a-build.zip"
+          "s3Key": "amplify-builds/movieMatchLambdaFunction-3549366f793773746d69-build.zip"
         }
       },
       "auth": {

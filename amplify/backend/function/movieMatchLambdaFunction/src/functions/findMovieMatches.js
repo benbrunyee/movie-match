@@ -52,20 +52,24 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                 return [4, common_1.getUser(requestee)];
             case 1:
                 user = _a.sent();
+                console.debug("Successfully got user obj for ID: " + requestee);
                 connectedUserId = user.connectedUser;
+                console.debug("Got connected partner user ID: " + connectedUserId);
                 if (!connectedUserId) {
                     throw new Error("Could not find connected user for user database obj: " + requestee);
                 }
                 return [4, common_1.getUser(connectedUserId)];
             case 2:
                 connectedUserObj = _a.sent();
+                console.debug("Successfully got connected partner user obj for ID: " + connectedUserId);
                 if (!(user.movieReactions && connectedUserObj.movieReactions)) {
                     console.warn("Movie reactions for one or both user's are not present");
-                    console.debug("Returning an empty array");
+                    console.warn("Returning an empty array");
                     return [2, []];
                 }
                 movieMatches = findMovieMatches(user.movieReactions.items, connectedUserObj.movieReactions.items);
                 movieIds = common_1.removeDuplicates(getMovieIdsFromReactions(movieMatches));
+                console.debug("Found matches for the following movie IDs: " + JSON.stringify(movieIds, null, 2));
                 return [4, updateUserMovieMatches(requestee, movieIds)];
             case 3:
                 _a.sent();
@@ -73,6 +77,7 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
             case 4:
                 _a.sent();
                 newMatches = getNewMatches(user.movieMatches || [], movieIds);
+                console.debug("Found new movie matches: " + JSON.stringify(newMatches, null, 2));
                 return [2, { allMatches: movieIds, newMatches: newMatches }];
         }
     });

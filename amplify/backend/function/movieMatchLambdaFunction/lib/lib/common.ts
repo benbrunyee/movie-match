@@ -28,7 +28,9 @@ export function removeDuplicates(arr: string[]) {
   return Array.from(new Set(arr));
 }
 
-export async function getMovieByIdentifier(identifier: number): Promise<Movie | void> {
+export async function getMovieByIdentifier(
+  identifier: number
+): Promise<Movie | void> {
   const movie = await callGraphQl<
     MovieByIdentifierQuery,
     MovieByIdentifierQueryVariables
@@ -40,11 +42,31 @@ export async function getMovieByIdentifier(identifier: number): Promise<Movie | 
   );
 
   if (!movie.data?.movieByIdentifier?.items?.[0]) {
-    console.warn(`Could find movie by identifier: ${identifier}`)
+    console.warn(`Could find movie by identifier: ${identifier}`);
     return;
   }
 
   return movie.data.movieByIdentifier.items[0];
+}
+
+export async function getMoviesByIdentifier(
+  identifiers: number[]
+): Promise<Movie[] | void> {
+  const promises: Promise<Movie | void>[] = [];
+
+  for (let identifier of identifiers) {
+    promises.push(getMovieByIdentifier(identifier));
+  }
+
+  const result = (await Promise.all(promises)).reduce<Movie[]>((r, movie) => {
+    if (movie) {
+      r.push(movie);
+    }
+
+    return r;
+  }, []);
+
+  return result;
 }
 
 export async function listMovies(vars?: ListMoviesQueryVariables) {
@@ -100,8 +122,6 @@ export async function acceptRequest(id: string) {
       },
     }
   );
-
-  console.debug(`Successfully updated connection request to: ${status}`);
 
   return res;
 }
