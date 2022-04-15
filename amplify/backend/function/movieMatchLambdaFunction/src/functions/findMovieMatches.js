@@ -41,7 +41,7 @@ var appSync_1 = require("../lib/appSync");
 var common_1 = require("../lib/common");
 var mutations_1 = require("../lib/graphql/mutations");
 exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestee, user, connectedUserId, connectedUserObj, movieMatches, movieIds, newMatches;
+    var requestee, user, connectedUserId, connectedUserObj, movieMatches, allMatchIds, newMatchIds, allMovies, newMovies;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -68,21 +68,29 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                     return [2, []];
                 }
                 movieMatches = findMovieMatches(user.movieReactions.items, connectedUserObj.movieReactions.items);
-                movieIds = common_1.removeDuplicates(getMovieIdsFromReactions(movieMatches));
-                console.debug("Found matches for the following movie IDs: " + JSON.stringify(movieIds, null, 2));
-                return [4, updateUserMovieMatches(requestee, movieIds)];
+                allMatchIds = common_1.removeDuplicates(getMovieIdsFromReactions(movieMatches));
+                console.debug("Found matches for the following movie IDs: " + JSON.stringify(allMatchIds, null, 2));
+                return [4, updateUserMovieMatches(requestee, allMatchIds)];
             case 3:
                 _a.sent();
-                return [4, updateUserMovieMatches(connectedUserId, movieIds)];
+                return [4, updateUserMovieMatches(connectedUserId, allMatchIds)];
             case 4:
                 _a.sent();
-                newMatches = getNewMatches(user.movieMatches || [], movieIds);
-                console.debug("Found new movie matches: " + JSON.stringify(newMatches, null, 2));
-                return [2, { allMatches: movieIds, newMatches: newMatches }];
+                newMatchIds = getUniqueNewMatches(user.movieMatches || [], allMatchIds);
+                console.debug("Found additional movie matches, IDs: " + JSON.stringify(newMatchIds, null, 2));
+                return [4, common_1.getMovieByIds(allMatchIds)];
+            case 5:
+                allMovies = _a.sent();
+                return [4, common_1.getMovieByIds(newMatchIds)];
+            case 6:
+                newMovies = _a.sent();
+                console.debug("All matches: " + JSON.stringify(allMovies, null, 2));
+                console.debug("New matches: " + JSON.stringify(newMovies, null, 2));
+                return [2, { allMatches: allMovies, newMatches: newMovies }];
         }
     });
 }); });
-function getNewMatches(currentMovieMatches, newMovieMatches) {
+function getUniqueNewMatches(currentMovieMatches, newMovieMatches) {
     return newMovieMatches.filter(function (x) { return !currentMovieMatches.includes(x); });
 }
 function getMovieIdsFromReactions(movieReactions) {

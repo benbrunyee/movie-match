@@ -5,7 +5,11 @@ import {
   UpdateUserMutationVariables
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
-import { getUser, removeDuplicates } from "../lib/common";
+import {
+  getMovieByIds,
+  getUser,
+  removeDuplicates
+} from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 import { updateUser } from "../lib/graphql/mutations";
 
@@ -48,22 +52,38 @@ export default async (event: EventInterface) => {
     connectedUserObj.movieReactions.items as MovieReaction[]
   );
 
-  const movieIds = removeDuplicates(getMovieIdsFromReactions(movieMatches));
+  const allMatchIds = removeDuplicates(getMovieIdsFromReactions(movieMatches));
   console.debug(
-    `Found matches for the following movie IDs: ${JSON.stringify(movieIds, null, 2)}`
+    `Found matches for the following movie IDs: ${JSON.stringify(
+      allMatchIds,
+      null,
+      2
+    )}`
   );
 
-  await updateUserMovieMatches(requestee, movieIds);
-  await updateUserMovieMatches(connectedUserId, movieIds);
+  await updateUserMovieMatches(requestee, allMatchIds);
+  await updateUserMovieMatches(connectedUserId, allMatchIds);
 
-  const newMatches = getNewMatches(user.movieMatches || [], movieIds);
-  console.debug(`Found new movie matches: ${JSON.stringify(newMatches, null, 2)}`);
+  const newMatchIds = getUniqueNewMatches(user.movieMatches || [], allMatchIds);
+  console.debug(
+    `Found additional movie matches, IDs: ${JSON.stringify(
+      newMatchIds,
+      null,
+      2
+    )}`
+  );
 
-  return { allMatches: movieIds, newMatches: newMatches };
+  const allMovies = await getMovieByIds(allMatchIds);
+  const newMovies = await getMovieByIds(newMatchIds);
+
+  console.debug(`All matches: ${JSON.stringify(allMovies, null, 2)}`);
+  console.debug(`New matches: ${JSON.stringify(newMovies, null, 2)}`);
+
+  return { allMatches: allMovies, newMatches: newMovies };
 };
 
 // TODO: Fix
-function getNewMatches(
+function getUniqueNewMatches(
   currentMovieMatches: string[],
   newMovieMatches: string[]
 ) {

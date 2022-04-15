@@ -47,6 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+var API_1 = require("../lib/API");
 var appSync_1 = require("../lib/appSync");
 var common_1 = require("../lib/common");
 var mutations_1 = require("../lib/graphql/mutations");
@@ -74,12 +75,30 @@ function default_1(event) {
 exports["default"] = default_1;
 function addMoviesToDb(discoveredMovies) {
     return __awaiter(this, void 0, void 0, function () {
-        var newMovies, promises, _loop_1, _i, newMovies_1, movie, dbMovies;
+        var genreFetch, genreObj, newMovies, promises, _loop_1, _i, newMovies_1, movie, dbMovies;
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0:
-                    newMovies = discoveredMovies.results.map(function (movie) { return (__assign({ identifier: movie.id, categories: movie.genre_ids.map(function (id) { return id.toString(); }), description: movie.overview, name: movie.title, rating: movie.vote_average, ratingCount: movie.vote_count }, (movie.poster_path && { coverUri: movie.poster_path }))); });
+                case 0: return [4, fetch(common_1.API_URL + "/genre/movie/list?api_key=" + common_1.API_KEY)];
+                case 1: return [4, (_a.sent()).json()];
+                case 2:
+                    genreFetch = (_a.sent());
+                    genreObj = genreFetch.genres.reduce(function (r, genre) {
+                        r[genre.id] = genre;
+                        return r;
+                    }, {});
+                    newMovies = discoveredMovies.results.map(function (movie) {
+                        var _a;
+                        var movieGenres = [];
+                        for (var _i = 0, _b = movie.genre_ids; _i < _b.length; _i++) {
+                            var genreId = _b[_i];
+                            var genreName = (_a = genreObj[genreId]) === null || _a === void 0 ? void 0 : _a.name;
+                            if (genreName && API_1.Genre[genreName]) {
+                                movieGenres.push(API_1.Genre[genreName]);
+                            }
+                        }
+                        return __assign({ identifier: movie.id, genres: movieGenres, description: movie.overview, name: movie.title, rating: movie.vote_average, ratingCount: movie.vote_count }, (movie.poster_path && { coverUri: movie.poster_path }));
+                    });
                     promises = [];
                     _loop_1 = function (movie) {
                         promises.push(new Promise(function (resolve) { return __awaiter(_this, void 0, void 0, function () {
@@ -111,7 +130,7 @@ function addMoviesToDb(discoveredMovies) {
                         _loop_1(movie);
                     }
                     return [4, Promise.all(promises)["catch"](function (e) { })];
-                case 1:
+                case 3:
                     dbMovies = _a.sent();
                     if (!dbMovies) {
                         throw new Error("Failed to create all movies in database");

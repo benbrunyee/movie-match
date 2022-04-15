@@ -2,6 +2,8 @@ import {
   ConnectionRequestStatus,
   GetConnectionRequestQuery,
   GetConnectionRequestQueryVariables,
+  GetMovieQuery,
+  GetMovieQueryVariables,
   GetUserQuery,
   GetUserQueryVariables,
   ListMoviesQuery,
@@ -15,8 +17,7 @@ import {
 import callGraphQl from "./appSync";
 import { updateConnectionRequest } from "./graphql/mutations";
 import {
-  getConnectionRequest as getGraphConnectionRequest,
-  getUser as getGraphUser,
+  getConnectionRequest as getGraphConnectionRequest, getMovie as getMovieApi, getUser as getGraphUser,
   listMovies as listGraphMovies,
   movieByIdentifier
 } from "./graphql/queries";
@@ -24,8 +25,10 @@ import {
 export const API_URL = "https://api.themoviedb.org/3";
 export const API_KEY = "0dd0cb2ac703e890ab3573c95612498a";
 
-export function removeDuplicates(arr: string[]) {
-  return Array.from(new Set(arr));
+export function removeDuplicates(arr: number[]): number[];
+export function removeDuplicates(arr: string[]): string[];
+export function removeDuplicates(arr: string[] | number[]) {
+  return Array.from(new Set<any>(arr));
 }
 
 export async function getMovieByIdentifier(
@@ -90,6 +93,31 @@ export async function getApiMovie(id: number) {
   return await (
     await fetch(`${API_URL}/movie/${id}?api_key=${API_KEY}`)
   ).json();
+}
+
+export async function getMovie(id: string) {
+  const movie = await callGraphQl<GetMovieQuery, GetMovieQueryVariables>(
+    { getMovieApi },
+    {
+      id,
+    }
+  );
+
+  if (!movie.data?.getMovie) {
+    throw new Error(`Failed to get movie: ${id}`);
+  }
+
+  return movie.data.getMovie;
+}
+
+export async function getMovieByIds(ids: string[]) {
+  const promises: Promise<Movie>[] = [];
+
+  for (let id of ids) {
+    promises.push(getMovie(id));
+  }
+
+  return await Promise.all(promises);
 }
 
 export async function getUser(id: string) {

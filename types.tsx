@@ -6,7 +6,7 @@
 import { BottomTabScreenProps } from "@react-navigation/bottom-tabs";
 import {
   CompositeScreenProps,
-  NavigatorScreenParams,
+  NavigatorScreenParams
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -18,10 +18,15 @@ declare global {
 
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
+  SettingsRoot: NavigatorScreenParams<SettingsParamList | undefined>;
   NotFound: undefined;
   Login: LoginTabParamList | undefined;
   Verification: undefined;
+};
+
+export type ModalStackParamList = {
   ConnectParter: undefined;
+  SearchOptions: undefined;
 };
 
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
@@ -29,7 +34,14 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
 
 export type RootTabParamList = {
   Discover: undefined;
+  Matches: undefined;
+  SettingsRoot: NavigatorScreenParams<SettingsParamList> | undefined;
+};
+
+export type SettingsParamList = {
   Settings: undefined;
+  ConnectPartnerModal: undefined;
+  SearchOptions: undefined;
 };
 
 export type LoginTabParamList = {
@@ -41,3 +53,6 @@ export type RootTabScreenProps<Screen extends keyof RootTabParamList> =
     BottomTabScreenProps<RootTabParamList, Screen>,
     NativeStackScreenProps<RootStackParamList>
   >;
+
+export type SettingsTabScreenProps<Screen extends keyof SettingsParamList> =
+  NativeStackScreenProps<SettingsParamList, Screen>;

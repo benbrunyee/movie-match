@@ -1,4 +1,4 @@
-import { MovieReaction } from "../lib/API";
+import { MovieReaction, Reaction } from "../lib/API";
 import { getMoviesByIdentifier, getUser } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 
@@ -42,22 +42,35 @@ export default async function (event: EventInterface) {
     throw new Error("Could not find movie reactions for partner and/or user");
   }
 
+  // Only filter for only the liked reactions for the partner
+  const partnerLikeReations = partnerReactions.filter(
+    (entry) => entry?.reaction === Reaction.LIKE
+  );
+
   console.debug(
-    `User movie reactions: ${JSON.stringify(userReactions, null, 2)}`
+    `User movie like reactions: ${JSON.stringify(userReactions, null, 2)}`
   );
   console.debug(
-    `Partner movie reactions: ${JSON.stringify(partnerReactions, null, 2)}`
+    `Partner movie like reactions: ${JSON.stringify(
+      partnerLikeReations,
+      null,
+      2
+    )}`
   );
 
   // Get the identifiers since that is what we will be using to compare
   const userMovieIds = getMovieIds(userReactions as MovieReaction[]);
-  const partnerMovieIds = getMovieIds(partnerReactions as MovieReaction[]);
+  const partnerMovieIds = getMovieIds(partnerLikeReations as MovieReaction[]);
 
   console.debug(
-    `User movie ID reactions: ${JSON.stringify(userReactions, null, 2)}`
+    `User movie ID like reactions: ${JSON.stringify(userMovieIds, null, 2)}`
   );
   console.debug(
-    `Partner movie ID reactions: ${JSON.stringify(partnerReactions, null, 2)}`
+    `Partner movie ID like reactions: ${JSON.stringify(
+      partnerMovieIds,
+      null,
+      2
+    )}`
   );
 
   const unmatchedMovieIdentifiers = removeOverlap(

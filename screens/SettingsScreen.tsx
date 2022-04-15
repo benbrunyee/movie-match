@@ -1,22 +1,37 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { MenuItem, Text } from "../components/Themed";
-import { RootTabScreenProps } from "../types";
+import { SettingsParamList, SettingsTabScreenProps } from "../types";
 
-const SettingsScreen: React.FC<RootTabScreenProps<"Settings">> = ({
+interface ModalInterface {
+  text: string;
+}
+
+const MODALS: { [key in keyof Partial<SettingsParamList>]: ModalInterface } = {
+  ConnectPartnerModal: {
+    text: "Connect to partner",
+  },
+  SearchOptions: {
+    text: "Search options",
+  },
+};
+
+const SettingsScreen: React.FC<SettingsTabScreenProps<"Settings">> = ({
   navigation,
 }) => {
   return (
     <View>
       <View>
-        <MenuItem
-          bottomBorder
-          onPress={() => {
-            navigation.navigate("ConnectParter");
-          }}
-        >
-          <Text>Connect to partner</Text>
-        </MenuItem>
+        {Object.entries(MODALS).map(([modal, obj]) => (
+          <MenuItem
+            bottomBorder
+            onPress={() => {
+              navigation.navigate(modal as keyof SettingsParamList);
+            }}
+          >
+            <Text>{obj.text}</Text>
+          </MenuItem>
+        ))}
       </View>
     </View>
   );

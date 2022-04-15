@@ -36,11 +36,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+var API_1 = require("../lib/API");
 var common_1 = require("../lib/common");
 function default_1(event) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var username, user, connectedPartner, userReactions, partnerReactions, userMovieIds, partnerMovieIds, unmatchedMovieIdentifiers, movieData;
+        var username, user, connectedPartner, userReactions, partnerReactions, partnerLikeReations, userMovieIds, partnerMovieIds, unmatchedMovieIdentifiers, movieData;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
@@ -64,12 +65,13 @@ function default_1(event) {
                     if (!(partnerReactions && userReactions)) {
                         throw new Error("Could not find movie reactions for partner and/or user");
                     }
-                    console.debug("User movie reactions: " + JSON.stringify(userReactions, null, 2));
-                    console.debug("Partner movie reactions: " + JSON.stringify(partnerReactions, null, 2));
+                    partnerLikeReations = partnerReactions.filter(function (entry) { return (entry === null || entry === void 0 ? void 0 : entry.reaction) === API_1.Reaction.LIKE; });
+                    console.debug("User movie like reactions: " + JSON.stringify(userReactions, null, 2));
+                    console.debug("Partner movie like reactions: " + JSON.stringify(partnerLikeReations, null, 2));
                     userMovieIds = getMovieIds(userReactions);
-                    partnerMovieIds = getMovieIds(partnerReactions);
-                    console.debug("User movie ID reactions: " + JSON.stringify(userReactions, null, 2));
-                    console.debug("Partner movie ID reactions: " + JSON.stringify(partnerReactions, null, 2));
+                    partnerMovieIds = getMovieIds(partnerLikeReations);
+                    console.debug("User movie ID like reactions: " + JSON.stringify(userMovieIds, null, 2));
+                    console.debug("Partner movie ID like reactions: " + JSON.stringify(partnerMovieIds, null, 2));
                     unmatchedMovieIdentifiers = removeOverlap(partnerMovieIds, userMovieIds);
                     console.debug("Result after removing overlap: " + JSON.stringify(unmatchedMovieIdentifiers, null, 2));
                     if (unmatchedMovieIdentifiers.length === 0) {

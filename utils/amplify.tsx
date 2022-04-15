@@ -61,6 +61,8 @@ function subscribeGraphQL<T, TV>(
 ): ZenObservable.Subscription {
   const call = API.graphql(graphqlOperation(query, variables));
 
+  console.debug(call);
+
   if ("subscribe" in call) {
     return call.subscribe(callbacks);
   } else {

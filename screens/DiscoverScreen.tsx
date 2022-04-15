@@ -19,8 +19,7 @@ import {
 } from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
-
-const IMAGE_PREFIX = "https://image.tmdb.org/t/p/w220_and_h330_face";
+import { IMAGE_PREFIX } from "../utils/movieApi";
 
 const MIN_PAGE = 1;
 const MAX_PAGE = 500;
@@ -29,7 +28,7 @@ export interface Movie extends MovieApi {
   isPartnerMovie?: boolean;
 }
 
-export default function Discover({
+export default function DiscoverScreen({
   navigation,
 }: RootTabScreenProps<"Discover">) {
   const [userContext] = useUserContext();
@@ -76,12 +75,10 @@ export default function Discover({
   }, [page]);
 
   const likeMovie = useCallback((movie: Movie) => {
-    addReaction(userContext.sub, movie.id, Reaction.LIKE).then(() => {
-      if (movie.isPartnerMovie) {
-        // TODO: Configure pop up
-        alert("You found a match!");
-      }
-    });
+    addReaction(userContext.sub, movie.id, Reaction.LIKE);
+    if (movie.isPartnerMovie) {
+      alert("You found a match!");
+    }
     setIndex((cur) => cur + 1);
   }, []);
 

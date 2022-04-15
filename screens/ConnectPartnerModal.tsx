@@ -1,4 +1,3 @@
-import { GraphQLResult } from "@aws-amplify/api-graphql";
 import { BarCodeScannedCallback } from "expo-barcode-scanner";
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
@@ -6,7 +5,7 @@ import QRCode from "react-native-qrcode-svg";
 import BarCodeScanner from "../components/BarCodeScanner";
 import { Text, useThemeColor } from "../components/Themed";
 import Styling from "../constants/Styling";
-import { UserContext, useUserContext } from "../context/UserContext";
+import { useUserContext } from "../context/UserContext";
 import {
   ConnectionRequestStatus,
   CreateConnectionRequestMutation,
@@ -14,16 +13,16 @@ import {
   ListConnectionRequestsQuery,
   ListConnectionRequestsQueryVariables,
   ListUsersQuery,
-  User,
+  User
 } from "../src/API";
 import { createConnectionRequest } from "../src/graphql/mutations";
 import { listConnectionRequests, listUsers } from "../src/graphql/queries";
-import { RootStackScreenProps } from "../types";
+import { SettingsTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
 
-const ConnectPartnerModal: React.FC<RootStackScreenProps<"ConnectParter">> = ({
-  navigation,
-}) => {
+const ConnectPartnerModal: React.FC<
+  SettingsTabScreenProps<"ConnectPartnerModal">
+> = () => {
   const [userData, setUserData] = useState<User>();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);

@@ -64,6 +64,7 @@ type User
   requests: [ConnectionRequest!] @hasMany
   movieReactions: [MovieReaction!] @hasMany
   movieMatches: [ID!]
+  searchOptions: SearchOptions
   connectedUser: String
     @auth(
       rules: [
@@ -114,7 +115,7 @@ type Movie
   rating: Float
   ratingCount: Int
   description: String!
-  categories: [String!]!
+  genres: [Genre!]!
   trailerUri: String
 }
 
@@ -130,8 +131,8 @@ type MovieReaction
 # Types
 
 type FindMovieMatchesList {
-  allMatches: [String!]!
-  newMatches: [String!]!
+  allMatches: [Movie!]!
+  newMatches: [Movie!]!
 }
 
 type QueryMovieList {
@@ -153,6 +154,13 @@ type MovieApiOutput {
   vote_count: Int!
   video: Boolean!
   vote_average: Float!
+}
+
+type SearchOptions {
+  region: Region
+  includeAdult: Boolean
+  releasedAfterYear: Int
+  genres: [Genre]
 }
 
 # Inputs
@@ -179,4 +187,37 @@ enum ConnectionRequestStatus {
 enum Reaction {
   LIKE
   DISLIKE
+}
+
+enum Region {
+  US
+  GB
+  DE
+  CN
+  JP
+  FR
+  IN
+  PL
+}
+
+enum Genre {
+  Action
+  Adventure
+  Animation
+  Comedy
+  Crime
+  Documentary
+  Drama
+  Family
+  Fantasy
+  History
+  Horror
+  Music
+  Mystery
+  Romance
+  Fiction
+  Movie
+  Thriller
+  War
+  Western
 }

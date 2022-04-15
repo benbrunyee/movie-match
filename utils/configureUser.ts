@@ -1,3 +1,4 @@
+import { GraphQLResult } from "@aws-amplify/api-graphql";
 import { Auth } from "aws-amplify";
 import { UserContextObject } from "../context/UserContext";
 import {
@@ -5,10 +6,11 @@ import {
   CreateUserMutation,
   CreateUserMutationVariables,
   FindMovieMatchesQuery,
-  ListUsersQuery
+  GetUserQuery,
+  GetUserQueryVariables
 } from "../src/API";
 import { createUser } from "../src/graphql/mutations";
-import { findMovieMatches, listUsers } from "../src/graphql/queries";
+import { findMovieMatches, getUser } from "../src/graphql/queries";
 import { callGraphQL } from "./amplify";
 
 export default async function configureUser(): Promise<UserContextObject> {
@@ -18,13 +20,17 @@ export default async function configureUser(): Promise<UserContextObject> {
     console.debug(authStatus);
 
     // Check the database object
-    const dbItems = await callGraphQL<ListUsersQuery>(listUsers);
+    let userDb: GraphQLResult<GetUserQuery> | undefined = undefined;
 
-    if (!dbItems.data?.listUsers?.items) {
-      throw new Error("Could not list Users");
+    try {
+      userDb = await callGraphQL<GetUserQuery, GetUserQueryVariables>(getUser, {
+        id: authStatus.attributes.sub,
+      });
+    } catch (e) {
+      console.warn(e);
     }
 
-    if (dbItems.data.listUsers.items.length === 0) {
+    if (!userDb?.data?.getUser) {
       // Create the database object since this is first login
       await createDbOj({
         id: authStatus.attributes.sub,
@@ -33,7 +39,7 @@ export default async function configureUser(): Promise<UserContextObject> {
       });
     }
 
-    if (dbItems.data.listUsers.items[0]?.connectedUser) {
+    if (userDb?.data?.getUser?.connectedUser) {
       // Refresh matches on load
       await callGraphQL<FindMovieMatchesQuery>(findMovieMatches);
     }
@@ -42,7 +48,7 @@ export default async function configureUser(): Promise<UserContextObject> {
       signedIn: true,
       sub: authStatus.attributes.sub,
       email: authStatus.attributes.email,
-      connectedPartner: dbItems.data.listUsers.items[0]?.connectedUser || "",
+      connectedPartner: userDb?.data?.getUser?.connectedUser || "",
     };
   } catch (e) {
     console.warn(e);

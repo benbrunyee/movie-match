@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getConnectionRequest = exports.acceptRequest = exports.getUser = exports.getApiMovie = exports.listMovies = exports.getMoviesByIdentifier = exports.getMovieByIdentifier = exports.removeDuplicates = exports.API_KEY = exports.API_URL = void 0;
+exports.getConnectionRequest = exports.acceptRequest = exports.getUser = exports.getMovieByIds = exports.getMovie = exports.getApiMovie = exports.listMovies = exports.getMoviesByIdentifier = exports.getMovieByIdentifier = exports.removeDuplicates = exports.API_KEY = exports.API_URL = void 0;
 var API_1 = require("./API");
 var appSync_1 = require("./appSync");
 var mutations_1 = require("./graphql/mutations");
@@ -127,6 +127,44 @@ function getApiMovie(id) {
     });
 }
 exports.getApiMovie = getApiMovie;
+function getMovie(id) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function () {
+        var movie;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0: return [4, appSync_1["default"]({ getMovieApi: queries_1.getMovie }, {
+                        id: id
+                    })];
+                case 1:
+                    movie = _b.sent();
+                    if (!((_a = movie.data) === null || _a === void 0 ? void 0 : _a.getMovie)) {
+                        throw new Error("Failed to get movie: " + id);
+                    }
+                    return [2, movie.data.getMovie];
+            }
+        });
+    });
+}
+exports.getMovie = getMovie;
+function getMovieByIds(ids) {
+    return __awaiter(this, void 0, void 0, function () {
+        var promises, _i, ids_1, id;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    promises = [];
+                    for (_i = 0, ids_1 = ids; _i < ids_1.length; _i++) {
+                        id = ids_1[_i];
+                        promises.push(getMovie(id));
+                    }
+                    return [4, Promise.all(promises)];
+                case 1: return [2, _a.sent()];
+            }
+        });
+    });
+}
+exports.getMovieByIds = getMovieByIds;
 function getUser(id) {
     var _a;
     return __awaiter(this, void 0, void 0, function () {

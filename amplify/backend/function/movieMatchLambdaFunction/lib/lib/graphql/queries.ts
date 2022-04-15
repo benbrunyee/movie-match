@@ -32,7 +32,7 @@ export const getUser = /* GraphQL */ `
             rating
             ratingCount
             description
-            categories
+            genres
             trailerUri
             updatedAt
             owner
@@ -47,6 +47,12 @@ export const getUser = /* GraphQL */ `
         nextToken
       }
       movieMatches
+      searchOptions {
+        region
+        includeAdult
+        releasedAfterYear
+        genres
+      }
       connectedUser
       createdAt
       updatedAt
@@ -97,7 +103,7 @@ export const listUsers = /* GraphQL */ `
               rating
               ratingCount
               description
-              categories
+              genres
               trailerUri
               updatedAt
               owner
@@ -112,6 +118,12 @@ export const listUsers = /* GraphQL */ `
           nextToken
         }
         movieMatches
+        searchOptions {
+          region
+          includeAdult
+          releasedAfterYear
+          genres
+        }
         connectedUser
         createdAt
         updatedAt
@@ -173,7 +185,7 @@ export const getMovie = /* GraphQL */ `
       rating
       ratingCount
       description
-      categories
+      genres
       trailerUri
       updatedAt
       owner
@@ -204,7 +216,7 @@ export const listMovies = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner
@@ -237,7 +249,7 @@ export const movieByIdentifier = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner
@@ -259,7 +271,7 @@ export const getMovieReaction = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner
@@ -299,7 +311,7 @@ export const listMovieReactions = /* GraphQL */ `
           rating
           ratingCount
           description
-          categories
+          genres
           trailerUri
           updatedAt
           owner
@@ -327,7 +339,7 @@ export const discoverMovies = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner
@@ -358,8 +370,34 @@ export const getApiMovie = /* GraphQL */ `
 export const findMovieMatches = /* GraphQL */ `
   query FindMovieMatches {
     findMovieMatches {
-      allMatches
-      newMatches
+      allMatches {
+        id
+        identifier
+        createdAt
+        name
+        coverUri
+        rating
+        ratingCount
+        description
+        genres
+        trailerUri
+        updatedAt
+        owner
+      }
+      newMatches {
+        id
+        identifier
+        createdAt
+        name
+        coverUri
+        rating
+        ratingCount
+        description
+        genres
+        trailerUri
+        updatedAt
+        owner
+      }
     }
   }
 `;
@@ -375,7 +413,7 @@ export const listPartnerPendingMovieMatches = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner

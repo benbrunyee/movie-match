@@ -70,10 +70,10 @@ exports.handler = async (event: EventInterface) => {
   let result;
   try {
     result = await resolver(event);
-    console.debug(`Returning: ${JSON.stringify(result, null, 2)}`);
+    console.log(`Returning: ${JSON.stringify(result, null, 2)}`);
     return result;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     throw e;
   }
 };

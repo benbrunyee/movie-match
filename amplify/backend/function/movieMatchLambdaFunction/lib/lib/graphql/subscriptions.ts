@@ -52,7 +52,7 @@ export const onCreateMovie = /* GraphQL */ `
       rating
       ratingCount
       description
-      categories
+      genres
       trailerUri
       updatedAt
       owner
@@ -70,7 +70,7 @@ export const onUpdateMovie = /* GraphQL */ `
       rating
       ratingCount
       description
-      categories
+      genres
       trailerUri
       updatedAt
       owner
@@ -88,7 +88,7 @@ export const onDeleteMovie = /* GraphQL */ `
       rating
       ratingCount
       description
-      categories
+      genres
       trailerUri
       updatedAt
       owner
@@ -108,7 +108,7 @@ export const onCreateMovieReaction = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner
@@ -135,7 +135,7 @@ export const onUpdateMovieReaction = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner
@@ -162,7 +162,7 @@ export const onDeleteMovieReaction = /* GraphQL */ `
         rating
         ratingCount
         description
-        categories
+        genres
         trailerUri
         updatedAt
         owner

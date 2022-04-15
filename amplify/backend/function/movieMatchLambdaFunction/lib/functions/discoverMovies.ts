@@ -2,6 +2,7 @@ import {
   CreateMovieInput,
   CreateMovieMutation,
   CreateMovieMutationVariables,
+  Genre,
   Movie,
   MovieApiOutput
 } from "../lib/API";
@@ -25,6 +26,15 @@ export interface DiscoverMovieApi {
   total_pages: number;
 }
 
+export interface MoveGenreApi {
+  genres: MovieGenre[];
+}
+
+export interface MovieGenre {
+  id: number;
+  name: string;
+}
+
 export default async function (event: EventInterface) {
   let page: number = event.arguments?.input?.page || 0;
 
@@ -46,15 +56,39 @@ export default async function (event: EventInterface) {
 }
 
 async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
-  const newMovies = discoveredMovies.results.map<CreateMovieInput>((movie) => ({
-    identifier: movie.id,
-    categories: movie.genre_ids.map((id) => id.toString()),
-    description: movie.overview,
-    name: movie.title,
-    rating: movie.vote_average,
-    ratingCount: movie.vote_count,
-    ...(movie.poster_path && { coverUri: movie.poster_path }),
-  }));
+  const genreFetch = (await (
+    await fetch(`${API_URL}/genre/movie/list?api_key=${API_KEY}`)
+  ).json()) as MoveGenreApi;
+
+  const genreObj = genreFetch.genres.reduce<{ [key: number]: MovieGenre }>(
+    (r, genre) => {
+      r[genre.id] = genre;
+      return r;
+    },
+    {}
+  );
+
+  const newMovies = discoveredMovies.results.map<CreateMovieInput>((movie) => {
+    let movieGenres: Genre[] = [];
+
+    for (let genreId of movie.genre_ids) {
+      const genreName = genreObj[genreId]?.name;
+
+      if (genreName && (Genre as any)[genreName]) {
+        movieGenres.push((Genre as any)[genreName]);
+      }
+    }
+
+    return {
+      identifier: movie.id,
+      genres: movieGenres,
+      description: movie.overview,
+      name: movie.title,
+      rating: movie.vote_average,
+      ratingCount: movie.vote_count,
+      ...(movie.poster_path && { coverUri: movie.poster_path }),
+    };
+  });
 
   let promises: Promise<Movie>[] = [];
 
