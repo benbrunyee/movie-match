@@ -47,9 +47,6 @@ export default function DiscoverScreen({
   const [page, setPage] = useState(generateRandomNumber(MIN_PAGE, MAX_PAGE));
 
   const findMovies = useCallback(async () => {
-    let discoveredMovies: Movie[] = [];
-    let partnerMovies: Movie[] = [];
-
     try {
       const userData = await callGraphQL<GetUserQuery, GetUserQueryVariables>(
         getUser,
@@ -62,12 +59,7 @@ export default function DiscoverScreen({
         throw new Error("Could not load user data");
       }
 
-      const searchOptions = userData.data.getUser.searchOptions;
-
-      discoveredMovies = await discoverMovies({
-        page,
-        ...searchOptions,
-      });
+      let partnerMovies: Movie[] = [];
 
       if (userContext.connectedPartner) {
         partnerMovies = await loadPartnerPendingMatches();
@@ -78,6 +70,19 @@ export default function DiscoverScreen({
         ...movie,
         isPartnerMovie: true,
       }));
+
+      // Set the partner movies
+      setMovies(partnerMovies);
+
+      const searchOptions = userData.data.getUser.searchOptions;
+
+      const discoveredMovies = await discoverMovies({
+        page,
+        ...searchOptions,
+      });
+
+      // Add the discovered movies to the end
+      setMovies((cur) => [...cur, ...discoveredMovies]);
     } catch (e) {
       console.error(e);
       setError("Failed to load movies");
@@ -86,10 +91,6 @@ export default function DiscoverScreen({
 
     // Use another random number
     setPage(generateRandomNumber(MIN_PAGE, MAX_PAGE));
-
-    // Set the movies
-    // Partner movies come first
-    setMovies([...partnerMovies, ...discoveredMovies]);
 
     // Reset the index
     setIndex(0);
