@@ -18,7 +18,7 @@ declare global {
 
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
-  SettingsRoot: NavigatorScreenParams<SettingsParamList | undefined>;
+  Settings: NavigatorScreenParams<SettingsParamList | undefined>;
   NotFound: undefined;
   Login: LoginTabParamList | undefined;
   Verification: undefined;
@@ -35,11 +35,11 @@ export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
 export type RootTabParamList = {
   Discover: undefined;
   Matches: undefined;
-  SettingsRoot: NavigatorScreenParams<SettingsParamList> | undefined;
+  Settings: NavigatorScreenParams<SettingsParamList> | undefined;
 };
 
 export type SettingsParamList = {
-  Settings: undefined;
+  SettingsScreen: undefined;
   ConnectPartnerModal: undefined;
   SearchOptions: undefined;
 };

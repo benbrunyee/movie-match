@@ -20,9 +20,9 @@ const linking: LinkingOptions<RootStackParamList> = {
               MatchesScreen: "matches",
             },
           },
-          SettingsRoot: {
+          Settings: {
             screens: {
-              Settings: {
+              SettingsScreen: {
                 screens: {
                   SettingsScreen: "settings",
                 },

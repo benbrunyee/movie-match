@@ -38,7 +38,7 @@ type Query {
 }
 
 type Mutation {
-  acceptRequest(input: AcceptRequestInput!): AWSJSON
+  acceptRequest(input: AcceptRequestInput!): AcceptRequestOutput
     @function(name: "movieMatchLambdaFunction-${env}")
     @auth(
       rules: [
@@ -161,6 +161,11 @@ type SearchOptions {
   includeAdult: Boolean
   releasedAfterYear: Int
   genres: [Genre]
+}
+
+type AcceptRequestOutput {
+  status: Boolean!
+  message: String
 }
 
 # Inputs

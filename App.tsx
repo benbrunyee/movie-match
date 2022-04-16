@@ -5,7 +5,6 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { ZenObservable } from "zen-observable-ts";
 import { UserContext, UserContextObject } from "./context/UserContext";
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
@@ -29,7 +28,6 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const cachedLoadingComplete = useCachedResources();
   const colorScheme = useColorScheme();
-  // const requestSubscription = useRef<ZenObservable.Subscription>();
 
   const [userContext, setUserContext] = useState<UserContextObject>({
     email: "",
@@ -39,14 +37,10 @@ export default function App() {
   });
 
   useEffect(() => {
-    let requestSubscription: ZenObservable.Subscription | undefined;
-
     async function onLoad() {
       try {
         const contextObj = await configureUser();
         setUserContext(contextObj);
-
-        requestSubscription = createSubscriptions(contextObj.sub);
       } catch (e) {
         console.error(e);
       }
@@ -55,12 +49,6 @@ export default function App() {
     onLoad().finally(() => {
       setUserLoading(false);
     });
-
-    return () => {
-      if (requestSubscription) {
-        requestSubscription.unsubscribe();
-      }
-    };
   }, []);
 
   useEffect(() => {

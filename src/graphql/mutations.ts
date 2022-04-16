@@ -388,6 +388,9 @@ export const deleteMovieReaction = /* GraphQL */ `
 `;
 export const acceptRequest = /* GraphQL */ `
   mutation AcceptRequest($input: AcceptRequestInput!) {
-    acceptRequest(input: $input)
+    acceptRequest(input: $input) {
+      status
+      message
+    }
   }
 `;

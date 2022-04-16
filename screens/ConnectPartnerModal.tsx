@@ -12,8 +12,7 @@ import {
   CreateConnectionRequestMutationVariables,
   ListConnectionRequestsQuery,
   ListConnectionRequestsQueryVariables,
-  ListUsersQuery,
-  User
+  ListUsersQuery
 } from "../src/API";
 import { createConnectionRequest } from "../src/graphql/mutations";
 import { listConnectionRequests, listUsers } from "../src/graphql/queries";
@@ -23,7 +22,6 @@ import { callGraphQL } from "../utils/amplify";
 const ConnectPartnerModal: React.FC<
   SettingsTabScreenProps<"ConnectPartnerModal">
 > = () => {
-  const [userData, setUserData] = useState<User>();
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const borderBottomColor = useThemeColor({}, "borderColor");
@@ -43,11 +41,9 @@ const ConnectPartnerModal: React.FC<
         const user = await callGraphQL<ListUsersQuery>(listUsers);
         const userObj = user.data?.listUsers?.items?.[0];
 
-        if (!userObj) {
-          throw new Error("Could not find user object");
+        if (userObj?.connectedUser) {
+          setStatus("CONNECTED");
         }
-
-        setUserData(userObj as User);
       } catch (e) {
         console.error(e);
         setError("Failed to load data");
@@ -83,7 +79,6 @@ const ConnectPartnerModal: React.FC<
 
     createConnectRequest(userContext.sub, data)
       .then(() => {
-        // setStatus("CONNECTED");
         alert("Sent request");
       })
       .catch((err) => {

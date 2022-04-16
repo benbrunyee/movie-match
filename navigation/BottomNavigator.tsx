@@ -10,7 +10,7 @@ import useColorScheme from "../hooks/useColorScheme";
 import DiscoverScreen from "../screens/DiscoverScreen";
 import MatchesScreen from "../screens/MatchesScreen";
 import { RootTabParamList } from "../types";
-import SettingsRoot from "./SettingsRoot";
+import Settings from "./Settings";
 
 /**
  * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
@@ -46,8 +46,8 @@ function BottomTabNavigator() {
         }}
       />
       <BottomTab.Screen
-        name="SettingsRoot"
-        component={SettingsRoot}
+        name="Settings"
+        component={Settings}
         options={{
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
           headerRight: () => (

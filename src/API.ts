@@ -366,6 +366,12 @@ export type AcceptRequestInput = {
   requestId: string,
 };
 
+export type AcceptRequestOutput = {
+  __typename: "AcceptRequestOutput",
+  status: boolean,
+  message?: string | null,
+};
+
 export type ModelUserFilterInput = {
   id?: ModelIDInput | null,
   sub?: ModelIDInput | null,
@@ -904,7 +910,11 @@ export type AcceptRequestMutationVariables = {
 };
 
 export type AcceptRequestMutation = {
-  acceptRequest?: string | null,
+  acceptRequest?:  {
+    __typename: "AcceptRequestOutput",
+    status: boolean,
+    message?: string | null,
+  } | null,
 };
 
 export type GetUserQueryVariables = {

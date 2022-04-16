@@ -7,14 +7,14 @@ import { SettingsParamList } from "../types";
 
 const Stack = createNativeStackNavigator<SettingsParamList>();
 
-const SettingsRoot: React.FC = () => {
+const Settings: React.FC = () => {
   return (
     <Stack.Navigator
-      initialRouteName="Settings"
+      initialRouteName="SettingsScreen"
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen
-        name="Settings"
+        name="SettingsScreen"
         component={SettingsScreen}
         // options={{
         //   title: "Settings",
@@ -38,4 +38,4 @@ const SettingsRoot: React.FC = () => {
   );
 };
 
-export default SettingsRoot;
+export default Settings;
