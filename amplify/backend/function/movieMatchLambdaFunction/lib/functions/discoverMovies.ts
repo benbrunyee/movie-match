@@ -2,6 +2,7 @@ import {
   CreateMovieInput,
   CreateMovieMutation,
   CreateMovieMutationVariables,
+  DiscoverMoviesInput,
   Genre,
   Movie,
   MovieApiOutput
@@ -13,9 +14,7 @@ import { createMovie } from "../lib/graphql/mutations";
 
 export interface EventInterface extends EventIdentity {
   arguments?: {
-    input?: {
-      page?: number;
-    };
+    input?: DiscoverMoviesInput
   };
 }
 

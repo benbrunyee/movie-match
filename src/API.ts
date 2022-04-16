@@ -441,6 +441,10 @@ export type ModelMovieReactionFilterInput = {
 
 export type DiscoverMoviesInput = {
   page?: number | null,
+  region?: Region | null,
+  includeAdult?: boolean | null,
+  releasedAfterYear?: number | null,
+  genres?: Array< Genre | null > | null,
 };
 
 export type QueryMovieList = {

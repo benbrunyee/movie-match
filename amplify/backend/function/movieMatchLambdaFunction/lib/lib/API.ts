@@ -366,6 +366,12 @@ export type AcceptRequestInput = {
   requestId: string,
 };
 
+export type AcceptRequestOutput = {
+  __typename: "AcceptRequestOutput",
+  status: boolean,
+  message?: string | null,
+};
+
 export type ModelUserFilterInput = {
   id?: ModelIDInput | null,
   sub?: ModelIDInput | null,
@@ -435,6 +441,10 @@ export type ModelMovieReactionFilterInput = {
 
 export type DiscoverMoviesInput = {
   page?: number | null,
+  region?: Region | null,
+  includeAdult?: boolean | null,
+  releasedAfterYear?: number | null,
+  genres?: Array< Genre | null > | null,
 };
 
 export type QueryMovieList = {
@@ -904,7 +914,11 @@ export type AcceptRequestMutationVariables = {
 };
 
 export type AcceptRequestMutation = {
-  acceptRequest?: string | null,
+  acceptRequest?:  {
+    __typename: "AcceptRequestOutput",
+    status: boolean,
+    message?: string | null,
+  } | null,
 };
 
 export type GetUserQueryVariables = {

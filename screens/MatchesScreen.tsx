@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
-import { Box, MenuItem, Text } from "../components/Themed";
+import { FlatList, Image, SafeAreaView, StyleSheet, View } from "react-native";
+import { Box, Container, MenuItem, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { FindMovieMatchesQuery, Movie as MovieApi } from "../src/API";
 import { findMovieMatches } from "../src/graphql/queries";
@@ -64,54 +64,71 @@ const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = () => {
   }
 
   return (
-    <View>
-      {matches.map((movie) => {
-        return (
-          <MenuItem
-            key={movie.id}
-            bottomBorder={true}
-            onPress={() => {
-              setSelectedMovie(movie.id);
-            }}
-          >
-            <View style={styles.menuItem}>
-              {movie.coverUri ? (
-                <Image
-                  source={{
-                    uri: IMAGE_PREFIX + movie.coverUri,
-                    height: 66,
-                    width: 44,
-                  }}
-                  style={styles.movieImage}
-                />
-              ) : null}
-              <View>
-                <Text variant="subtitle">{movie.name}</Text>
-                <Text
-                  variant="caption"
-                  {...(selectedMovie !== movie.id && {
-                    style: styles.movieDescription,
-                    numberOfLines: 1,
-                    ellipsizeMode: "tail",
-                  })}
-                >
-                  {movie.description}
-                </Text>
-                {movie.isNew ? <Text variant="caption">New Match!</Text> : null}
+    <SafeAreaView>
+      {matches.length > 0 ? (
+        <FlatList
+          data={matches}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <MenuItem
+              key={item.id}
+              bottomBorder={true}
+              onPress={() => {
+                setSelectedMovie(item.id);
+              }}
+            >
+              <View style={styles.menuItem}>
+                {item.coverUri ? (
+                  <Image
+                    source={{
+                      uri: IMAGE_PREFIX + item.coverUri,
+                      height: 66,
+                      width: 44,
+                    }}
+                    style={styles.movieImage}
+                  />
+                ) : null}
+                <View>
+                  <Text variant="subtitle">{item.name}</Text>
+                  <Text
+                    variant="caption"
+                    {...(selectedMovie !== item.id && {
+                      style: styles.movieDescription,
+                      numberOfLines: 1,
+                      ellipsizeMode: "tail",
+                    })}
+                  >
+                    {item.description}
+                  </Text>
+                  {item.isNew ? (
+                    <Text variant="caption">New Match!</Text>
+                  ) : null}
+                </View>
               </View>
-            </View>
-          </MenuItem>
-        );
-      })}
-    </View>
+            </MenuItem>
+          )}
+        />
+      ) : (
+        <Container style={styles.container}>
+          <Text variant="title">Nothing to load...</Text>
+        </Container>
+      )}
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    alignContent: "center",
+    margin: Styling.spacingLarge,
+    padding: Styling.spacingMedium,
+    textAlign: "center",
+  },
   messageContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    padding: Styling.spacingMedium,
   },
   menuItem: {
     flexDirection: "row",

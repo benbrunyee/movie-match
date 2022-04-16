@@ -180,6 +180,10 @@ input AcceptRequestInput {
 
 input DiscoverMoviesInput {
   page: Int
+  region: Region
+  includeAdult: Boolean
+  releasedAfterYear: Int
+  genres: [Genre]
 }
 
 # Enums

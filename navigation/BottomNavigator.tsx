@@ -10,6 +10,7 @@ import useColorScheme from "../hooks/useColorScheme";
 import DiscoverScreen from "../screens/DiscoverScreen";
 import MatchesScreen from "../screens/MatchesScreen";
 import { RootTabParamList } from "../types";
+import { DEFAULT_ROOT_ROUTE } from "./defaultRoutes";
 import Settings from "./Settings";
 
 /**
@@ -24,7 +25,7 @@ function BottomTabNavigator() {
 
   return (
     <BottomTab.Navigator
-      initialRouteName="Discover"
+      initialRouteName={DEFAULT_ROOT_ROUTE}
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
       }}

@@ -4,13 +4,14 @@ import ConnectPartnerModal from "../screens/ConnectPartnerModal";
 import SearchOptionsScreen from "../screens/SearchOptions";
 import SettingsScreen from "../screens/SettingsScreen";
 import { SettingsParamList } from "../types";
+import { DEFAULT_SETTINGS_ROUTE } from "./defaultRoutes";
 
 const Stack = createNativeStackNavigator<SettingsParamList>();
 
 const Settings: React.FC = () => {
   return (
     <Stack.Navigator
-      initialRouteName="SettingsScreen"
+      initialRouteName={DEFAULT_SETTINGS_ROUTE}
       screenOptions={{ headerShown: false }}
     >
       <Stack.Screen
