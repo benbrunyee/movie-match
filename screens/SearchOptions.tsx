@@ -1,7 +1,7 @@
 import { Picker } from "@react-native-picker/picker";
 import { Formik } from "formik";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Switch, View } from "react-native";
+import { ScrollView, StyleSheet, Switch, View } from "react-native";
 import {
   Box,
   Button,
@@ -9,6 +9,7 @@ import {
   Text,
   useThemeColor
 } from "../components/Themed";
+import { sizes } from "../constants/Font";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import {
@@ -112,48 +113,68 @@ const SearchOptionsScreen: React.FC<
         >
           {({ handleSubmit, values, setFieldValue }) => (
             <Container style={styles.form}>
-              <View style={styles.formField}>
-                <Text style={styles.formLabel}>Region: </Text>
-                <Picker
-                  selectedValue={values.region}
-                  onValueChange={(val) => setFieldValue("region", val)}
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <View
+                  style={[styles.formFieldContainer, styles.firstFormField]}
                 >
-                  <Picker.Item label="Any" value={undefined} />
-                  {Object.keys(Region).map((k) => (
-                    <Picker.Item key={k} label={k} value={k} />
-                  ))}
-                </Picker>
-              </View>
-              <View style={styles.formField}>
-                <Text style={styles.formLabel}>Show adult movies?</Text>
-                <Switch
-                  value={Boolean(values.includeAdult)}
-                  onValueChange={(val) => setFieldValue("includeAdult", val)}
-                />
-              </View>
-              <View style={styles.formField}>
-                <Text style={styles.formLabel}>Show movies after year:</Text>
-                <Picker
-                  selectedValue={values.releasedAfterYear}
-                  onValueChange={(v) => setFieldValue("releasedAfterYear", v)}
-                >
-                  <Picker.Item label="Unset" value={undefined} />
-                  {Array(curYear - oldestYear + 1)
-                    .fill(undefined)
-                    .map((el, i) => (
-                      <Picker.Item
-                        key={(oldestYear + i).toString()}
-                        label={(oldestYear + i).toString()}
-                        value={oldestYear + i}
-                      />
-                    ))}
-                </Picker>
-              </View>
-              <View style={[styles.formField, { marginBottom: "unset" }]}>
-                <Button onPress={() => handleSubmit()}>
-                  <Text>Submit</Text>
-                </Button>
-              </View>
+                  <Text style={styles.formLabel}>Region: </Text>
+                  <View style={styles.formField}>
+                    <Picker
+                      selectedValue={values.region}
+                      onValueChange={(val) => setFieldValue("region", val)}
+                      style={styles.picker}
+                      itemStyle={[styles.pickerItem, styles.formField]}
+                    >
+                      <Picker.Item label="Any" value={undefined} />
+                      {Object.keys(Region).map((k) => (
+                        <Picker.Item key={k} label={k} value={k} />
+                      ))}
+                    </Picker>
+                  </View>
+                </View>
+                <View style={styles.formFieldContainer}>
+                  <Text style={styles.formLabel}>Show adult movies?</Text>
+                  <View style={styles.formField}>
+                    <Switch
+                      value={Boolean(values.includeAdult)}
+                      onValueChange={(val) =>
+                        setFieldValue("includeAdult", val)
+                      }
+                    />
+                  </View>
+                </View>
+                <View style={styles.formFieldContainer}>
+                  <Text style={styles.formLabel}>Show movies after year:</Text>
+                  <View style={styles.formField}>
+                    <Picker
+                      selectedValue={(
+                        values.releasedAfterYear || ""
+                      ).toString()}
+                      onValueChange={(v) =>
+                        setFieldValue("releasedAfterYear", parseInt(v))
+                      }
+                      style={styles.picker}
+                      itemStyle={styles.pickerItem}
+                    >
+                      <Picker.Item label="Any" value={undefined} />
+                      {Array(curYear - oldestYear + 1)
+                        .fill(undefined)
+                        .map((el, i) => (
+                          <Picker.Item
+                            key={(oldestYear + i).toString()}
+                            label={(oldestYear + i).toString()}
+                            value={(oldestYear + i).toString()}
+                          />
+                        ))}
+                    </Picker>
+                  </View>
+                </View>
+                <View style={[styles.submitButton]}>
+                  <Button onPress={() => handleSubmit()}>
+                    <Text>Submit</Text>
+                  </Button>
+                </View>
+              </ScrollView>
             </Container>
           )}
         </Formik>
@@ -166,16 +187,25 @@ const handleFormSubmit = async (
   values: Omit<SearchOptions, "__typename">,
   userId: string
 ) => {
+  console.log(JSON.stringify(values, null, 2));
+
   try {
     await callGraphQL<UpdateUserMutation, UpdateUserMutationVariables>(
       updateUser,
       {
         input: {
           id: userId,
-          searchOptions: values,
+          searchOptions: {
+            ...values,
+            releasedAfterYear: values.releasedAfterYear
+              ? values.releasedAfterYear
+              : undefined,
+          },
         },
       }
     );
+
+    alert("Settings saved");
   } catch (e) {
     console.error(e);
     alert("Failed to save settings");
@@ -194,15 +224,37 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   form: {
-    padding: Styling.spacingLarge,
+    paddingHorizontal: Styling.spacingLarge,
+    width: "90%",
+    height: "90%",
   },
-  formField: {
+  formFieldContainer: {
+    flex: 1,
     flexDirection: "row",
     marginBottom: Styling.spacingMedium,
-    justifyContent: "center",
+    alignItems: "center",
   },
   formLabel: {
+    flex: 5,
     marginRight: Styling.spacingSmall,
+  },
+  formField: {
+    flex: 3,
+    alignItems: "center",
+  },
+  picker: {
+    height: 215,
+    width: 120,
+  },
+  pickerItem: {
+    fontSize: sizes.body,
+  },
+  submitButton: {
+    alignSelf: "center",
+    marginBottom: Styling.spacingLarge,
+  },
+  firstFormField: {
+    marginTop: Styling.spacingLarge,
   },
 });
 

@@ -39,6 +39,7 @@ exports.__esModule = true;
 var appSync_1 = require("../lib/appSync");
 var common_1 = require("../lib/common");
 var mutations_1 = require("../lib/graphql/mutations");
+var queries_1 = require("../lib/graphql/queries");
 exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0, function () {
     var requestId, request;
     return __generator(this, function (_a) {
@@ -57,8 +58,12 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
             case 2:
                 _a.sent();
                 console.debug("Successfully accepted connection request");
-                return [4, updateUsers(request.sender, request.receiver)];
+                return [4, clearPartners([request.sender, request.receiver])];
             case 3:
+                _a.sent();
+                console.debug("Successfully cleared partners");
+                return [4, updateUsers(request.sender, request.receiver)];
+            case 4:
                 _a.sent();
                 return [2, {
                         status: true
@@ -66,6 +71,103 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
         }
     });
 }); });
+function clearExistingConReq(_a) {
+    var _b;
+    var userIdOne = _a[0], userIdTwo = _a[1];
+    return __awaiter(this, void 0, void 0, function () {
+        var existingReq, existingReqItems, _i, existingReqItems_1, reqId;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0: return [4, appSync_1["default"]({ listConnectionRequests: queries_1.listConnectionRequests }, {
+                        filter: {
+                            and: [
+                                {
+                                    or: [
+                                        { receiver: { eq: userIdOne } },
+                                        { sender: { eq: userIdOne } },
+                                    ]
+                                },
+                                {
+                                    or: [
+                                        { receiver: { eq: userIdTwo } },
+                                        { sender: { eq: userIdTwo } },
+                                    ]
+                                },
+                            ]
+                        }
+                    })];
+                case 1:
+                    existingReq = _c.sent();
+                    if (!((_b = existingReq.data) === null || _b === void 0 ? void 0 : _b.listConnectionRequests)) {
+                        throw new Error("Failed to list existing connection request for user: " + userIdOne + " and partner: " + userIdTwo);
+                    }
+                    existingReqItems = existingReq.data.listConnectionRequests.items;
+                    _i = 0, existingReqItems_1 = existingReqItems;
+                    _c.label = 2;
+                case 2:
+                    if (!(_i < existingReqItems_1.length)) return [3, 5];
+                    reqId = existingReqItems_1[_i];
+                    if (!(reqId === null || reqId === void 0 ? void 0 : reqId.id)) {
+                        throw new Error("Failed to find ID from existing connection request");
+                    }
+                    console.debug("Deleting existing request ID: " + reqId.id + " for user: " + userIdOne + " and old partner: " + userIdTwo);
+                    return [4, appSync_1["default"]({ deleteConnectionRequest: mutations_1.deleteConnectionRequest }, {
+                            input: {
+                                id: reqId.id
+                            }
+                        })];
+                case 3:
+                    _c.sent();
+                    console.debug("Successfully deleted existing request ID: " + reqId.id + " for user: " + userIdOne + " and old partner: " + userIdTwo);
+                    _c.label = 4;
+                case 4:
+                    _i++;
+                    return [3, 2];
+                case 5: return [2];
+            }
+        });
+    });
+}
+function clearPartners(userIds) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _i, userIds_1, id, user, partner;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _i = 0, userIds_1 = userIds;
+                    _a.label = 1;
+                case 1:
+                    if (!(_i < userIds_1.length)) return [3, 6];
+                    id = userIds_1[_i];
+                    return [4, common_1.getUser(id)];
+                case 2:
+                    user = _a.sent();
+                    partner = user.connectedUser;
+                    if (!partner) {
+                        console.debug("User: " + id + " does not have a connected partner to clear");
+                        return [3, 5];
+                    }
+                    return [4, appSync_1["default"]({ updateUser: mutations_1.updateUser }, {
+                            input: {
+                                id: partner,
+                                connectedUser: null
+                            }
+                        })];
+                case 3:
+                    _a.sent();
+                    console.debug("Set connected partner for user: " + partner + " to \"null\"");
+                    return [4, clearExistingConReq([id, partner])];
+                case 4:
+                    _a.sent();
+                    _a.label = 5;
+                case 5:
+                    _i++;
+                    return [3, 1];
+                case 6: return [2];
+            }
+        });
+    });
+}
 function updateUsers(senderId, receiverId) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {

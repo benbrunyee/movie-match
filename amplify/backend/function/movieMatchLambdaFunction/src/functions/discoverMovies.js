@@ -51,22 +51,42 @@ var API_1 = require("../lib/API");
 var appSync_1 = require("../lib/appSync");
 var common_1 = require("../lib/common");
 var mutations_1 = require("../lib/graphql/mutations");
+var URL_PARAMS = {
+    genres: "with_genres",
+    region: "region",
+    includeAdult: "include_adult",
+    page: "page",
+    releasedAfterYear: "primary_release_date.gte"
+};
+var apiGenres;
 function default_1(event) {
-    var _a, _b;
+    var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var page, movies, movieEntries;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var input, urlParams, discoverUrl, movies, movieEntries;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
                 case 0:
-                    page = ((_b = (_a = event.arguments) === null || _a === void 0 ? void 0 : _a.input) === null || _b === void 0 ? void 0 : _b.page) || 0;
-                    return [4, fetch(common_1.API_URL + "/discover/movie?api_key=" + common_1.API_KEY + (page > 0 ? "&page=" + page : ""))];
-                case 1: return [4, (_c.sent()).json()];
+                    input = (_a = event.arguments) === null || _a === void 0 ? void 0 : _a.input;
+                    if (!input) return [3, 2];
+                    return [4, createUrlParams(input)];
+                case 1:
+                    urlParams = _b.sent();
+                    _b.label = 2;
                 case 2:
-                    movies = (_c.sent());
+                    console.debug("URL Params for movie discovery: \"" + urlParams + "\"");
+                    discoverUrl = common_1.API_URL + "/discover/movie?api_key=" + common_1.API_KEY + (urlParams ? "&" + urlParams : "");
+                    console.debug("URL Request: " + discoverUrl);
+                    return [4, fetch(discoverUrl)];
+                case 3: return [4, (_b.sent()).json()];
+                case 4:
+                    movies = (_b.sent());
+                    if (typeof movies.success !== "undefined" && !movies.success) {
+                        throw new Error("Failed to discover movies: " + JSON.stringify(movies, null, 2));
+                    }
                     console.debug("Movies found: " + JSON.stringify(movies, null, 2));
                     return [4, addMoviesToDb(movies)];
-                case 3:
-                    movieEntries = _c.sent();
+                case 5:
+                    movieEntries = _b.sent();
                     return [2, { items: movieEntries }];
             }
         });
@@ -79,10 +99,9 @@ function addMoviesToDb(discoveredMovies) {
         var _this = this;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4, fetch(common_1.API_URL + "/genre/movie/list?api_key=" + common_1.API_KEY)];
-                case 1: return [4, (_a.sent()).json()];
-                case 2:
-                    genreFetch = (_a.sent());
+                case 0: return [4, getGenreIds()];
+                case 1:
+                    genreFetch = _a.sent();
                     genreObj = genreFetch.genres.reduce(function (r, genre) {
                         r[genre.id] = genre;
                         return r;
@@ -130,12 +149,94 @@ function addMoviesToDb(discoveredMovies) {
                         _loop_1(movie);
                     }
                     return [4, Promise.all(promises)["catch"](function (e) { })];
-                case 3:
+                case 2:
                     dbMovies = _a.sent();
                     if (!dbMovies) {
                         throw new Error("Failed to create all movies in database");
                     }
                     return [2, dbMovies];
+            }
+        });
+    });
+}
+function getGenreIds() {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    if (!!apiGenres) return [3, 3];
+                    return [4, fetch(common_1.API_URL + "/genre/movie/list?api_key=" + common_1.API_KEY)];
+                case 1: return [4, (_a.sent()).json()];
+                case 2:
+                    apiGenres = (_a.sent());
+                    _a.label = 3;
+                case 3: return [2, apiGenres];
+            }
+        });
+    });
+}
+function createUrlParams(input) {
+    return __awaiter(this, void 0, void 0, function () {
+        var urlParams, key, _loop_2, _a, _b, _i;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0:
+                    urlParams = "";
+                    _loop_2 = function () {
+                        var value, genres_1;
+                        return __generator(this, function (_d) {
+                            switch (_d.label) {
+                                case 0:
+                                    value = input[key];
+                                    if (value == null) {
+                                        return [2, "continue"];
+                                    }
+                                    if (!(key !== "genres")) return [3, 1];
+                                    urlParams += URL_PARAMS[key] + "=" + value + "&";
+                                    return [3, 3];
+                                case 1:
+                                    if (!(value && Array.isArray(value) && value.length > 0)) return [3, 3];
+                                    urlParams += URL_PARAMS[key] + "=";
+                                    return [4, getGenreIds()];
+                                case 2:
+                                    genres_1 = (_d.sent()).genres.reduce(function (r, entry) {
+                                        r[entry.name] = entry;
+                                        return r;
+                                    }, {});
+                                    urlParams += value.reduce(function (r, val) {
+                                        if (val && genres_1[val.toString()]) {
+                                            r += genres_1[val] + ",";
+                                        }
+                                        return r;
+                                    }, "");
+                                    urlParams = urlParams.replace(/,$/, "") + "&";
+                                    _d.label = 3;
+                                case 3: return [2];
+                            }
+                        });
+                    };
+                    _a = [];
+                    for (_b in input)
+                        _a.push(_b);
+                    _i = 0;
+                    _c.label = 1;
+                case 1:
+                    if (!(_i < _a.length)) return [3, 4];
+                    key = _a[_i];
+                    return [5, _loop_2()];
+                case 2:
+                    _c.sent();
+                    _c.label = 3;
+                case 3:
+                    _i++;
+                    return [3, 1];
+                case 4:
+                    if (!Object.keys(input).includes("includeAdult") ||
+                        input["includeAdult"] == null) {
+                        urlParams += URL_PARAMS["includeAdult"] + "=false";
+                    }
+                    urlParams = urlParams.replace(/&$/, "");
+                    return [2, urlParams];
             }
         });
     });

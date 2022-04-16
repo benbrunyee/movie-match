@@ -153,7 +153,12 @@ async function createConnectRequest(senderSub: string, receiverSub: string) {
       ListConnectionRequestsQueryVariables
     >(listConnectionRequests, {
       filter: {
-        receiver: { eq: receiverSub },
+        and: [
+          {
+            receiver: { eq: receiverSub },
+            sender: { eq: senderSub },
+          },
+        ],
       },
     })
   ).data?.listConnectionRequests?.items;

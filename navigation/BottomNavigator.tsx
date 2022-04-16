@@ -28,6 +28,7 @@ function BottomTabNavigator() {
       initialRouteName={DEFAULT_ROOT_ROUTE}
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
+        tabBarShowLabel: false,
       }}
     >
       <BottomTab.Screen
@@ -35,7 +36,7 @@ function BottomTabNavigator() {
         component={DiscoverScreen}
         options={{
           title: "Discover",
-          tabBarIcon: ({ color }) => <TabBarIcon name="film" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="circle-o-notch" color={color} />,
         }}
       />
       <BottomTab.Screen
@@ -43,13 +44,14 @@ function BottomTabNavigator() {
         component={MatchesScreen}
         options={{
           title: "Matches",
-          tabBarIcon: ({ color }) => <TabBarIcon name="film" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="circle-o" color={color} />,
         }}
       />
       <BottomTab.Screen
         name="Settings"
         component={Settings}
         options={{
+          title: "Settings",
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
           headerRight: () => (
             <Pressable
@@ -112,7 +114,7 @@ function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
-  return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={25} {...props} />;
 }
 
 export default BottomTabNavigator;

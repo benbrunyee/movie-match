@@ -12,13 +12,11 @@ import Navigation from "./navigation";
 import {
   AcceptRequestMutation,
   AcceptRequestMutationVariables,
-  OnCreateConnectionRequestSubscription,
-  OnCreateConnectionRequestSubscriptionVariables
+  OnCreateConnectionRequestSubscription
 } from "./src/API";
 import awsconfig from "./src/aws-exports";
 import { acceptRequest } from "./src/graphql/mutations";
-import { onCreateConnectionRequest } from "./src/graphql/subscriptions";
-import { callGraphQL, subscribeGraphQL } from "./utils/amplify";
+import { callGraphQL } from "./utils/amplify";
 import configureUser from "./utils/configureUser";
 
 Amplify.configure(awsconfig);
@@ -69,22 +67,6 @@ export default function App() {
       </UserContext.Provider>
     );
   }
-}
-
-function createSubscriptions(sub: string) {
-  return subscribeGraphQL<
-    OnCreateConnectionRequestSubscription,
-    OnCreateConnectionRequestSubscriptionVariables
-  >(
-    onCreateConnectionRequest,
-    {
-      receiver: sub,
-    },
-    {
-      next: onSubscriptionMessage,
-      error: console.error,
-    }
-  );
 }
 
 function onSubscriptionMessage({

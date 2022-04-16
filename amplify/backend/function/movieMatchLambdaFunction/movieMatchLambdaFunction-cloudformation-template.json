@@ -23,6 +23,14 @@
     "apimoviematchGraphQLAPIEndpointOutput": {
       "Type": "String",
       "Default": "apimoviematchGraphQLAPIEndpointOutput"
+    },
+    "functionmoviematchmovieMatchLambdaLayerArn": {
+      "Type": "String",
+      "Default": "functionmoviematchmovieMatchLambdaLayerArn"
+    },
+    "functionmoviematchLambdaLayerArn": {
+      "Type": "String",
+      "Default": "functionmoviematchLambdaLayerArn"
     }
   },
   "Conditions": {
@@ -93,7 +101,11 @@
           ]
         },
         "Runtime": "nodejs14.x",
-        "Layers": [],
+        "Layers": [
+          {
+            "Ref": "functionmoviematchLambdaLayerArn"
+          }
+        ],
         "Timeout": 25
       }
     },

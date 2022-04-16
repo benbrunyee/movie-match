@@ -1,3 +1,4 @@
+import { FontAwesome } from "@expo/vector-icons";
 import { useCallback, useEffect, useState } from "react";
 import { Image, StyleSheet, View } from "react-native";
 import { Box, Button, Container, Text } from "../components/Themed";
@@ -6,8 +7,11 @@ import { useUserContext } from "../context/UserContext";
 import {
   CreateMovieReactionMutation,
   CreateMovieReactionMutationVariables,
+  DiscoverMoviesInput,
   DiscoverMoviesQuery,
   DiscoverMoviesQueryVariables,
+  GetUserQuery,
+  GetUserQueryVariables,
   ListPartnerPendingMovieMatchesQuery,
   Movie as MovieApi,
   Reaction
@@ -15,6 +19,7 @@ import {
 import { createMovieReaction } from "../src/graphql/mutations";
 import {
   discoverMovies as discoverMoviesApi,
+  getUser,
   listPartnerPendingMovieMatches
 } from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
@@ -42,11 +47,27 @@ export default function DiscoverScreen({
   const [page, setPage] = useState(generateRandomNumber(MIN_PAGE, MAX_PAGE));
 
   const findMovies = useCallback(async () => {
-    let movies: Movie[] = [];
+    let discoveredMovies: Movie[] = [];
     let partnerMovies: Movie[] = [];
 
     try {
-      movies = await discoverMovies(page);
+      const userData = await callGraphQL<GetUserQuery, GetUserQueryVariables>(
+        getUser,
+        {
+          id: userContext.sub,
+        }
+      );
+
+      if (!userData.data?.getUser) {
+        throw new Error("Could not load user data");
+      }
+
+      const searchOptions = userData.data.getUser.searchOptions;
+
+      discoveredMovies = await discoverMovies({
+        page,
+        ...searchOptions,
+      });
 
       if (userContext.connectedPartner) {
         partnerMovies = await loadPartnerPendingMatches();
@@ -68,7 +89,7 @@ export default function DiscoverScreen({
 
     // Set the movies
     // Partner movies come first
-    setMovies([...partnerMovies, ...movies]);
+    setMovies([...partnerMovies, ...discoveredMovies]);
 
     // Reset the index
     setIndex(0);
@@ -89,9 +110,12 @@ export default function DiscoverScreen({
 
   // This will load movies on mount as well
   useEffect(() => {
-    console.debug("Loading because of index");
     // Load more movies if we are at the end
     if (index === movies.length) {
+      if (!isLoading) {
+        setIsLoading(true);
+      }
+
       findMovies().then(() => {
         if (isLoading) {
           setIsLoading(false);
@@ -140,10 +164,21 @@ export default function DiscoverScreen({
               <Text variant="subtitle" style={styles.movieTitle}>
                 {selectedMovie.name}
               </Text>
+              {selectedMovie.rating ? (
+                <View style={styles.rating}>
+                  <FontAwesome name="star" size={10} style={styles.star} />
+                  <Text variant="smallCaption">{selectedMovie.rating}/10</Text>
+                  {selectedMovie.ratingCount ? (
+                    <Text variant="smallCaption">
+                      {` - ${selectedMovie.ratingCount}`}
+                    </Text>
+                  ) : null}
+                </View>
+              ) : null}
               <Text
                 numberOfLines={2}
                 ellipsizeMode="tail"
-                variant="smallCaption"
+                variant="caption"
                 style={styles.movieDescription}
               >
                 {selectedMovie.description}
@@ -210,14 +245,14 @@ async function addReaction(
 }
 
 // TODO: First load movies that the connected partner has liked
-async function discoverMovies(page?: number): Promise<Movie[]> {
+async function discoverMovies(
+  searchOptions?: DiscoverMoviesInput
+): Promise<Movie[]> {
   const movies = await callGraphQL<
     DiscoverMoviesQuery,
     DiscoverMoviesQueryVariables
   >(discoverMoviesApi, {
-    input: {
-      ...(page && { page }),
-    },
+    input: searchOptions,
   });
 
   if (!movies.data?.discoverMovies) {
@@ -257,5 +292,15 @@ const styles = StyleSheet.create({
   movieDescription: {
     maxWidth: 220,
     marginBottom: Styling.spacingSmall,
+  },
+  rating: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: Styling.spacingSmall,
+  },
+  star: {
+    display: "flex",
+    marginRight: 5,
   },
 });

@@ -1,18 +1,22 @@
 import {
+  AcceptRequestInput,
   ConnectionRequest,
+  DeleteConnectionRequestMutation,
+  DeleteConnectionRequestMutationVariables,
+  ListConnectionRequestsQuery,
+  ListConnectionRequestsQueryVariables,
   UpdateUserMutation,
   UpdateUserMutationVariables
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
-import { acceptRequest, getConnectionRequest } from "../lib/common";
+import { acceptRequest, getConnectionRequest, getUser } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
-import { updateUser } from "../lib/graphql/mutations";
+import { deleteConnectionRequest, updateUser } from "../lib/graphql/mutations";
+import { listConnectionRequests } from "../lib/graphql/queries";
 
 export interface EventInterface extends EventIdentity {
   arguments: {
-    input: {
-      requestId: string;
-    };
+    input: AcceptRequestInput;
   };
 }
 
@@ -37,6 +41,11 @@ export default async (event: EventInterface) => {
 
   console.debug("Successfully accepted connection request");
 
+  // Clear partners
+  await clearPartners([request.sender, request.receiver]);
+
+  console.debug("Successfully cleared partners");
+
   // Update the users
   await updateUsers(request.sender, request.receiver);
 
@@ -44,6 +53,94 @@ export default async (event: EventInterface) => {
     status: true,
   };
 };
+
+async function clearExistingConReq([userIdOne, userIdTwo]: string[]) {
+  const existingReq = await callGraphQl<
+    ListConnectionRequestsQuery,
+    ListConnectionRequestsQueryVariables
+  >(
+    { listConnectionRequests },
+    {
+      filter: {
+        and: [
+          {
+            or: [
+              { receiver: { eq: userIdOne } },
+              { sender: { eq: userIdOne } },
+            ],
+          },
+          {
+            or: [
+              { receiver: { eq: userIdTwo } },
+              { sender: { eq: userIdTwo } },
+            ],
+          },
+        ],
+      },
+    }
+  );
+
+  if (!existingReq.data?.listConnectionRequests) {
+    throw new Error(
+      `Failed to list existing connection request for user: ${userIdOne} and partner: ${userIdTwo}`
+    );
+  }
+
+  const existingReqItems = existingReq.data.listConnectionRequests.items;
+
+  for (let reqId of existingReqItems) {
+    if (!reqId?.id) {
+      throw new Error("Failed to find ID from existing connection request");
+    }
+
+    console.debug(
+      `Deleting existing request ID: ${reqId.id} for user: ${userIdOne} and old partner: ${userIdTwo}`
+    );
+
+    await callGraphQl<
+      DeleteConnectionRequestMutation,
+      DeleteConnectionRequestMutationVariables
+    >(
+      { deleteConnectionRequest },
+      {
+        input: {
+          id: reqId.id,
+        },
+      }
+    );
+
+    console.debug(
+      `Successfully deleted existing request ID: ${reqId.id} for user: ${userIdOne} and old partner: ${userIdTwo}`
+    );
+  }
+}
+
+async function clearPartners(userIds: string[]) {
+  for (let id of userIds) {
+    const user = await getUser(id);
+    const partner = user.connectedUser;
+
+    if (!partner) {
+      // Nothing to do
+      console.debug(`User: ${id} does not have a connected partner to clear`);
+      continue;
+    }
+
+    await callGraphQl<UpdateUserMutation, UpdateUserMutationVariables>(
+      { updateUser },
+      {
+        input: {
+          id: partner,
+          connectedUser: null,
+        },
+      }
+    );
+
+    console.debug(`Set connected partner for user: ${partner} to "null"`);
+
+    await clearExistingConReq([id, partner]);
+  }
+}
 
 async function updateUsers(senderId: string, receiverId: string) {
   // Update the receiver

@@ -14,7 +14,7 @@ import { createMovie } from "../lib/graphql/mutations";
 
 export interface EventInterface extends EventIdentity {
   arguments?: {
-    input?: DiscoverMoviesInput
+    input?: DiscoverMoviesInput;
   };
 }
 
@@ -23,9 +23,12 @@ export interface DiscoverMovieApi {
   results: MovieApiOutput[];
   total_results: number;
   total_pages: number;
+  success?: boolean;
+  status_message?: string;
+  status_code?: number;
 }
 
-export interface MoveGenreApi {
+export interface MovieGenreApi {
   genres: MovieGenre[];
 }
 
@@ -34,17 +37,41 @@ export interface MovieGenre {
   name: string;
 }
 
+const URL_PARAMS: { [k in keyof DiscoverMoviesInput]: string } = {
+  genres: "with_genres",
+  region: "region",
+  includeAdult: "include_adult",
+  page: "page",
+  releasedAfterYear: "primary_release_date.gte",
+};
+
+let apiGenres: MovieGenreApi | undefined;
+
 export default async function (event: EventInterface) {
-  let page: number = event.arguments?.input?.page || 0;
+  const input = event.arguments?.input;
+
+  let urlParams: string | undefined;
+
+  if (input) {
+    urlParams = await createUrlParams(input);
+  }
+
+  console.debug(`URL Params for movie discovery: "${urlParams}"`);
+
+  const discoverUrl = `${API_URL}/discover/movie?api_key=${API_KEY}${
+    urlParams ? `&${urlParams}` : ""
+  }`;
+
+  console.debug(`URL Request: ${discoverUrl}`);
 
   // Get the movies
-  const movies = (await (
-    await fetch(
-      `${API_URL}/discover/movie?api_key=${API_KEY}${
-        page > 0 ? `&page=${page}` : ""
-      }`
-    )
-  ).json()) as DiscoverMovieApi;
+  const movies = (await (await fetch(discoverUrl)).json()) as DiscoverMovieApi;
+
+  if (typeof movies.success !== "undefined" && !movies.success) {
+    throw new Error(
+      `Failed to discover movies: ${JSON.stringify(movies, null, 2)}`
+    );
+  }
 
   console.debug(`Movies found: ${JSON.stringify(movies, null, 2)}`);
 
@@ -55,9 +82,7 @@ export default async function (event: EventInterface) {
 }
 
 async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
-  const genreFetch = (await (
-    await fetch(`${API_URL}/genre/movie/list?api_key=${API_KEY}`)
-  ).json()) as MoveGenreApi;
+  const genreFetch = await getGenreIds();
 
   const genreObj = genreFetch.genres.reduce<{ [key: number]: MovieGenre }>(
     (r, genre) => {
@@ -134,4 +159,64 @@ async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
   }
 
   return dbMovies;
+}
+
+async function getGenreIds() {
+  if (!apiGenres) {
+    apiGenres = (await (
+      await fetch(`${API_URL}/genre/movie/list?api_key=${API_KEY}`)
+    ).json()) as MovieGenreApi;
+  }
+
+  return apiGenres;
+}
+
+async function createUrlParams(input: DiscoverMoviesInput) {
+  let urlParams = "";
+
+  let key: keyof typeof input;
+  for (key in input) {
+    const value = input[key];
+
+    if (value == null) {
+      continue;
+    }
+
+    if (key !== "genres") {
+      urlParams += `${URL_PARAMS[key]}=${value}&`;
+    } else {
+      if (value && Array.isArray(value) && value.length > 0) {
+        urlParams += `${URL_PARAMS[key]}=`;
+
+        const genres = (await getGenreIds()).genres.reduce<{
+          [key: string]: MovieGenre;
+        }>((r, entry) => {
+          r[entry.name] = entry;
+          return r;
+        }, {});
+
+        urlParams += value.reduce<string>((r, val) => {
+          if (val && genres[val.toString()]) {
+            r += `${genres[val]},`;
+          }
+
+          return r;
+        }, "");
+
+        urlParams = urlParams.replace(/,$/, "") + "&";
+      }
+    }
+  }
+
+  if (
+    !Object.keys(input).includes("includeAdult") ||
+    input["includeAdult"] == null
+  ) {
+    // By default, don't include adult movies
+    urlParams += `${URL_PARAMS["includeAdult"]}=false`;
+  }
+
+  urlParams = urlParams.replace(/&$/, "");
+
+  return urlParams;
 }
