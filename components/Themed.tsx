@@ -4,6 +4,7 @@
  */
 
 import {
+  Modal as DefaultModal,
   Pressable,
   PressableProps,
   Text as DefaultText,
@@ -50,6 +51,7 @@ export type ContainerProps = ThemeProps & DefaultView["props"];
 export type MenuItemProps = ThemeProps &
   PressableProps & { topBorder?: boolean; bottomBorder?: boolean };
 export type SwiperProps<T> = DefaultSwiper.SwiperProps<T> & ThemeProps;
+export type ModalProps = DefaultModal["props"] & ThemeProps;
 
 export function Text(props: TextProps) {
   const { disabled, variant, style, lightColor, darkColor, ...otherProps } =
@@ -170,11 +172,11 @@ export function MenuItem(props: MenuItemProps) {
   } = props;
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },
-    "containerBackgroundDefault"
+    "menuItemDefault"
   );
   const backgroundColorPressed = useThemeColor(
     { light: lightColor, dark: darkColor },
-    "containerBackgroundPressed"
+    "menuItemPressed"
   );
   const borderColor = useThemeColor(
     { light: lightColor, dark: darkColor },
@@ -213,4 +215,21 @@ export function Swiper<T>({
   return (
     <DefaultSwiper.default backgroundColor={backgroundColor} {...otherProps} />
   );
+}
+
+export function Modal({
+  lightColor,
+  darkColor,
+  style,
+  ...otherProps
+}: ModalProps) {
+  const backgroundColor = useThemeColor(
+    {
+      light: lightColor,
+      dark: darkColor,
+    },
+    "modalBackground"
+  );
+
+  return <DefaultModal style={[{ backgroundColor }, style]} {...otherProps} />;
 }

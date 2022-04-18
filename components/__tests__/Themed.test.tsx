@@ -2,9 +2,9 @@
 
 import React from "react";
 import renderer from "react-test-renderer";
-import Colors from "../constants/Colors";
-import { sizes } from "../constants/Font";
-import { Button, Text, TextInput } from "./Themed";
+import Colors from "../../constants/Colors";
+import { sizes } from "../../constants/Font";
+import { Button, Text, TextInput } from "../Themed";
 
 describe("<Text />", () => {
   const text = "Hello world!";

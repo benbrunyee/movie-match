@@ -1,8 +1,10 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Auth } from "aws-amplify";
 import { brand } from "expo-device";
+import React from "react";
 import { Alert, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 import { useUserContext } from "../context/UserContext";
@@ -18,6 +20,7 @@ import Settings from "./Settings";
  * https://reactnavigation.org/docs/bottom-tab-navigator
  */
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
+const Tab = createNativeStackNavigator<any>();
 
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
@@ -98,12 +101,7 @@ function BottomTabNavigator() {
                 opacity: pressed ? 0.5 : 1,
               })}
             >
-              <FontAwesome
-                name="sign-out"
-                size={25}
-                color={Colors[colorScheme].text}
-                style={{ marginRight: 15 }}
-              />
+              <HeaderRightIcon name="sign-out" />
             </Pressable>
           ),
         }}
@@ -120,6 +118,21 @@ function TabBarIcon(props: {
   color: string;
 }) {
   return <FontAwesome size={25} {...props} />;
+}
+
+function HeaderRightIcon(props: {
+  name: React.ComponentProps<typeof FontAwesome>["name"];
+}) {
+  const colorScheme = useColorScheme();
+
+  return (
+    <FontAwesome
+      size={25}
+      color={Colors[colorScheme].text}
+      style={{ marginRight: 15 }}
+      {...props}
+    />
+  );
 }
 
 export default BottomTabNavigator;

@@ -10,11 +10,7 @@ const linking: LinkingOptions<RootStackParamList> = {
       Verification: "verification",
       Root: {
         screens: {
-          Discover: {
-            screens: {
-              DiscoverScreen: "discover",
-            },
-          },
+          Discover: "discover",
           Matches: {
             screens: {
               MatchesScreen: "matches",

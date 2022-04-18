@@ -56,7 +56,7 @@ export default async function configureUser(): Promise<UserContextObject> {
     userDbObj: userDbData || {},
   };
 
-  console.debug(`User context: ${JSON.stringify(userContext, null, 2)}`);
+  console.dir(userContext);
 
   return userContext;
 }

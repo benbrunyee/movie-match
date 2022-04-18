@@ -90,6 +90,11 @@ export default function DiscoverScreen({
     setPage(generateRandomNumber(MIN_PAGE, MAX_PAGE));
   }, [page]);
 
+  const reloadMovies = useCallback(() => {
+    setIsLoading(true);
+    findMovies().then(() => setIsLoading(false));
+  }, [findMovies]);
+
   const likeMovie = useCallback((movie: Movie) => {
     addReaction(userContext.sub, movie.id, Reaction.LIKE);
     if (movie.isPartnerMovie) {
@@ -100,6 +105,30 @@ export default function DiscoverScreen({
   const dislikeMovie = useCallback((movie: Movie) => {
     addReaction(userContext.sub, movie.id, Reaction.DISLIKE);
   }, []);
+
+  const swipeRight = useCallback(
+    (i: number) => {
+      const movie = movies[i];
+      if (movie) {
+        likeMovie(movie);
+      } else {
+        console.error("Could not find movie based on swipe index");
+      }
+    },
+    [likeMovie]
+  );
+
+  const swipeLeft = useCallback(
+    (i: number) => {
+      const movie = movies[i];
+      if (movie) {
+        dislikeMovie(movie);
+      } else {
+        console.error("Could not find movie based on swipe index");
+      }
+    },
+    [dislikeMovie]
+  );
 
   // This will load movies on mount as well
   useEffect(() => {
@@ -130,36 +159,21 @@ export default function DiscoverScreen({
   }
 
   return (
-    <View style={styles.container}>
-      <Swiper
-        cards={movies}
-        keyExtractor={(movie) => movie.id}
-        renderCard={(movie) => <MovieCard movie={movie} />}
-        onSwipedLeft={(swipeI) => {
-          const movie = movies[swipeI];
-          if (movie) {
-            dislikeMovie(movie);
-          } else {
-            console.error("Could not find movie based on swipe index");
-          }
-        }}
-        onSwipedRight={(swipeI) => {
-          const movie = movies[swipeI];
-          if (movie) {
-            likeMovie(movie);
-          } else {
-            console.error("Could not find movie based on swipe index");
-          }
-        }}
-        onSwipedAll={() => {
-          setIsLoading(true);
-          findMovies().then(() => {
-            setIsLoading(false);
-          });
-        }}
-        verticalSwipe={false}
-      />
-    </View>
+    <>
+      <View style={styles.container}>
+        <Swiper
+          cards={movies}
+          keyExtractor={(movie) => movie.id}
+          renderCard={(movie) => <MovieCard movie={movie} />}
+          onSwipedLeft={swipeLeft}
+          onSwipedRight={swipeRight}
+          onSwipedAll={() => {
+            reloadMovies();
+          }}
+          verticalSwipe={false}
+        />
+      </View>
+    </>
   );
 }
 
