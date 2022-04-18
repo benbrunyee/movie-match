@@ -33,7 +33,7 @@ export default async (
     console.warn(
       `Could not find connected user for user database obj: ${requestee}`
     );
-    console.warn("Returning an empty array");
+    console.warn("Returning an empty results");
     return { allMatches: [], newMatches: [] };
   }
 
@@ -44,7 +44,7 @@ export default async (
 
   if (!(user.movieReactions && connectedUserObj.movieReactions)) {
     console.warn("Movie reactions for one or both user's are not present");
-    console.warn("Returning an empty array");
+    console.warn("Returning an empty results");
     return { allMatches: [], newMatches: [] };
   }
 

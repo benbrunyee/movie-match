@@ -58,7 +58,7 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                 console.debug("Got connected partner user ID: " + connectedUserId);
                 if (!connectedUserId) {
                     console.warn("Could not find connected user for user database obj: " + requestee);
-                    console.warn("Returning an empty array");
+                    console.warn("Returning an empty results");
                     return [2, { allMatches: [], newMatches: [] }];
                 }
                 return [4, common_1.getUser(connectedUserId)];
@@ -67,7 +67,7 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                 console.debug("Successfully got connected partner user obj for ID: " + connectedUserId);
                 if (!(user.movieReactions && connectedUserObj.movieReactions)) {
                     console.warn("Movie reactions for one or both user's are not present");
-                    console.warn("Returning an empty array");
+                    console.warn("Returning an empty results");
                     return [2, { allMatches: [], newMatches: [] }];
                 }
                 console.debug("User movie reactions: " + JSON.stringify(((_a = user.movieReactions) === null || _a === void 0 ? void 0 : _a.items) || [], null, 2));
