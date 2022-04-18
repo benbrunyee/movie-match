@@ -1,6 +1,6 @@
 import { Auth } from "aws-amplify";
 import React, { useCallback, useEffect, useState } from "react";
-import { AsyncStorage, ImageBackground, StyleSheet, View } from "react-native";
+import { AsyncStorage, StyleSheet, View } from "react-native";
 import { Button, Container, Tab, Text, TextInput } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
@@ -84,10 +84,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
   );
 
   return (
-    <ImageBackground
-      style={styles.pageContainer}
-      source={require("../assets/images/movie.jpg")}
-    >
+    <View style={styles.pageContainer}>
       <Container style={styles.container}>
         <View>
           <View style={styles.switchTabContainer}>
@@ -168,7 +165,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
           </View>
         </View>
       </Container>
-    </ImageBackground>
+    </View>
   );
 };
 

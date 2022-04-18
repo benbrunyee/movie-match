@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Image, ImageBackground, StyleSheet, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
 import { Box, Button, Container, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
@@ -160,10 +160,7 @@ export default function DiscoverScreen({
   const selectedMovie = movies[index];
 
   return (
-    <ImageBackground
-      style={styles.container}
-      source={require("../assets/images/movie.jpg")}
-    >
+    <View style={styles.container}>
       {selectedMovie ? (
         <Container style={styles.movieContainer}>
           {selectedMovie.coverUri ? (
@@ -222,7 +219,7 @@ export default function DiscoverScreen({
           </View>
         </Container>
       ) : null}
-    </ImageBackground>
+    </View>
   );
 }
 
