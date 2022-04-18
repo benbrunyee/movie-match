@@ -1,7 +1,9 @@
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import MovieCard from "../components/MovieCard";
 import { Box, Swiper, Text } from "../components/Themed";
+import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import {
   CreateMovieReactionMutation,
@@ -36,6 +38,7 @@ export default function DiscoverScreen({
 }: RootTabScreenProps<"Discover">) {
   const [userContext] = useUserContext();
   const firstLoad = useRef(true);
+  const bottomTabHeight = useBottomTabBarHeight();
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,7 +118,7 @@ export default function DiscoverScreen({
         console.error("Could not find movie based on swipe index");
       }
     },
-    [likeMovie]
+    [likeMovie, movies]
   );
 
   const swipeLeft = useCallback(
@@ -127,7 +130,7 @@ export default function DiscoverScreen({
         console.error("Could not find movie based on swipe index");
       }
     },
-    [dislikeMovie]
+    [dislikeMovie, movies]
   );
 
   // This will load movies on mount as well
@@ -159,23 +162,43 @@ export default function DiscoverScreen({
   }
 
   return (
-    <>
-      <View style={styles.container}>
-        <Swiper
-          cards={movies}
-          keyExtractor={(movie) => movie.id}
-          renderCard={(movie) => <MovieCard movie={movie} />}
-          onSwipedLeft={swipeLeft}
-          onSwipedRight={swipeRight}
-          onSwipedAll={() => {
-            reloadMovies();
-          }}
-          verticalSwipe={false}
-        />
-      </View>
-    </>
+    <View style={[styles.container]}>
+      <Swiper
+        cards={movies}
+        keyExtractor={(movie) => movie.id}
+        renderCard={(movie) => (
+          <MovieCard
+            movie={movie}
+            style={{
+              margin: Styling.spacingLarge,
+              marginBottom: 225,
+            }}
+          />
+        )}
+        onSwipedLeft={swipeLeft}
+        onSwipedRight={swipeRight}
+        onSwipedAll={() => {
+          reloadMovies();
+        }}
+        verticalSwipe={false}
+        containerStyle={styles.swiper}
+        cardVerticalMargin={0}
+        cardHorizontalMargin={0}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  swiper: {
+    // flex: 1,
+  },
+});
 
 async function loadPartnerPendingMatches(): Promise<Movie[]> {
   const movies = await callGraphQL<ListPartnerPendingMovieMatchesQuery>(
@@ -227,11 +250,3 @@ async function discoverMovies(
 
   return movies.data.discoverMovies.items;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

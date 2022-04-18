@@ -4,15 +4,19 @@ import { Image, StyleSheet, View } from "react-native";
 import Styling from "../constants/Styling";
 import { Movie } from "../src/API";
 import { IMAGE_PREFIX } from "../utils/movieApi";
-import { Container, Text } from "./Themed";
+import { Container, ContainerProps, Text } from "./Themed";
 
-export interface MovieCardProps {
+export interface MovieCardProps extends ContainerProps {
   movie: Movie;
 }
 
-const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
+const MovieCard: React.FC<MovieCardProps> = ({
+  movie,
+  style,
+  ...otherProps
+}) => {
   return (
-    <Container style={styles.movieContainer}>
+    <Container style={[styles.movieContainer, style]} {...otherProps}>
       {movie.coverUri ? (
         <Image
           source={{
@@ -53,8 +57,10 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
 
 const styles = StyleSheet.create({
   movieContainer: {
+    flex: 1,
     padding: Styling.spacingLarge,
-    alignSelf: "center"
+    alignItems: "center",
+    justifyContent: "center",
   },
   movieTitle: {
     textAlign: "center",
