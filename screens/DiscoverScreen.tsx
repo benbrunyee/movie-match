@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import { Box, Container, Swiper, Text } from "../components/Themed";
-import Styling from "../constants/Styling";
+import MovieCard from "../components/MovieCard";
+import { Box, Swiper, Text } from "../components/Themed";
 import { useUserContext } from "../context/UserContext";
 import {
   CreateMovieReactionMutation,
@@ -133,18 +133,8 @@ export default function DiscoverScreen({
     <View style={styles.container}>
       <Swiper
         cards={movies}
-        renderCard={(movie) => {
-          return (
-            <Container style={styles.movieContainer}>
-              <Text variant="title" style={styles.movieTitle}>
-                {movie.name}
-              </Text>
-            </Container>
-          );
-        }}
-        onSwiped={(swipeI) => {
-          console.log(swipeI);
-        }}
+        keyExtractor={(movie) => movie.id}
+        renderCard={(movie) => <MovieCard movie={movie} />}
         onSwipedLeft={(swipeI) => {
           const movie = movies[swipeI];
           if (movie) {
@@ -167,9 +157,7 @@ export default function DiscoverScreen({
             setIsLoading(false);
           });
         }}
-        stackSize={3}
-        disableTopSwipe
-        disableBottomSwipe
+        verticalSwipe={false}
       />
     </View>
   );
@@ -231,35 +219,5 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  movieContainer: {
-    padding: Styling.spacingLarge,
-  },
-  movieTitle: {
-    textAlign: "center",
-    margin: Styling.spacingSmall,
-    maxWidth: 220,
-  },
-  movieYear: {
-    textAlign: "center",
-    marginBottom: Styling.spacingSmall,
-  },
-  buttonControls: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-  },
-  movieDescription: {
-    maxWidth: 220,
-    marginBottom: Styling.spacingSmall,
-  },
-  rating: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: Styling.spacingSmall,
-  },
-  star: {
-    display: "flex",
-    marginRight: 5,
   },
 });
