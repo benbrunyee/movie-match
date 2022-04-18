@@ -1149,7 +1149,7 @@ aws-appsync-subscription-link@^2.2.7:
     debug "2.6.9"
     url "^0.11.0"
 
-aws-appsync@^4.1.4:
+aws-appsync@^4.1.5:
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/aws-appsync/-/aws-appsync-4.1.5.tgz#fea1d2c5161e535ef069d689de6ff9e10848deca"
   integrity sha512-tkg7GQi/F7ZZawwzccn8dMgNu12mSwqDBQBd4oz+mi7zsnxo2Xenccd/aNsund7diKhrWb+M2VM3npY47eTvZA==
@@ -1401,6 +1401,11 @@ graphql-tag@^2.12.6:
   integrity sha512-FdSNcu2QQcWnM2VNvSCCDCVS5PpPqpzgFT8+GXzqJuoDd0CBncxCY278u4mhRO7tMgo2JjgJA5aZ+nWSQ/Z+xg==
   dependencies:
     tslib "^2.1.0"
+
+graphql@15.7.0:
+  version "15.7.0"
+  resolved "https://registry.yarnpkg.com/graphql/-/graphql-15.7.0.tgz#caace26caf9b875b80982c45db58765d8a060e3e"
+  integrity sha512-1jvUsS5mSzcgXLTQNQyrP7eKkBZW+HUnmx2LYSnfvkyseVpij8wwO/sFBGgxbkZ+zzFwYQxrHsOana5oMXmMxg==
 
 har-schema@^2.0.0:
   version "2.0.0"

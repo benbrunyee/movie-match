@@ -8,14 +8,14 @@ import { RootTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
 import { IMAGE_PREFIX } from "../utils/movieApi";
 
-export interface Movie extends MovieApi {
+export interface MovieItem extends MovieApi {
   isNew?: boolean;
 }
 
 const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = ({
   navigation,
 }) => {
-  const [matches, setMatches] = useState<Movie[]>([]);
+  const [matches, setMatches] = useState<MovieItem[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [selectedMovie, setSelectedMovie] = useState("");
@@ -29,12 +29,8 @@ const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = ({
       }
 
       const allMatches = movies.data.findMovieMatches.allMatches;
-      const newMatches = movies.data.findMovieMatches.newMatches;
 
-      setMatches([
-        ...allMatches,
-        ...newMatches.map<Movie>((movie) => ({ ...movie, isNew: true })),
-      ]);
+      setMatches([...allMatches]);
     } catch (e) {
       console.error(e);
       setError("Failed to load movies");

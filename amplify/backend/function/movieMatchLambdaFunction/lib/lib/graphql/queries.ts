@@ -34,6 +34,7 @@ export const getUser = /* GraphQL */ `
             description
             genres
             trailerUri
+            releaseYear
             updatedAt
             owner
           }
@@ -105,6 +106,7 @@ export const listUsers = /* GraphQL */ `
               description
               genres
               trailerUri
+              releaseYear
               updatedAt
               owner
             }
@@ -187,6 +189,7 @@ export const getMovie = /* GraphQL */ `
       description
       genres
       trailerUri
+      releaseYear
       updatedAt
       owner
     }
@@ -218,6 +221,7 @@ export const listMovies = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -251,6 +255,7 @@ export const movieByIdentifier = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -273,6 +278,7 @@ export const getMovieReaction = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -313,6 +319,7 @@ export const listMovieReactions = /* GraphQL */ `
           description
           genres
           trailerUri
+          releaseYear
           updatedAt
           owner
         }
@@ -341,6 +348,7 @@ export const discoverMovies = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -381,6 +389,7 @@ export const findMovieMatches = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -395,6 +404,7 @@ export const findMovieMatches = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -415,6 +425,7 @@ export const listPartnerPendingMovieMatches = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }

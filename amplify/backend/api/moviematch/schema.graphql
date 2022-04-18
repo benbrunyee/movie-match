@@ -117,6 +117,7 @@ type Movie
   description: String!
   genres: [Genre!]!
   trailerUri: String
+  releaseYear: Int
 }
 
 type MovieReaction

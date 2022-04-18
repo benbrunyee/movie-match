@@ -66,11 +66,11 @@ function default_1(event) {
                         throw new Error("Could not find movie reactions for partner and/or user");
                     }
                     partnerLikeReations = partnerReactions.filter(function (entry) { return (entry === null || entry === void 0 ? void 0 : entry.reaction) === API_1.Reaction.LIKE; });
-                    console.debug("User movie like reactions: " + JSON.stringify(userReactions, null, 2));
+                    console.debug("User movie reactions: " + JSON.stringify(userReactions, null, 2));
                     console.debug("Partner movie like reactions: " + JSON.stringify(partnerLikeReations, null, 2));
                     userMovieIds = getMovieIds(userReactions);
                     partnerMovieIds = getMovieIds(partnerLikeReations);
-                    console.debug("User movie ID like reactions: " + JSON.stringify(userMovieIds, null, 2));
+                    console.debug("User movie ID reactions: " + JSON.stringify(userMovieIds, null, 2));
                     console.debug("Partner movie ID like reactions: " + JSON.stringify(partnerMovieIds, null, 2));
                     unmatchedMovieIdentifiers = removeOverlap(partnerMovieIds, userMovieIds);
                     console.debug("Result after removing overlap: " + JSON.stringify(unmatchedMovieIdentifiers, null, 2));

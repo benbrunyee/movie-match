@@ -2,8 +2,8 @@ import { GraphQLResult } from "@aws-amplify/api-graphql";
 import { Amplify } from "aws-amplify";
 import { brand } from "expo-device";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
-import { Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { UserContext, UserContextObject } from "./context/UserContext";
 import useCachedResources from "./hooks/useCachedResources";
@@ -21,7 +21,7 @@ import configureUser from "./utils/configureUser";
 
 Amplify.configure(awsconfig);
 
-export default function App() {
+const App = () => {
   const [userLoading, setUserLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const cachedLoadingComplete = useCachedResources();
@@ -40,7 +40,7 @@ export default function App() {
         const contextObj = await configureUser();
         setUserContext(contextObj);
       } catch (e) {
-        console.error(e);
+        console.warn(e);
       }
     }
 
@@ -56,7 +56,7 @@ export default function App() {
   }, [userLoading, cachedLoadingComplete]);
 
   if (isLoading) {
-    return null;
+    return <View></View>;
   } else {
     return (
       <UserContext.Provider value={[userContext, setUserContext]}>
@@ -67,7 +67,7 @@ export default function App() {
       </UserContext.Provider>
     );
   }
-}
+};
 
 function onSubscriptionMessage({
   value,
@@ -116,3 +116,5 @@ async function acceptConnectionRequest(id: string) {
     console.error(e);
   }
 }
+
+export default App;

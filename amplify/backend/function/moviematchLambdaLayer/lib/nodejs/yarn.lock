@@ -963,11 +963,6 @@
   resolved "https://registry.yarnpkg.com/@types/async/-/async-2.0.50.tgz#117540e026d64e1846093abbd5adc7e27fda7bcb"
   integrity sha512-VMhZMMQgV1zsR+lX/0IBfAk+8Eb7dPVMWiQGFAt3qjo5x7Ml6b77jUo0e1C3ToD+XRDXqtrfw+6AB0uUsPEr3Q==
 
-"@types/aws-lambda@^8.10.92":
-  version "8.10.93"
-  resolved "https://registry.yarnpkg.com/@types/aws-lambda/-/aws-lambda-8.10.93.tgz#3e2c80894122477040aabf29b7320556f5702a76"
-  integrity sha512-Vsyi9ogDAY3REZDjYnXMRJJa62SDvxHXxJI5nGDQdZW058dDE+av/anynN2rLKbCKXDRNw3D/sQmqxVflZFi4A==
-
 "@types/node@>=8.1.0":
   version "17.0.24"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.24.tgz#20ba1bf69c1b4ab405c7a01e950c4f446b05029f"
@@ -1160,7 +1155,7 @@ aws-appsync-subscription-link@^2.2.7:
     debug "2.6.9"
     url "^0.11.0"
 
-aws-appsync@^4.1.4:
+aws-appsync@^4.1.5:
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/aws-appsync/-/aws-appsync-4.1.5.tgz#fea1d2c5161e535ef069d689de6ff9e10848deca"
   integrity sha512-tkg7GQi/F7ZZawwzccn8dMgNu12mSwqDBQBd4oz+mi7zsnxo2Xenccd/aNsund7diKhrWb+M2VM3npY47eTvZA==

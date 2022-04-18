@@ -48,7 +48,7 @@ export default async function (event: EventInterface) {
   );
 
   console.debug(
-    `User movie like reactions: ${JSON.stringify(userReactions, null, 2)}`
+    `User movie reactions: ${JSON.stringify(userReactions, null, 2)}`
   );
   console.debug(
     `Partner movie like reactions: ${JSON.stringify(
@@ -63,7 +63,7 @@ export default async function (event: EventInterface) {
   const partnerMovieIds = getMovieIds(partnerLikeReations as MovieReaction[]);
 
   console.debug(
-    `User movie ID like reactions: ${JSON.stringify(userMovieIds, null, 2)}`
+    `User movie ID reactions: ${JSON.stringify(userMovieIds, null, 2)}`
   );
   console.debug(
     `Partner movie ID like reactions: ${JSON.stringify(

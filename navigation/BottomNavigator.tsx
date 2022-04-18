@@ -1,9 +1,8 @@
 import { FontAwesome } from "@expo/vector-icons";
-import AsyncStorageLib from "@react-native-async-storage/async-storage";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Auth } from "aws-amplify";
 import { brand } from "expo-device";
-import { Alert, Pressable } from "react-native";
+import { Alert, AsyncStorage, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 import { useUserContext } from "../context/UserContext";
 import useColorScheme from "../hooks/useColorScheme";
@@ -36,7 +35,9 @@ function BottomTabNavigator() {
         component={DiscoverScreen}
         options={{
           title: "Discover",
-          tabBarIcon: ({ color }) => <TabBarIcon name="circle-o-notch" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="circle-o-notch" color={color} />
+          ),
         }}
       />
       <BottomTab.Screen
@@ -44,7 +45,9 @@ function BottomTabNavigator() {
         component={MatchesScreen}
         options={{
           title: "Matches",
-          tabBarIcon: ({ color }) => <TabBarIcon name="circle-o" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="circle-o" color={color} />
+          ),
         }}
       />
       <BottomTab.Screen
@@ -61,7 +64,7 @@ function BottomTabNavigator() {
                     .catch(() => {})
                     .finally(() => {
                       Auth.signOut().then(async () => {
-                        await AsyncStorageLib.clear();
+                        await AsyncStorage.clear();
 
                         setUserContext({
                           email: "",

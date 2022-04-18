@@ -1,7 +1,6 @@
-import AsyncStorageLib from "@react-native-async-storage/async-storage";
 import { Auth } from "aws-amplify";
 import React, { useState } from "react";
-import { StyleSheet } from "react-native";
+import { AsyncStorage, StyleSheet } from "react-native";
 import { Box, Button, Text, TextInput } from "../components/Themed";
 import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
@@ -50,13 +49,14 @@ async function submitCode(code: string) {
     throw new Error("Verification code cannot be empty");
   }
 
-  const storage_username = await AsyncStorageLib.getItem("@signUpUsername");
+  const storage_username = await AsyncStorage.getItem("@signUpUsername");
 
   if (!storage_username) {
     throw new Error("Could not find username in storage");
   }
 
   await Auth.confirmSignUp(storage_username, code);
+  await AsyncStorage.removeItem("@signUpUsername");
 }
 
 const style = StyleSheet.create({

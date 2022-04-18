@@ -116,7 +116,9 @@ function addMoviesToDb(discoveredMovies) {
                                 movieGenres.push(API_1.Genre[genreName]);
                             }
                         }
-                        return __assign({ identifier: movie.id, genres: movieGenres, description: movie.overview, name: movie.title, rating: movie.vote_average, ratingCount: movie.vote_count }, (movie.poster_path && { coverUri: movie.poster_path }));
+                        return __assign(__assign({ identifier: movie.id, genres: movieGenres, description: movie.overview, name: movie.title, rating: movie.vote_average, ratingCount: movie.vote_count }, (movie.release_date && {
+                            releaseYear: new Date(movie.release_date).getFullYear()
+                        })), (movie.poster_path && { coverUri: movie.poster_path }));
                     });
                     promises = [];
                     _loop_1 = function (movie) {

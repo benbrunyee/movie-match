@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useCallback, useEffect, useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Image, ImageBackground, StyleSheet, View } from "react-native";
 import { Box, Button, Container, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
@@ -14,7 +14,8 @@ import {
   GetUserQueryVariables,
   ListPartnerPendingMovieMatchesQuery,
   Movie as MovieApi,
-  Reaction
+  Reaction,
+  SearchOptions
 } from "../src/API";
 import { createMovieReaction } from "../src/graphql/mutations";
 import {
@@ -37,11 +38,13 @@ export default function DiscoverScreen({
   navigation,
 }: RootTabScreenProps<"Discover">) {
   const [userContext] = useUserContext();
+  const firstLoad = useRef(true);
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [index, setIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [searchOptions, setSearchOptions] = useState<SearchOptions | {}>({});
 
   // Use a random page
   const [page, setPage] = useState(generateRandomNumber(MIN_PAGE, MAX_PAGE));
@@ -76,9 +79,11 @@ export default function DiscoverScreen({
 
       const searchOptions = userData.data.getUser.searchOptions;
 
+      setSearchOptions(searchOptions || {});
+
       const discoveredMovies = await discoverMovies({
         page,
-        ...searchOptions,
+        ...(searchOptions || {}),
       });
 
       // Add the discovered movies to the end
@@ -111,11 +116,9 @@ export default function DiscoverScreen({
 
   // This will load movies on mount as well
   useEffect(() => {
-    // Load more movies if we are at the end
-    if (index === movies.length) {
-      if (!isLoading) {
-        setIsLoading(true);
-      }
+    if (firstLoad.current) {
+      // No longer first load
+      firstLoad.current = false;
 
       findMovies().then(() => {
         if (isLoading) {
@@ -123,7 +126,20 @@ export default function DiscoverScreen({
         }
       });
     }
-  }, [index]);
+
+    // Load more movies if we are near the end or first load
+    // TODO: This won't load again if the results we get back are less than 2 items
+    if (index === movies.length - 2) {
+      discoverMovies({ page, ...searchOptions }).then((movies) => {
+        // Add the movies to the end of the list
+        // We do not reload the partner movies here
+        setMovies((cur) => [...cur, ...movies]);
+      });
+
+      // Use another random number
+      setPage(generateRandomNumber(MIN_PAGE, MAX_PAGE));
+    }
+  }, [index, searchOptions]);
 
   if (isLoading) {
     return (
@@ -141,73 +157,72 @@ export default function DiscoverScreen({
     );
   }
 
+  const selectedMovie = movies[index];
+
   return (
-    <Box style={styles.container}>
-      <Box>
-        {(() => {
-          const selectedMovie = movies[index];
-
-          if (!selectedMovie) {
-            return;
-          }
-
-          return (
-            <Container style={styles.movieContainer}>
-              {selectedMovie.coverUri ? (
-                <Image
-                  source={{
-                    uri: IMAGE_PREFIX + selectedMovie.coverUri,
-                    height: 330,
-                    width: 220,
-                  }}
-                />
+    <ImageBackground
+      style={styles.container}
+      source={require("../assets/images/movie.jpg")}
+    >
+      {selectedMovie ? (
+        <Container style={styles.movieContainer}>
+          {selectedMovie.coverUri ? (
+            <Image
+              source={{
+                uri: IMAGE_PREFIX + selectedMovie.coverUri,
+                height: 330,
+                width: 220,
+              }}
+            />
+          ) : null}
+          <Text variant="title" style={styles.movieTitle}>
+            {selectedMovie.name}
+          </Text>
+          {selectedMovie.releaseYear ? (
+            <Text variant="caption" style={styles.movieYear}>
+              Released: {selectedMovie.releaseYear}
+            </Text>
+          ) : null}
+          {selectedMovie.rating ? (
+            <View style={styles.rating}>
+              <FontAwesome name="star" size={10} style={styles.star} />
+              <Text variant="smallCaption">{selectedMovie.rating}/10</Text>
+              {selectedMovie.ratingCount ? (
+                <Text variant="smallCaption">
+                  {` - ${selectedMovie.ratingCount}`}
+                </Text>
               ) : null}
-              <Text variant="subtitle" style={styles.movieTitle}>
-                {selectedMovie.name}
-              </Text>
-              {selectedMovie.rating ? (
-                <View style={styles.rating}>
-                  <FontAwesome name="star" size={10} style={styles.star} />
-                  <Text variant="smallCaption">{selectedMovie.rating}/10</Text>
-                  {selectedMovie.ratingCount ? (
-                    <Text variant="smallCaption">
-                      {` - ${selectedMovie.ratingCount}`}
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-              <Text
-                numberOfLines={2}
-                ellipsizeMode="tail"
-                variant="caption"
-                style={styles.movieDescription}
-              >
-                {selectedMovie.description}
-              </Text>
-              <View style={styles.buttonControls}>
-                <Button
-                  onPress={() => {
-                    dislikeMovie(selectedMovie);
-                  }}
-                  style={{ backgroundColor: "#DC143C" }}
-                >
-                  <Text>No</Text>
-                </Button>
-                <Button
-                  onPress={() => {
-                    likeMovie(selectedMovie);
-                  }}
-                  style={{ backgroundColor: "#7FFFD4" }}
-                >
-                  <Text>Yes</Text>
-                </Button>
-              </View>
-            </Container>
-          );
-        })()}
-      </Box>
-      {/* <EditScreenInfo path="/screens/TabOneScreen.tsx" /> */}
-    </Box>
+            </View>
+          ) : null}
+          <Text
+            numberOfLines={2}
+            ellipsizeMode="tail"
+            variant="caption"
+            style={styles.movieDescription}
+          >
+            {selectedMovie.description}
+          </Text>
+          <View style={styles.buttonControls}>
+            <Button
+              onPress={() => {
+                dislikeMovie(selectedMovie);
+              }}
+              style={{ backgroundColor: "#DC143C" }}
+            >
+              <Text>No</Text>
+            </Button>
+            <Button
+              onPress={() => {
+                likeMovie(selectedMovie);
+              }}
+              style={{ backgroundColor: "#7FFFD4" }}
+            >
+              <Text>Yes</Text>
+            </Button>
+          </View>
+        </Container>
+      ) : null}
+    </ImageBackground>
   );
 }
 
@@ -245,7 +260,6 @@ async function addReaction(
   });
 }
 
-// TODO: First load movies that the connected partner has liked
 async function discoverMovies(
   searchOptions?: DiscoverMoviesInput
 ): Promise<Movie[]> {
@@ -285,6 +299,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
     margin: Styling.spacingSmall,
     maxWidth: 220,
+  },
+  movieYear: {
+    textAlign: "center",
+    marginBottom: Styling.spacingSmall,
   },
   buttonControls: {
     flexDirection: "row",

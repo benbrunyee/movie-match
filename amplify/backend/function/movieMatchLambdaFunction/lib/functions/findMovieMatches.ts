@@ -5,11 +5,7 @@ import {
   UpdateUserMutationVariables
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
-import {
-  getMovieByIds,
-  getUser,
-  removeDuplicates
-} from "../lib/common";
+import { getMovieByIds, getUser, removeDuplicates } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 import { updateUser } from "../lib/graphql/mutations";
 
@@ -47,9 +43,28 @@ export default async (event: EventInterface) => {
     return [];
   }
 
+  console.debug(
+    `User movie reactions: ${JSON.stringify(
+      user.movieReactions?.items || [],
+      null,
+      2
+    )}`
+  );
+  console.debug(
+    `Partner movie reactions: ${JSON.stringify(
+      connectedUserObj.movieReactions?.items || [],
+      null,
+      2
+    )}`
+  );
+
   const movieMatches = findMovieMatches(
     user.movieReactions.items as MovieReaction[],
     connectedUserObj.movieReactions.items as MovieReaction[]
+  );
+
+  console.debug(
+    `Found movie matches: ${JSON.stringify(movieMatches, null, 2)}`
   );
 
   const allMatchIds = removeDuplicates(getMovieIdsFromReactions(movieMatches));
@@ -82,7 +97,6 @@ export default async (event: EventInterface) => {
   return { allMatches: allMovies, newMatches: newMovies };
 };
 
-// TODO: Fix
 function getUniqueNewMatches(
   currentMovieMatches: string[],
   newMovieMatches: string[]
@@ -106,7 +120,7 @@ async function updateUserMovieMatches(id: string, movieIds: string[]) {
   );
 }
 
-function findMovieMatches(arr1: MovieReaction[], arr2: MovieReaction[]) {
+function findMovieMatches(arr1: MovieReaction[], arr2: MovieReaction[]): MovieReaction[] {
   const likeFilter = (movieReaction: MovieReaction) =>
     movieReaction.reaction === Reaction.LIKE;
 
@@ -114,24 +128,27 @@ function findMovieMatches(arr1: MovieReaction[], arr2: MovieReaction[]) {
   arr1 = arr1.filter(likeFilter);
   arr2 = arr2.filter(likeFilter);
 
+  console.debug(`Liked movies for array 1: ${JSON.stringify(arr1, null, 2)}`);
+  console.debug(`Liked movies for array 2: ${JSON.stringify(arr2, null, 2)}`);
+
   // Get the largest & smallest out of the 2
   const [largestArr, smallestArr] =
     arr1.length >= arr2.length ? [arr1, arr2] : [arr2, arr1];
 
-  const match = (
-    movieReaction1: MovieReaction,
-    movieReaction2: MovieReaction
-  ) => movieReaction1.movie.id === movieReaction2.movie.id;
-
-  // Loop through the biggest array to reduce performance impact (if it were switched around)
-  const matches = largestArr.reduce<MovieReaction[]>((r, movieReaction) => {
-    // Check if it is in the smaller array
-    if (smallestArr.some((reaction) => match(reaction, movieReaction))) {
-      r.push(movieReaction);
-    }
-
+  // Convert the smallest array into a key-value object
+  const smallObjMap = smallestArr.reduce<{ [key: string ]: MovieReaction}>((r, reaction) => {
+    r[reaction.movie.id] = reaction;
     return r;
-  }, []);
+  }, {});
+
+  let matches: MovieReaction[] = [];
+
+  for (let reaction of largestArr) {
+    // Add to the match array if it exist in the larger array
+    if (smallObjMap[reaction.movie.id]) {
+      matches.push(reaction);
+    }
+  }
 
   return matches;
 }

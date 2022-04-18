@@ -1,15 +1,7 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Auth } from "aws-amplify";
 import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import {
-  Box,
-  Button,
-  Container,
-  Tab,
-  Text,
-  TextInput
-} from "../components/Themed";
+import { AsyncStorage, ImageBackground, StyleSheet, View } from "react-native";
+import { Button, Container, Tab, Text, TextInput } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
@@ -51,9 +43,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
           const userData = await configureUser();
           setUserContext(userData);
         } catch (e) {
-          console.error(e);
-          setError("Failed to log in");
-          return;
+          throw new Error("Failed to login");
         }
       } else if (innerType === "SIGNUP") {
         if (form.password !== form.repeatPassword) {
@@ -69,15 +59,13 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
           // Store the email in storage
           await AsyncStorage.setItem("@signUpUsername", form.email);
         } catch (e) {
-          console.error(e);
-          setError("Failed to sign up");
-          return;
+          throw new Error("Failed to sign up");
         }
 
         navigation.navigate("Verification");
       } else {
         console.error(`Login type not configured: ${innerType}`);
-        return;
+        throw new Error("Failed to proceed");
       }
     },
     [type, form]
@@ -88,6 +76,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
       setIsSubmitting(true);
       handleSubmit(providedType).catch((e) => {
         console.error(e);
+        setError(e.message || "Failed to proceed");
         setIsSubmitting(false);
       });
     },
@@ -95,7 +84,10 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
   );
 
   return (
-    <Box style={styles.pageContainer}>
+    <ImageBackground
+      style={styles.pageContainer}
+      source={require("../assets/images/movie.jpg")}
+    >
       <Container style={styles.container}>
         <View>
           <View style={styles.switchTabContainer}>
@@ -163,7 +155,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
                 }
               />
             ) : null}
-            {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
+            {error ? <Text style={styles.errorMessage}>{error}</Text> : null}
             <View style={styles.submitBtnContainer}>
               <Button
                 disabled={isSubmitting}
@@ -176,7 +168,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
           </View>
         </View>
       </Container>
-    </Box>
+    </ImageBackground>
   );
 };
 
@@ -216,6 +208,10 @@ const styles = StyleSheet.create({
   },
   submitBtn: {
     marginTop: Styling.spacingMedium,
+  },
+  errorMessage: {
+    color: "red",
+    textAlign: "center",
   },
 });
 

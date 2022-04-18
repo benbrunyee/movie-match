@@ -37,6 +37,7 @@ export const createUser = /* GraphQL */ `
             description
             genres
             trailerUri
+            releaseYear
             updatedAt
             owner
           }
@@ -98,6 +99,7 @@ export const updateUser = /* GraphQL */ `
             description
             genres
             trailerUri
+            releaseYear
             updatedAt
             owner
           }
@@ -159,6 +161,7 @@ export const deleteUser = /* GraphQL */ `
             description
             genres
             trailerUri
+            releaseYear
             updatedAt
             owner
           }
@@ -249,6 +252,7 @@ export const createMovie = /* GraphQL */ `
       description
       genres
       trailerUri
+      releaseYear
       updatedAt
       owner
     }
@@ -270,6 +274,7 @@ export const updateMovie = /* GraphQL */ `
       description
       genres
       trailerUri
+      releaseYear
       updatedAt
       owner
     }
@@ -291,6 +296,7 @@ export const deleteMovie = /* GraphQL */ `
       description
       genres
       trailerUri
+      releaseYear
       updatedAt
       owner
     }
@@ -314,6 +320,7 @@ export const createMovieReaction = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -344,6 +351,7 @@ export const updateMovieReaction = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
@@ -374,6 +382,7 @@ export const deleteMovieReaction = /* GraphQL */ `
         description
         genres
         trailerUri
+        releaseYear
         updatedAt
         owner
       }
