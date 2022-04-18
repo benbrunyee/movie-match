@@ -32,6 +32,7 @@ const App = () => {
     sub: "",
     signedIn: false,
     connectedPartner: "",
+    userDbObj: {},
   });
 
   useEffect(() => {

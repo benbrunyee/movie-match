@@ -1,10 +1,12 @@
 import { createContext, useContext } from "react";
+import { User } from "../src/API";
 
 export interface UserContextObject {
   sub: string;
   email: string;
   signedIn: boolean;
   connectedPartner: string;
+  userDbObj: Omit<User, "__typename"> | {}
 }
 
 export const UserContext = createContext<
@@ -15,6 +17,7 @@ export const UserContext = createContext<
     sub: "",
     signedIn: false,
     connectedPartner: "",
+    userDbObj: {}
   },
   () => {},
 ]);
