@@ -10,6 +10,7 @@ import {
   TextInput as DefaultTextInput,
   View as DefaultView
 } from "react-native";
+import * as DefaultSwiper from "react-native-deck-swiper";
 import Colors from "../constants/Colors";
 import { sizes } from "../constants/Font";
 import Styling from "../constants/Styling";
@@ -48,6 +49,7 @@ export type TabProps = ThemeProps & { selected?: boolean } & PressableProps;
 export type ContainerProps = ThemeProps & DefaultView["props"];
 export type MenuItemProps = ThemeProps &
   PressableProps & { topBorder?: boolean; bottomBorder?: boolean };
+export type SwiperProps<T> = DefaultSwiper.SwiperProps<T> & ThemeProps;
 
 export function Text(props: TextProps) {
   const { disabled, variant, style, lightColor, darkColor, ...otherProps } =
@@ -195,5 +197,20 @@ export function MenuItem(props: MenuItemProps) {
       ]}
       {...otherProps}
     />
+  );
+}
+
+export function Swiper<T>({
+  lightColor,
+  darkColor,
+  ...otherProps
+}: SwiperProps<T>) {
+  const backgroundColor = useThemeColor(
+    { light: lightColor, dark: darkColor },
+    "background"
+  );
+
+  return (
+    <DefaultSwiper.default backgroundColor={backgroundColor} {...otherProps} />
   );
 }

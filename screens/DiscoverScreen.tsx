@@ -1,7 +1,6 @@
-import { FontAwesome } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
-import { Box, Button, Container, Text } from "../components/Themed";
+import { StyleSheet, View } from "react-native";
+import { Box, Container, Swiper, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import {
@@ -14,8 +13,7 @@ import {
   GetUserQueryVariables,
   ListPartnerPendingMovieMatchesQuery,
   Movie as MovieApi,
-  Reaction,
-  SearchOptions
+  Reaction
 } from "../src/API";
 import { createMovieReaction } from "../src/graphql/mutations";
 import {
@@ -25,7 +23,6 @@ import {
 } from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
-import { IMAGE_PREFIX } from "../utils/movieApi";
 
 const MIN_PAGE = 1;
 const MAX_PAGE = 500;
@@ -41,10 +38,8 @@ export default function DiscoverScreen({
   const firstLoad = useRef(true);
 
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [index, setIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchOptions, setSearchOptions] = useState<SearchOptions | {}>({});
 
   // Use a random page
   const [page, setPage] = useState(generateRandomNumber(MIN_PAGE, MAX_PAGE));
@@ -78,9 +73,6 @@ export default function DiscoverScreen({
       setMovies(partnerMovies);
 
       const searchOptions = userData.data.getUser.searchOptions;
-
-      setSearchOptions(searchOptions || {});
-
       const discoveredMovies = await discoverMovies({
         page,
         ...(searchOptions || {}),
@@ -96,9 +88,6 @@ export default function DiscoverScreen({
 
     // Use another random number
     setPage(generateRandomNumber(MIN_PAGE, MAX_PAGE));
-
-    // Reset the index
-    setIndex(0);
   }, [page]);
 
   const likeMovie = useCallback((movie: Movie) => {
@@ -106,12 +95,10 @@ export default function DiscoverScreen({
     if (movie.isPartnerMovie) {
       alert("You found a match!");
     }
-    setIndex((cur) => cur + 1);
   }, []);
 
   const dislikeMovie = useCallback((movie: Movie) => {
     addReaction(userContext.sub, movie.id, Reaction.DISLIKE);
-    setIndex((cur) => cur + 1);
   }, []);
 
   // This will load movies on mount as well
@@ -121,25 +108,10 @@ export default function DiscoverScreen({
       firstLoad.current = false;
 
       findMovies().then(() => {
-        if (isLoading) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       });
     }
-
-    // Load more movies if we are near the end or first load
-    // TODO: This won't load again if the results we get back are less than 2 items
-    if (index === movies.length - 2) {
-      discoverMovies({ page, ...searchOptions }).then((movies) => {
-        // Add the movies to the end of the list
-        // We do not reload the partner movies here
-        setMovies((cur) => [...cur, ...movies]);
-      });
-
-      // Use another random number
-      setPage(generateRandomNumber(MIN_PAGE, MAX_PAGE));
-    }
-  }, [index, searchOptions]);
+  }, []);
 
   if (isLoading) {
     return (
@@ -157,68 +129,48 @@ export default function DiscoverScreen({
     );
   }
 
-  const selectedMovie = movies[index];
-
   return (
     <View style={styles.container}>
-      {selectedMovie ? (
-        <Container style={styles.movieContainer}>
-          {selectedMovie.coverUri ? (
-            <Image
-              source={{
-                uri: IMAGE_PREFIX + selectedMovie.coverUri,
-                height: 330,
-                width: 220,
-              }}
-            />
-          ) : null}
-          <Text variant="title" style={styles.movieTitle}>
-            {selectedMovie.name}
-          </Text>
-          {selectedMovie.releaseYear ? (
-            <Text variant="caption" style={styles.movieYear}>
-              Released: {selectedMovie.releaseYear}
-            </Text>
-          ) : null}
-          {selectedMovie.rating ? (
-            <View style={styles.rating}>
-              <FontAwesome name="star" size={10} style={styles.star} />
-              <Text variant="smallCaption">{selectedMovie.rating}/10</Text>
-              {selectedMovie.ratingCount ? (
-                <Text variant="smallCaption">
-                  {` - ${selectedMovie.ratingCount}`}
-                </Text>
-              ) : null}
-            </View>
-          ) : null}
-          <Text
-            numberOfLines={2}
-            ellipsizeMode="tail"
-            variant="caption"
-            style={styles.movieDescription}
-          >
-            {selectedMovie.description}
-          </Text>
-          <View style={styles.buttonControls}>
-            <Button
-              onPress={() => {
-                dislikeMovie(selectedMovie);
-              }}
-              style={{ backgroundColor: "#DC143C" }}
-            >
-              <Text>No</Text>
-            </Button>
-            <Button
-              onPress={() => {
-                likeMovie(selectedMovie);
-              }}
-              style={{ backgroundColor: "#7FFFD4" }}
-            >
-              <Text>Yes</Text>
-            </Button>
-          </View>
-        </Container>
-      ) : null}
+      <Swiper
+        cards={movies}
+        renderCard={(movie) => {
+          return (
+            <Container style={styles.movieContainer}>
+              <Text variant="title" style={styles.movieTitle}>
+                {movie.name}
+              </Text>
+            </Container>
+          );
+        }}
+        onSwiped={(swipeI) => {
+          console.log(swipeI);
+        }}
+        onSwipedLeft={(swipeI) => {
+          const movie = movies[swipeI];
+          if (movie) {
+            dislikeMovie(movie);
+          } else {
+            console.error("Could not find movie based on swipe index");
+          }
+        }}
+        onSwipedRight={(swipeI) => {
+          const movie = movies[swipeI];
+          if (movie) {
+            likeMovie(movie);
+          } else {
+            console.error("Could not find movie based on swipe index");
+          }
+        }}
+        onSwipedAll={() => {
+          setIsLoading(true);
+          findMovies().then(() => {
+            setIsLoading(false);
+          });
+        }}
+        stackSize={3}
+        disableTopSwipe
+        disableBottomSwipe
+      />
     </View>
   );
 }
@@ -279,15 +231,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
   },
   movieContainer: {
     padding: Styling.spacingLarge,

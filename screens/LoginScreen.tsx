@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Auth } from "aws-amplify";
 import React, { useCallback, useEffect, useState } from "react";
-import { AsyncStorage, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Button, Container, Tab, Text, TextInput } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";

@@ -1,8 +1,9 @@
 import { FontAwesome } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Auth } from "aws-amplify";
 import { brand } from "expo-device";
-import { Alert, AsyncStorage, Pressable } from "react-native";
+import { Alert, Pressable } from "react-native";
 import Colors from "../constants/Colors";
 import { useUserContext } from "../context/UserContext";
 import useColorScheme from "../hooks/useColorScheme";
@@ -71,6 +72,7 @@ function BottomTabNavigator() {
                           sub: "",
                           signedIn: false,
                           connectedPartner: "",
+                          userDbObj: {},
                         });
                       });
                     });

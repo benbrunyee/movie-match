@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Auth } from "aws-amplify";
 import React, { useState } from "react";
-import { AsyncStorage, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { Box, Button, Text, TextInput } from "../components/Themed";
 import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
