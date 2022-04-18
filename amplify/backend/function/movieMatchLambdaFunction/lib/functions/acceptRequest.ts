@@ -1,5 +1,6 @@
 import {
   AcceptRequestInput,
+  AcceptRequestOutput,
   ConnectionRequest,
   DeleteConnectionRequestMutation,
   DeleteConnectionRequestMutationVariables,
@@ -20,21 +21,39 @@ export interface EventInterface extends EventIdentity {
   };
 }
 
-export default async (event: EventInterface) => {
+export default async (
+  event: EventInterface
+): Promise<Omit<AcceptRequestOutput, "__typename">> => {
   const requestId = event.arguments.input.requestId;
 
   console.debug(`Connection Request ID: ${requestId}`);
 
+  let request: ConnectionRequest;
+
   // Get the request
-  const request = await getConnectionRequest(requestId);
+  try {
+    request = await getConnectionRequest(requestId);
+  } catch (e) {
+    return {
+      status: false,
+      message: e.message || "Failed to get connection request",
+    };
+  }
 
   // Just for TS validation
   if (!request.sender) {
-    throw new Error("Could not find sender of the request");
+    return { status: false, message: "Could not find sender of the request" };
   }
 
   // Validation checks
-  validateRequest(event, request);
+  try {
+    validateRequest(event, request);
+  } catch (e) {
+    return {
+      status: false,
+      message: e.message || "Failed to validate request",
+    };
+  }
 
   // Accept the request
   await acceptRequest(requestId);

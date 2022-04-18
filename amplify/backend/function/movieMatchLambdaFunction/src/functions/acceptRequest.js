@@ -41,29 +41,48 @@ var common_1 = require("../lib/common");
 var mutations_1 = require("../lib/graphql/mutations");
 var queries_1 = require("../lib/graphql/queries");
 exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestId, request;
+    var requestId, request, e_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 requestId = event.arguments.input.requestId;
                 console.debug("Connection Request ID: " + requestId);
-                return [4, common_1.getConnectionRequest(requestId)];
+                _a.label = 1;
             case 1:
-                request = _a.sent();
-                if (!request.sender) {
-                    throw new Error("Could not find sender of the request");
-                }
-                validateRequest(event, request);
-                return [4, common_1.acceptRequest(requestId)];
+                _a.trys.push([1, 3, , 4]);
+                return [4, common_1.getConnectionRequest(requestId)];
             case 2:
+                request = _a.sent();
+                return [3, 4];
+            case 3:
+                e_1 = _a.sent();
+                return [2, {
+                        status: false,
+                        message: e_1.message || "Failed to get connection request"
+                    }];
+            case 4:
+                if (!request.sender) {
+                    return [2, { status: false, message: "Could not find sender of the request" }];
+                }
+                try {
+                    validateRequest(event, request);
+                }
+                catch (e) {
+                    return [2, {
+                            status: false,
+                            message: e.message || "Failed to validate request"
+                        }];
+                }
+                return [4, common_1.acceptRequest(requestId)];
+            case 5:
                 _a.sent();
                 console.debug("Successfully accepted connection request");
                 return [4, clearPartners([request.sender, request.receiver])];
-            case 3:
+            case 6:
                 _a.sent();
                 console.debug("Successfully cleared partners");
                 return [4, updateUsers(request.sender, request.receiver)];
-            case 4:
+            case 7:
                 _a.sent();
                 return [2, {
                         status: true

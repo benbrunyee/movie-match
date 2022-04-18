@@ -9,6 +9,7 @@ import {
   ListMoviesQuery,
   ListMoviesQueryVariables,
   Movie,
+  MovieApiOutput,
   MovieByIdentifierQuery,
   MovieByIdentifierQueryVariables,
   UpdateConnectionRequestMutation,
@@ -17,7 +18,9 @@ import {
 import callGraphQl from "./appSync";
 import { updateConnectionRequest } from "./graphql/mutations";
 import {
-  getConnectionRequest as getGraphConnectionRequest, getMovie as getMovieApi, getUser as getGraphUser,
+  getConnectionRequest as getGraphConnectionRequest,
+  getMovie as getMovieApi,
+  getUser as getGraphUser,
   listMovies as listGraphMovies,
   movieByIdentifier
 } from "./graphql/queries";
@@ -54,7 +57,7 @@ export async function getMovieByIdentifier(
 
 export async function getMoviesByIdentifier(
   identifiers: number[]
-): Promise<Movie[] | void> {
+) {
   const promises: Promise<Movie | void>[] = [];
 
   for (let identifier of identifiers) {
@@ -90,9 +93,9 @@ export async function listMovies(vars?: ListMoviesQueryVariables) {
 export async function getApiMovie(id: number) {
   console.debug(`Attempting to get movie: ${id} from the movie api`);
 
-  return await (
+  return (await (
     await fetch(`${API_URL}/movie/${id}?api_key=${API_KEY}`)
-  ).json();
+  ).json()) as MovieApiOutput;
 }
 
 export async function getMovie(id: string) {

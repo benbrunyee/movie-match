@@ -5,7 +5,8 @@ import {
   DiscoverMoviesInput,
   Genre,
   Movie,
-  MovieApiOutput
+  MovieApiOutput,
+  QueryMovieList
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
 import { API_KEY, API_URL, getMovieByIdentifier } from "../lib/common";
@@ -47,7 +48,9 @@ const URL_PARAMS: { [k in keyof DiscoverMoviesInput]: string } = {
 
 let apiGenres: MovieGenreApi | undefined;
 
-export default async function (event: EventInterface) {
+export default async function (
+  event: EventInterface
+): Promise<Omit<QueryMovieList, "__typename">> {
   const input = event.arguments?.input;
 
   let urlParams: string | undefined;

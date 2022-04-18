@@ -1,4 +1,5 @@
 import {
+  FindMovieMatchesList,
   MovieReaction,
   Reaction,
   UpdateUserMutation,
@@ -11,7 +12,9 @@ import { updateUser } from "../lib/graphql/mutations";
 
 export interface EventInterface extends EventIdentity {}
 
-export default async (event: EventInterface) => {
+export default async (
+  event: EventInterface
+): Promise<Omit<FindMovieMatchesList, "__typename">> => {
   const requestee = event.identity.username;
 
   if (!requestee) {
@@ -27,9 +30,11 @@ export default async (event: EventInterface) => {
   console.debug(`Got connected partner user ID: ${connectedUserId}`);
 
   if (!connectedUserId) {
-    throw new Error(
+    console.warn(
       `Could not find connected user for user database obj: ${requestee}`
     );
+    console.warn("Returning an empty array");
+    return { allMatches: [], newMatches: [] };
   }
 
   const connectedUserObj = await getUser(connectedUserId);
@@ -40,7 +45,7 @@ export default async (event: EventInterface) => {
   if (!(user.movieReactions && connectedUserObj.movieReactions)) {
     console.warn("Movie reactions for one or both user's are not present");
     console.warn("Returning an empty array");
-    return [];
+    return { allMatches: [], newMatches: [] };
   }
 
   console.debug(
@@ -120,7 +125,10 @@ async function updateUserMovieMatches(id: string, movieIds: string[]) {
   );
 }
 
-function findMovieMatches(arr1: MovieReaction[], arr2: MovieReaction[]): MovieReaction[] {
+function findMovieMatches(
+  arr1: MovieReaction[],
+  arr2: MovieReaction[]
+): MovieReaction[] {
   const likeFilter = (movieReaction: MovieReaction) =>
     movieReaction.reaction === Reaction.LIKE;
 
@@ -136,10 +144,13 @@ function findMovieMatches(arr1: MovieReaction[], arr2: MovieReaction[]): MovieRe
     arr1.length >= arr2.length ? [arr1, arr2] : [arr2, arr1];
 
   // Convert the smallest array into a key-value object
-  const smallObjMap = smallestArr.reduce<{ [key: string ]: MovieReaction}>((r, reaction) => {
-    r[reaction.movie.id] = reaction;
-    return r;
-  }, {});
+  const smallObjMap = smallestArr.reduce<{ [key: string]: MovieReaction }>(
+    (r, reaction) => {
+      r[reaction.movie.id] = reaction;
+      return r;
+    },
+    {}
+  );
 
   let matches: MovieReaction[] = [];
 

@@ -121,7 +121,7 @@ function getApiMovie(id) {
                     console.debug("Attempting to get movie: " + id + " from the movie api");
                     return [4, fetch(exports.API_URL + "/movie/" + id + "?api_key=" + exports.API_KEY)];
                 case 1: return [4, (_a.sent()).json()];
-                case 2: return [2, _a.sent()];
+                case 2: return [2, (_a.sent())];
             }
         });
     });

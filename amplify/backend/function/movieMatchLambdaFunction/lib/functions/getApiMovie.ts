@@ -1,3 +1,4 @@
+import { MovieApiOutput } from "../lib/API";
 import { getApiMovie } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 
@@ -9,7 +10,7 @@ export interface EventInterface extends EventIdentity {
   };
 }
 
-export default async function (event: EventInterface) {
+export default async function (event: EventInterface): Promise<Omit<MovieApiOutput, "__typename">> {
   const movieId = event.arguments?.input?.id;
 
   if (!movieId) {

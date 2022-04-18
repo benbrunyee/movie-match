@@ -1,4 +1,4 @@
-import { MovieReaction, Reaction } from "../lib/API";
+import { MovieReaction, QueryMovieList, Reaction } from "../lib/API";
 import { getMoviesByIdentifier, getUser } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 
@@ -11,7 +11,9 @@ export interface EventInterface extends EventIdentity {}
  * 3. Find movies that the partner has reacted to but the user hasn't
  * 4. Return that list
  */
-export default async function (event: EventInterface) {
+export default async function (
+  event: EventInterface
+): Promise<Omit<QueryMovieList, "__typename">> {
   const username = event.identity.username;
 
   if (!username) {
