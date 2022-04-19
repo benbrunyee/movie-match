@@ -11,7 +11,7 @@ const SearchOptionsScreen: React.FC<
   const borderBottomColor = useThemeColor({}, "borderColor");
 
   return (
-    <View>
+    <View style={styles.container}>
       <View
         style={[
           styles.titleContainer,
@@ -22,9 +22,9 @@ const SearchOptionsScreen: React.FC<
       >
         <Text variant="title">Search settings</Text>
       </View>
-      <View style={styles.centered}>
+      <View style={[styles.centered, styles.contentContainer]}>
         <Container style={styles.formContainer}>
-          <SearchOptionsForm style={styles.form} />
+          <SearchOptionsForm />
         </Container>
       </View>
     </View>
@@ -37,15 +37,20 @@ const styles = StyleSheet.create({
     padding: Styling.spacingMedium,
     borderBottomWidth: 1,
   },
+  container: {
+    flex: 1,
+  },
   centered: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
   },
-  formContainer: {
-    height: "85%",
+  contentContainer: {
+    padding: Styling.spacingLarge,
   },
-  form: {
-    margin: Styling.spacingLarge,
+  formContainer: {
+    flex: 1,
+    padding: Styling.spacingLarge,
   },
 });
 

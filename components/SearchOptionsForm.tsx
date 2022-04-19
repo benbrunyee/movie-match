@@ -12,6 +12,7 @@ import { sizes } from "../constants/Font";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import {
+  Genre,
   GetUserQuery,
   GetUserQueryVariables,
   Region,
@@ -22,7 +23,8 @@ import {
 import { updateUser } from "../src/graphql/mutations";
 import { getUser } from "../src/graphql/queries";
 import { callGraphQL } from "../utils/amplify";
-import { Box, Button, Text } from "./Themed";
+import MultiSelectModal, { SelectObject } from "./MultiSelectModal";
+import { Box, Button, Text, useThemeColor } from "./Themed";
 
 export interface SearchOptionsFormProps extends ScrollViewProps {
   afterSubmit?: (values: Omit<SearchOptions, "__typename">) => void;
@@ -32,6 +34,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   afterSubmit,
   ...otherProps
 }) => {
+  const borderTopColor = useThemeColor({}, "borderColor");
   const [userContext] = useUserContext();
 
   const [initialValues, setInitialValues] = useState<
@@ -44,6 +47,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [modal, setModal] = useState(false);
 
   const curYear = new Date().getFullYear();
   const oldestYear = 1900;
@@ -71,6 +75,8 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
             region: currentOptions.region,
             releasedAfterYear: currentOptions.releasedAfterYear,
           });
+
+          console.log(currentOptions.genres);
         }
       } catch (e) {
         console.error(e);
@@ -99,73 +105,131 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   }
 
   return (
-    <Formik
-      initialValues={Object.assign({}, Object.freeze(initialValues))}
-      onSubmit={(values) =>
-        handleFormSubmit(values, userContext.sub).finally(
-          () => afterSubmit && afterSubmit(values)
-        )
-      }
-    >
-      {({ handleSubmit, values, setFieldValue }) => (
-        <ScrollView showsVerticalScrollIndicator={false} {...otherProps}>
-          <View style={styles.formFieldContainer}>
-            <Text style={styles.formLabel}>Region: </Text>
-            <View style={styles.formField}>
-              <Picker
-                selectedValue={values.region}
-                onValueChange={(val) => setFieldValue("region", val)}
-                style={styles.picker}
-                itemStyle={[styles.pickerItem, styles.formField]}
-              >
-                <Picker.Item label="Any" value={undefined} />
-                {Object.keys(Region).map((k) => (
-                  <Picker.Item key={k} label={k} value={k} />
-                ))}
-              </Picker>
-            </View>
-          </View>
-          <View style={styles.formFieldContainer}>
-            <Text style={styles.formLabel}>Show adult movies?</Text>
-            <View style={styles.formField}>
-              <Switch
-                value={Boolean(values.includeAdult)}
-                onValueChange={(val) => setFieldValue("includeAdult", val)}
-              />
-            </View>
-          </View>
-          <View style={styles.formFieldContainer}>
-            <Text style={styles.formLabel}>Show movies after year:</Text>
-            <View style={styles.formField}>
-              <Picker
-                selectedValue={(values.releasedAfterYear || "").toString()}
-                onValueChange={(v) =>
-                  setFieldValue("releasedAfterYear", parseInt(v))
+    <>
+      <Formik
+        initialValues={Object.assign({}, Object.freeze(initialValues))}
+        onSubmit={(values) => {
+          {
+            console.log(values);
+            handleFormSubmit(values, userContext.sub).finally(
+              () => afterSubmit && afterSubmit(values)
+            );
+          }
+        }}
+      >
+        {({ handleSubmit, values, setFieldValue }) => (
+          <>
+            <ScrollView showsVerticalScrollIndicator={false} {...otherProps}>
+              <FormField
+                label="Region:"
+                field={
+                  <Picker
+                    selectedValue={values.region}
+                    onValueChange={(val) => setFieldValue("region", val)}
+                    style={styles.picker}
+                    itemStyle={[styles.pickerItem, styles.formField]}
+                  >
+                    <Picker.Item label="Any" value={undefined} />
+                    {Object.keys(Region).map((k) => (
+                      <Picker.Item key={k} label={k} value={k} />
+                    ))}
+                  </Picker>
                 }
-                style={styles.picker}
-                itemStyle={[styles.pickerItem, styles.formField]}
-              >
-                <Picker.Item label="Any" value={undefined} />
-                {Array(curYear - oldestYear + 1)
-                  .fill(undefined)
-                  .map((el, i) => (
-                    <Picker.Item
-                      key={(oldestYear + i).toString()}
-                      label={(oldestYear + i).toString()}
-                      value={(oldestYear + i).toString()}
-                    />
-                  ))}
-              </Picker>
+              />
+              <FormField
+                label="Show adult movies?"
+                field={
+                  <Switch
+                    value={Boolean(values.includeAdult)}
+                    onValueChange={(val) => setFieldValue("includeAdult", val)}
+                  />
+                }
+              />
+              <FormField
+                label="Show movies after year:"
+                field={
+                  <Picker
+                    selectedValue={(values.releasedAfterYear || "").toString()}
+                    onValueChange={(v) =>
+                      setFieldValue("releasedAfterYear", parseInt(v))
+                    }
+                    style={styles.picker}
+                    itemStyle={[styles.pickerItem, styles.formField]}
+                  >
+                    <Picker.Item label="Any" value={undefined} />
+                    {Array(curYear - oldestYear + 1)
+                      .fill(undefined)
+                      .map((el, i) => (
+                        <Picker.Item
+                          key={(oldestYear + i).toString()}
+                          label={(oldestYear + i).toString()}
+                          value={(oldestYear + i).toString()}
+                        />
+                      ))}
+                  </Picker>
+                }
+              />
+              <FormField
+                field={
+                  <Button onPress={() => setModal(true)}>
+                    <Text>Select Categories</Text>
+                  </Button>
+                }
+              />
+              <MultiSelectModal
+                selection={Object.values(Genre)
+                  .sort()
+                  .map((genre) => ({
+                    text: genre.toString(),
+                    value: genre,
+                  }))}
+                initialSelected={formatGenres(values.genres || [])}
+                visible={modal}
+                onRequestClose={() => setModal(false)}
+                onSave={(val) => {
+                  setFieldValue(
+                    "genres",
+                    val.map((selection) => selection.value)
+                  );
+                }}
+              />
+            </ScrollView>
+            <View style={[styles.submitContainer, { borderTopColor }]}>
+              <Button onPress={() => handleSubmit()}>
+                <Text>Submit</Text>
+              </Button>
             </View>
-          </View>
-          <View style={[styles.submitButton]}>
-            <Button onPress={() => handleSubmit()}>
-              <Text>Submit</Text>
-            </Button>
-          </View>
-        </ScrollView>
-      )}
-    </Formik>
+          </>
+        )}
+      </Formik>
+    </>
+  );
+};
+
+const formatGenres = (genres: (Genre | null)[]): SelectObject[] => {
+  return genres.reduce<SelectObject[]>((r, genre) => {
+    if (genre) {
+      r.push({
+        text: genre.toString(),
+        value: genre,
+      });
+    }
+
+    return r;
+  }, []);
+};
+
+interface FormFieldProps {
+  label?: string;
+  field: JSX.Element;
+}
+
+const FormField = ({ label, field }: FormFieldProps): JSX.Element => {
+  return (
+    <View style={styles.formFieldContainer}>
+      {label ? <Text style={styles.formLabel}>{label}</Text> : null}
+      <View style={styles.formField}>{field}</View>
+    </View>
   );
 };
 
@@ -218,9 +282,10 @@ const styles = StyleSheet.create({
   pickerItem: {
     fontSize: sizes.body,
   },
-  submitButton: {
-    alignSelf: "center",
-    flex: 1,
+  submitContainer: {
+    alignItems: "center",
+    paddingTop: Styling.spacingMedium,
+    borderTopWidth: 1,
   },
 });
 
