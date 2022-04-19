@@ -15,12 +15,18 @@ import acceptRequest from "./functions/acceptRequest";
 import discoverMovies from "./functions/discoverMovies";
 import findMovieMatches from "./functions/findMovieMatches";
 import listPartnerPendingMovieMatches from "./functions/listPartnerPendingMovieMatches";
+import pageCountForOptions from "./functions/pageCountForOptions";
 
 const resolvers: {
   Query: { [key: string]: any };
   Mutation: { [key: string]: any };
 } = {
-  Query: { discoverMovies, listPartnerPendingMovieMatches, findMovieMatches },
+  Query: {
+    discoverMovies,
+    listPartnerPendingMovieMatches,
+    findMovieMatches,
+    pageCountForOptions,
+  },
   Mutation: { acceptRequest },
 };
 

@@ -11,6 +11,14 @@ type Query {
         { allow: private, provider: userPools }
       ]
     )
+  pageCountForOptions(input: DiscoverMoviesInput): Int
+    @function(name: "movieMatchLambdaFunction-${env}")
+    @auth(
+      rules: [
+        { allow: private, provider: iam }
+        { allow: private, provider: userPools }
+      ]
+    )
   getApiMovie(input: GetApiMoviesInput): MovieApiOutput
     @function(name: "movieMatchLambdaFunction-${env}")
     @auth(

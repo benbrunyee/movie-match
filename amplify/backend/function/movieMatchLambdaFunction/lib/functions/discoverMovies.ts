@@ -177,33 +177,33 @@ async function getGenreIds() {
   return apiGenres;
 }
 
-async function createUrlParams(input: DiscoverMoviesInput) {
+export async function createUrlParams(searchOptions: DiscoverMoviesInput) {
   let urlParams = "";
 
-  let key: keyof typeof input;
-  for (key in input) {
-    const value = input[key];
+  let searchOption: keyof typeof searchOptions;
+  for (searchOption in searchOptions) {
+    const searchValue = searchOptions[searchOption];
 
-    if (value == null) {
+    if (searchValue == null) {
       continue;
     }
 
-    if (key !== "genres") {
-      urlParams += `${URL_PARAMS[key]}=${value}&`;
+    if (searchOption !== "genres") {
+      urlParams += `${URL_PARAMS[searchOption]}=${searchValue}&`;
     } else {
-      if (value && Array.isArray(value) && value.length > 0) {
-        urlParams += `${URL_PARAMS[key]}=`;
+      if (searchValue && Array.isArray(searchValue) && searchValue.length > 0) {
+        urlParams += `${URL_PARAMS[searchOption]}=`;
 
         const genres = (await getGenreIds()).genres.reduce<{
           [key: string]: MovieGenre;
-        }>((r, entry) => {
-          r[entry.name] = entry;
+        }>((r, genre) => {
+          r[genre.name] = genre;
           return r;
         }, {});
 
-        urlParams += value.reduce<string>((r, val) => {
-          if (val && genres[val.toString()]) {
-            r += `${genres[val]},`;
+        urlParams += searchValue.reduce<string>((r, genreName) => {
+          if (genreName && genres[genreName.toString()]) {
+            r += `${genres[genreName.toString()].id},`;
           }
 
           return r;
@@ -215,8 +215,8 @@ async function createUrlParams(input: DiscoverMoviesInput) {
   }
 
   if (
-    !Object.keys(input).includes("includeAdult") ||
-    input["includeAdult"] == null
+    !Object.keys(searchOptions).includes("includeAdult") ||
+    searchOptions["includeAdult"] == null
   ) {
     // By default, don't include adult movies
     urlParams += `${URL_PARAMS["includeAdult"]}=false`;

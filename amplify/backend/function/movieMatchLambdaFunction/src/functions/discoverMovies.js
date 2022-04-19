@@ -47,6 +47,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
+exports.createUrlParams = void 0;
 var API_1 = require("../lib/API");
 var appSync_1 = require("../lib/appSync");
 var common_1 = require("../lib/common");
@@ -177,37 +178,37 @@ function getGenreIds() {
         });
     });
 }
-function createUrlParams(input) {
+function createUrlParams(searchOptions) {
     return __awaiter(this, void 0, void 0, function () {
-        var urlParams, key, _loop_2, _a, _b, _i;
+        var urlParams, searchOption, _loop_2, _a, _b, _i;
         return __generator(this, function (_c) {
             switch (_c.label) {
                 case 0:
                     urlParams = "";
                     _loop_2 = function () {
-                        var value, genres_1;
+                        var searchValue, genres_1;
                         return __generator(this, function (_d) {
                             switch (_d.label) {
                                 case 0:
-                                    value = input[key];
-                                    if (value == null) {
+                                    searchValue = searchOptions[searchOption];
+                                    if (searchValue == null) {
                                         return [2, "continue"];
                                     }
-                                    if (!(key !== "genres")) return [3, 1];
-                                    urlParams += URL_PARAMS[key] + "=" + value + "&";
+                                    if (!(searchOption !== "genres")) return [3, 1];
+                                    urlParams += URL_PARAMS[searchOption] + "=" + searchValue + "&";
                                     return [3, 3];
                                 case 1:
-                                    if (!(value && Array.isArray(value) && value.length > 0)) return [3, 3];
-                                    urlParams += URL_PARAMS[key] + "=";
+                                    if (!(searchValue && Array.isArray(searchValue) && searchValue.length > 0)) return [3, 3];
+                                    urlParams += URL_PARAMS[searchOption] + "=";
                                     return [4, getGenreIds()];
                                 case 2:
-                                    genres_1 = (_d.sent()).genres.reduce(function (r, entry) {
-                                        r[entry.name] = entry;
+                                    genres_1 = (_d.sent()).genres.reduce(function (r, genre) {
+                                        r[genre.name] = genre;
                                         return r;
                                     }, {});
-                                    urlParams += value.reduce(function (r, val) {
-                                        if (val && genres_1[val.toString()]) {
-                                            r += genres_1[val] + ",";
+                                    urlParams += searchValue.reduce(function (r, genreName) {
+                                        if (genreName && genres_1[genreName.toString()]) {
+                                            r += genres_1[genreName.toString()].id + ",";
                                         }
                                         return r;
                                     }, "");
@@ -218,13 +219,13 @@ function createUrlParams(input) {
                         });
                     };
                     _a = [];
-                    for (_b in input)
+                    for (_b in searchOptions)
                         _a.push(_b);
                     _i = 0;
                     _c.label = 1;
                 case 1:
                     if (!(_i < _a.length)) return [3, 4];
-                    key = _a[_i];
+                    searchOption = _a[_i];
                     return [5, _loop_2()];
                 case 2:
                     _c.sent();
@@ -233,8 +234,8 @@ function createUrlParams(input) {
                     _i++;
                     return [3, 1];
                 case 4:
-                    if (!Object.keys(input).includes("includeAdult") ||
-                        input["includeAdult"] == null) {
+                    if (!Object.keys(searchOptions).includes("includeAdult") ||
+                        searchOptions["includeAdult"] == null) {
                         urlParams += URL_PARAMS["includeAdult"] + "=false";
                     }
                     urlParams = urlParams.replace(/&$/, "");
@@ -243,3 +244,4 @@ function createUrlParams(input) {
         });
     });
 }
+exports.createUrlParams = createUrlParams;

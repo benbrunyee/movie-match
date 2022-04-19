@@ -1,4 +1,3 @@
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import MovieCard from "../components/MovieCard";
@@ -15,19 +14,21 @@ import {
   GetUserQueryVariables,
   ListPartnerPendingMovieMatchesQuery,
   Movie as MovieApi,
+  PageCountForOptionsQuery,
+  PageCountForOptionsQueryVariables,
   Reaction
 } from "../src/API";
 import { createMovieReaction } from "../src/graphql/mutations";
 import {
   discoverMovies as discoverMoviesApi,
   getUser,
-  listPartnerPendingMovieMatches
+  listPartnerPendingMovieMatches,
+  pageCountForOptions
 } from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
 
 const MIN_PAGE = 1;
-const MAX_PAGE = 500;
 
 export interface Movie extends MovieApi {
   isPartnerMovie?: boolean;
@@ -38,14 +39,10 @@ export default function DiscoverScreen({
 }: RootTabScreenProps<"Discover">) {
   const [userContext] = useUserContext();
   const firstLoad = useRef(true);
-  const bottomTabHeight = useBottomTabBarHeight();
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-
-  // Use a random page
-  const [page, setPage] = useState(generateRandomNumber(MIN_PAGE, MAX_PAGE));
 
   const findMovies = useCallback(async () => {
     try {
@@ -76,8 +73,22 @@ export default function DiscoverScreen({
       setMovies(partnerMovies);
 
       const searchOptions = userData.data.getUser.searchOptions;
+
+      const maxPage = (
+        await callGraphQL<
+          PageCountForOptionsQuery,
+          PageCountForOptionsQueryVariables
+        >(pageCountForOptions, {
+          input: searchOptions,
+        })
+      ).data?.pageCountForOptions;
+
+      if (!maxPage) {
+        throw new Error("Failed to determine max page for search options");
+      }
+
       const discoveredMovies = await discoverMovies({
-        page,
+        page: generateRandomNumber(1, maxPage),
         ...(searchOptions || {}),
       });
 
@@ -88,10 +99,7 @@ export default function DiscoverScreen({
       setError("Failed to load movies");
       return;
     }
-
-    // Use another random number
-    setPage(generateRandomNumber(MIN_PAGE, MAX_PAGE));
-  }, [page]);
+  }, []);
 
   const reloadMovies = useCallback(() => {
     setIsLoading(true);

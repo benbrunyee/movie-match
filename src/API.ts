@@ -1308,6 +1308,14 @@ export type DiscoverMoviesQuery = {
   } | null,
 };
 
+export type PageCountForOptionsQueryVariables = {
+  input?: DiscoverMoviesInput | null,
+};
+
+export type PageCountForOptionsQuery = {
+  pageCountForOptions?: number | null,
+};
+
 export type GetApiMovieQueryVariables = {
   input?: GetApiMoviesInput | null,
 };

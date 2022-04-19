@@ -355,6 +355,11 @@ export const discoverMovies = /* GraphQL */ `
     }
   }
 `;
+export const pageCountForOptions = /* GraphQL */ `
+  query PageCountForOptions($input: DiscoverMoviesInput) {
+    pageCountForOptions(input: $input)
+  }
+`;
 export const getApiMovie = /* GraphQL */ `
   query GetApiMovie($input: GetApiMoviesInput) {
     getApiMovie(input: $input) {

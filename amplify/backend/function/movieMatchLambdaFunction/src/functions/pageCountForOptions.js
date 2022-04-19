@@ -36,49 +36,36 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-var acceptRequest_1 = require("./functions/acceptRequest");
-var discoverMovies_1 = require("./functions/discoverMovies");
-var findMovieMatches_1 = require("./functions/findMovieMatches");
-var listPartnerPendingMovieMatches_1 = require("./functions/listPartnerPendingMovieMatches");
-var pageCountForOptions_1 = require("./functions/pageCountForOptions");
-var resolvers = {
-    Query: {
-        discoverMovies: discoverMovies_1["default"],
-        listPartnerPendingMovieMatches: listPartnerPendingMovieMatches_1["default"],
-        findMovieMatches: findMovieMatches_1["default"],
-        pageCountForOptions: pageCountForOptions_1["default"]
-    },
-    Mutation: { acceptRequest: acceptRequest_1["default"] }
-};
-exports.handler = function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var typeHandler, resolver, result, e_1;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                console.log("Event: " + JSON.stringify(event, null, 2));
-                typeHandler = event.typeName ? resolvers[event.typeName] : null;
-                resolver =
-                    event.fieldName && typeHandler ? typeHandler[event.fieldName] : null;
-                console.log("Type Handler: " + event.typeName + ", Field Name: " + event.fieldName);
-                if (!typeHandler) {
-                    throw new Error("Type handler not found.");
-                }
-                if (!resolver) {
-                    throw new Error("Resolver not found.");
-                }
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4, resolver(event)];
-            case 2:
-                result = _a.sent();
-                console.log("Returning: " + JSON.stringify(result, null, 2));
-                return [2, result];
-            case 3:
-                e_1 = _a.sent();
-                console.error(e_1);
-                throw e_1;
-            case 4: return [2];
-        }
+var common_1 = require("../lib/common");
+var discoverMovies_1 = require("./discoverMovies");
+function default_1(event) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function () {
+        var input, urlParams, discoverUrl, movies;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    input = (_a = event.arguments) === null || _a === void 0 ? void 0 : _a.input;
+                    if (!input) return [3, 2];
+                    return [4, discoverMovies_1.createUrlParams(input)];
+                case 1:
+                    urlParams = _b.sent();
+                    _b.label = 2;
+                case 2:
+                    console.debug("URL Params for determing page count: \"" + urlParams + "\"");
+                    discoverUrl = common_1.API_URL + "/discover/movie?api_key=" + common_1.API_KEY + (urlParams ? "&" + urlParams : "");
+                    console.debug("URL Request: " + discoverUrl);
+                    return [4, fetch(discoverUrl)];
+                case 3: return [4, (_b.sent()).json()];
+                case 4:
+                    movies = (_b.sent());
+                    if (typeof movies.success !== "undefined" && !movies.success) {
+                        throw new Error("Failed to determine page count for search options: " + JSON.stringify(movies, null, 2));
+                    }
+                    console.debug("Total pages for search options: " + movies.total_pages);
+                    return [2, movies.total_pages];
+            }
+        });
     });
-}); };
+}
+exports["default"] = default_1;
