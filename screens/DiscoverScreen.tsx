@@ -189,7 +189,6 @@ export default function DiscoverScreen({
           reloadMovies();
         }}
         verticalSwipe={false}
-        containerStyle={styles.swiper}
         cardVerticalMargin={0}
         cardHorizontalMargin={0}
       />
@@ -202,9 +201,6 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-  },
-  swiper: {
-    // flex: 1,
   },
 });
 
