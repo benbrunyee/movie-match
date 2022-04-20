@@ -68,6 +68,7 @@ export default async function (
   console.debug(`URL Request: ${discoverUrl}`);
 
   // Get the movies
+  // TODO: Error checking here
   const movies = (await (await fetch(discoverUrl)).json()) as DiscoverMovieApi;
 
   if (typeof movies.success !== "undefined" && !movies.success) {

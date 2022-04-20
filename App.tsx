@@ -41,7 +41,7 @@ const App = () => {
         const contextObj = await configureUser();
         setUserContext(contextObj);
       } catch (e) {
-        console.warn(e);
+        console.debug(e);
       }
     }
 

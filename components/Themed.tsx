@@ -3,6 +3,7 @@
  * https://docs.expo.io/guides/color-schemes/
  */
 
+import { useTheme } from "@react-navigation/native";
 import {
   Modal as DefaultModal,
   Pressable,
@@ -12,6 +13,8 @@ import {
   View as DefaultView
 } from "react-native";
 import * as DefaultSwiper from "react-native-deck-swiper";
+import LogoDark from "../assets/images/logo-dark.svg";
+import LogoLight from "../assets/images/logo-light.svg";
 import Colors from "../constants/Colors";
 import { sizes } from "../constants/Font";
 import Styling from "../constants/Styling";
@@ -52,6 +55,10 @@ export type MenuItemProps = ThemeProps &
   PressableProps & { topBorder?: boolean; bottomBorder?: boolean };
 export type SwiperProps<T> = DefaultSwiper.SwiperProps<T> & ThemeProps;
 export type ModalProps = DefaultModal["props"] & ThemeProps;
+export type LogoProps = {
+  height?: number | string;
+  width?: number | string;
+};
 
 export function Text(props: TextProps) {
   const { disabled, variant, style, lightColor, darkColor, ...otherProps } =
@@ -62,7 +69,7 @@ export function Text(props: TextProps) {
   );
   const fontSize = useFontSize(variant);
 
-  return <DefaultText style={[{ color, fontSize }, style]} {...otherProps} />;
+  return <DefaultText style={[{ color, fontSize, fontFamily: "montserrat-medium" }, style]} {...otherProps} />;
 }
 
 export function Box(props: BoxProps) {
@@ -232,4 +239,10 @@ export function Modal({
   );
 
   return <DefaultModal style={[{ backgroundColor }, style]} {...otherProps} />;
+}
+
+export function Logo(props: LogoProps) {
+  const { dark } = useTheme();
+
+  return dark ? <LogoLight {...props} /> : <LogoDark {...props} />;
 }

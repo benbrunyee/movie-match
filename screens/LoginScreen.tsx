@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   errorMessage: {
     color: "red",
     textAlign: "center",
-  },
+  }
 });
 
 export default LoginScreen;
