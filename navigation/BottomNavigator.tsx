@@ -42,6 +42,7 @@ function BottomTabNavigator() {
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="circle-o-notch" color={color} />
           ),
+          headerShown: false,
         }}
       />
       <BottomTab.Screen

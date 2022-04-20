@@ -1,8 +1,8 @@
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import MovieCard from "../components/MovieCardTwo";
+import MovieCard from "../components/MovieCard";
 import { Box, Swiper, Text } from "../components/Themed";
+import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import {
   CreateMovieReactionMutation,
@@ -39,7 +39,6 @@ export default function DiscoverScreen({
 }: RootTabScreenProps<"Discover">) {
   const [userContext] = useUserContext();
   const firstLoad = useRef(true);
-  const bottomBarHeight = useBottomTabBarHeight();
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,26 +92,8 @@ export default function DiscoverScreen({
         ...(searchOptions || {}),
       });
 
+      // Add the discovered movies to the end
       setMovies((cur) => [...cur, ...discoveredMovies]);
-      //     setMovies((cur) => [
-      //       {
-      //         id: "304ab148-37eb-43ab-a3f2-d857350b72df",
-      //         identifier: 347755,
-      //         createdAt: "2022-04-20T19:55:19.396Z",
-      //         name: "Wind Walkers",
-      //         coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
-      //         rating: 6.8,
-      //         ratingCount: 14,
-      //         description: `A group of friends and family descend into the Everglades swamplands for their annual hunting trip only to discover that they are the ones being hunted. A malevolent entity is tracking them and they begin to realise one of their party may be possessed by something brought home from a tour
-      // of duty in the Middle East - a demon of war so horrible and deadly they are unaware of its devilish presence. Or are they facing something even more unspeakable, a legendary Native American curse about to unleash its dreadful legacy of thirsting for colonial revenge by claiming more souls?`,
-      //         genres: [Genre.Action, Genre.Adventure],
-      //         trailerUri: null,
-      //         releaseYear: 2015,
-      //         updatedAt: "2022-04-20T19:55:19.396Z",
-      //         owner: null,
-      //         __typename: "Movie",
-      //       },
-      //     ]);
     } catch (e) {
       console.error(e);
       setError("Failed to load movies");
@@ -189,29 +170,39 @@ export default function DiscoverScreen({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container]}>
       <Swiper
         cards={movies}
         keyExtractor={(movie) => movie.id}
         renderCard={(movie) => (
-          <MovieCard movie={movie} style={{ marginBottom: bottomBarHeight }} />
+          <MovieCard
+            movie={movie}
+            style={{
+              margin: Styling.spacingLarge,
+              marginBottom: 225,
+            }}
+          />
         )}
         onSwipedLeft={swipeLeft}
         onSwipedRight={swipeRight}
         onSwipedAll={() => {
           reloadMovies();
         }}
-        containerStyle={styles.cardContainer}
         verticalSwipe={false}
         cardVerticalMargin={0}
         cardHorizontalMargin={0}
       />
-      {
-        // TODO: Add buttons here instead of on the card
-      }
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
 
 async function loadPartnerPendingMatches(): Promise<Movie[]> {
   const movies = await callGraphQL<ListPartnerPendingMovieMatchesQuery>(
@@ -263,17 +254,3 @@ async function discoverMovies(
 
   return movies.data.discoverMovies.items;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cardContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-  },
-});

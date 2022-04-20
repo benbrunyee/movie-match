@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useUserContext } from "../context/UserContext";
-import LoginScreenTwo from "../screens/LoginScreenTwo";
+import LoginScreen from "../screens/LoginScreen";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import VerificationModal from "../screens/VerificationModal";
 import { RootStackParamList } from "../types";
@@ -28,7 +28,7 @@ function RootNavigator() {
         </>
       ) : (
         <>
-          <Stack.Screen name="Login" component={LoginScreenTwo} />
+          <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Group
             screenOptions={{ presentation: "modal", gestureEnabled: false }}
           >
