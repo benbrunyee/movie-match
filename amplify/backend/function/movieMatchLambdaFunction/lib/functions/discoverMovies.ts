@@ -101,6 +101,8 @@ async function getNewMovies(
   let movies: DiscoverMovieApi | undefined;
   let url = initialUrl;
   let attempt = 0;
+  let maxPages: number | undefined = undefined;
+  const triedPages: number[] = [];
 
   console.debug(
     "Attempting to find movies that the user has not already reacted to"
@@ -115,10 +117,20 @@ async function getNewMovies(
       throw new Error("Tried 50 times to find new movies.");
     }
 
+    if (typeof maxPages !=="undefined" && triedPages.length === maxPages) {
+      // TODO: Return movies out of their selection
+      throw new Error("Tried all available pages. Cannot find undiscovered movies");
+    }
+
     // If not the first attempt, then alter the page for the API call
     if (attempt > 1) {
       console.debug("Using a random page for next api call");
-      const page = generateRandomNumber(1, searchOptions.page || 500);
+      const page = generateRandomNumber(
+        1,
+        // Use the max page from the first loop API call
+        // If that is undefined then we just get the 1st page as that will then set "maxPages"
+        maxPages || 1
+      );
       console.debug(`Page to be used for next API call: ${page}`);
 
       const newParams = await createUrlParams({
@@ -129,6 +141,8 @@ async function getNewMovies(
       url = `${url.replace(/\?.*/, "")}?api_key=${API_KEY}${
         newParams ? `&${newParams}` : ""
       }`;
+
+      triedPages.push(page);
     }
 
     console.debug(`Calling API, attempt number: ${attempt}`);
@@ -136,6 +150,10 @@ async function getNewMovies(
     movies = (await (await fetch(url)).json()) as DiscoverMovieApi;
 
     console.debug(`Output from Movie API: ${JSON.stringify(movies, null, 2)}`);
+
+    if (movies.total_pages && typeof maxPages === "undefined") {
+      maxPages = movies.total_pages;
+    }
 
     if (typeof movies.success !== "undefined" && !movies.success) {
       throw new Error(

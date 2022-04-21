@@ -106,13 +106,15 @@ function generateRandomNumber(min, max) {
 function getNewMovies(sub, initialUrl, searchOptions) {
     var _a, _b, _c;
     return __awaiter(this, void 0, void 0, function () {
-        var validMovies, movies, url, attempt, user, page, newParams, firstMovieIdentifier;
+        var validMovies, movies, url, attempt, maxPages, triedPages, user, page, newParams, firstMovieIdentifier;
         return __generator(this, function (_d) {
             switch (_d.label) {
                 case 0:
                     validMovies = false;
                     url = initialUrl;
                     attempt = 0;
+                    maxPages = undefined;
+                    triedPages = [];
                     console.debug("Attempting to find movies that the user has not already reacted to");
                     return [4, common_1.getUser(sub)];
                 case 1:
@@ -124,14 +126,18 @@ function getNewMovies(sub, initialUrl, searchOptions) {
                     if (attempt >= 50) {
                         throw new Error("Tried 50 times to find new movies.");
                     }
+                    if (typeof maxPages !== "undefined" && triedPages.length === maxPages) {
+                        throw new Error("Tried all available pages. Cannot find undiscovered movies");
+                    }
                     if (!(attempt > 1)) return [3, 4];
                     console.debug("Using a random page for next api call");
-                    page = generateRandomNumber(1, searchOptions.page || 500);
+                    page = generateRandomNumber(1, maxPages || 1);
                     console.debug("Page to be used for next API call: " + page);
                     return [4, createUrlParams(__assign(__assign({}, searchOptions), { page: page }))];
                 case 3:
                     newParams = _d.sent();
                     url = url.replace(/\?.*/, "") + "?api_key=" + common_1.API_KEY + (newParams ? "&" + newParams : "");
+                    triedPages.push(page);
                     _d.label = 4;
                 case 4:
                     console.debug("Calling API, attempt number: " + attempt);
@@ -141,6 +147,9 @@ function getNewMovies(sub, initialUrl, searchOptions) {
                 case 6:
                     movies = (_d.sent());
                     console.debug("Output from Movie API: " + JSON.stringify(movies, null, 2));
+                    if (movies.total_pages && typeof maxPages === "undefined") {
+                        maxPages = movies.total_pages;
+                    }
                     if (typeof movies.success !== "undefined" && !movies.success) {
                         throw new Error("Failed to discover movies: " + JSON.stringify(movies, null, 2));
                     }
