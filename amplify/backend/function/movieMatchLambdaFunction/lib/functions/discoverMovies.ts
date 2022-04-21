@@ -20,10 +20,10 @@ export interface EventInterface extends EventIdentity {
 }
 
 export interface DiscoverMovieApi {
-  page: number;
-  results: MovieApiOutput[];
-  total_results: number;
-  total_pages: number;
+  page?: number;
+  results?: MovieApiOutput[];
+  total_results?: number;
+  total_pages?: number;
   success?: boolean;
   status_message?: string;
   status_code?: number;
@@ -68,7 +68,6 @@ export default async function (
   console.debug(`URL Request: ${discoverUrl}`);
 
   // Get the movies
-  // TODO: Error checking here
   const movies = (await (await fetch(discoverUrl)).json()) as DiscoverMovieApi;
 
   if (typeof movies.success !== "undefined" && !movies.success) {
@@ -96,30 +95,32 @@ async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
     {}
   );
 
-  const newMovies = discoveredMovies.results.map<CreateMovieInput>((movie) => {
-    let movieGenres: Genre[] = [];
+  const newMovies = (discoveredMovies.results || []).map<CreateMovieInput>(
+    (movie) => {
+      let movieGenres: Genre[] = [];
 
-    for (let genreId of movie.genre_ids) {
-      const genreName = genreObj[genreId]?.name;
+      for (let genreId of movie.genre_ids) {
+        const genreName = genreObj[genreId]?.name;
 
-      if (genreName && (Genre as any)[genreName]) {
-        movieGenres.push((Genre as any)[genreName]);
+        if (genreName && (Genre as any)[genreName]) {
+          movieGenres.push((Genre as any)[genreName]);
+        }
       }
-    }
 
-    return {
-      identifier: movie.id,
-      genres: movieGenres,
-      description: movie.overview,
-      name: movie.title,
-      rating: movie.vote_average,
-      ratingCount: movie.vote_count,
-      ...(movie.release_date && {
-        releaseYear: new Date(movie.release_date).getFullYear(),
-      }),
-      ...(movie.poster_path && { coverUri: movie.poster_path }),
-    };
-  });
+      return {
+        identifier: movie.id,
+        genres: movieGenres,
+        description: movie.overview,
+        name: movie.title,
+        rating: movie.vote_average,
+        ratingCount: movie.vote_count,
+        ...(movie.release_date && {
+          releaseYear: new Date(movie.release_date).getFullYear(),
+        }),
+        ...(movie.poster_path && { coverUri: movie.poster_path }),
+      };
+    }
+  );
 
   let promises: Promise<Movie>[] = [];
 

@@ -107,7 +107,7 @@ function addMoviesToDb(discoveredMovies) {
                         r[genre.id] = genre;
                         return r;
                     }, {});
-                    newMovies = discoveredMovies.results.map(function (movie) {
+                    newMovies = (discoveredMovies.results || []).map(function (movie) {
                         var _a;
                         var movieGenres = [];
                         for (var _i = 0, _b = movie.genre_ids; _i < _b.length; _i++) {

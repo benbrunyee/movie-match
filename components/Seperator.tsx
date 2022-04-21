@@ -2,7 +2,7 @@ import React from "react";
 import { StyleSheet } from "react-native";
 import { Box, BoxProps } from "./Themed";
 
-// TODO: Themeing for this
+// TODO: Theme this
 const textLightColor = "#6C6C6C";
 const textDarkColor = "#E1E1E1";
 
