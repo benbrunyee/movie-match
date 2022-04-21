@@ -59,7 +59,7 @@ function getMovieByIdentifier(identifier) {
                 case 1:
                     movie = _d.sent();
                     if (!((_c = (_b = (_a = movie.data) === null || _a === void 0 ? void 0 : _a.movieByIdentifier) === null || _b === void 0 ? void 0 : _b.items) === null || _c === void 0 ? void 0 : _c[0])) {
-                        console.warn("Could find movie by identifier: " + identifier);
+                        console.warn("Couldn't find movie by identifier: " + identifier);
                         return [2];
                     }
                     return [2, movie.data.movieByIdentifier.items[0]];

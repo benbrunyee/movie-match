@@ -4,6 +4,7 @@
  */
 
 import { useTheme } from "@react-navigation/native";
+import React from "react";
 import {
   Modal as DefaultModal,
   Pressable,
@@ -12,7 +13,7 @@ import {
   TextInput as DefaultTextInput,
   View as DefaultView
 } from "react-native";
-import * as DefaultSwiper from "react-native-deck-swiper";
+import DefaultSwiper from "react-native-deck-swiper";
 import LogoDark from "../assets/images/logo-dark.svg";
 import LogoLight from "../assets/images/logo-light.svg";
 import Colors from "../constants/Colors";
@@ -53,7 +54,9 @@ export type TabProps = ThemeProps & { selected?: boolean } & PressableProps;
 export type ContainerProps = ThemeProps & DefaultView["props"];
 export type MenuItemProps = ThemeProps &
   PressableProps & { topBorder?: boolean; bottomBorder?: boolean };
-export type SwiperProps<T> = DefaultSwiper.SwiperProps<T> & ThemeProps;
+export type SwiperProps<T> = DefaultSwiper<T>["props"] & {
+  passRef: React.Ref<DefaultSwiper<T>>;
+} & ThemeProps;
 export type ModalProps = DefaultModal["props"] & ThemeProps;
 export type LogoProps = {
   height?: number | string;
@@ -69,7 +72,12 @@ export function Text(props: TextProps) {
   );
   const fontSize = useFontSize(variant);
 
-  return <DefaultText style={[{ color, fontSize, fontFamily: "montserrat-medium" }, style]} {...otherProps} />;
+  return (
+    <DefaultText
+      style={[{ color, fontSize, fontFamily: "montserrat-medium" }, style]}
+      {...otherProps}
+    />
+  );
 }
 
 export function Box(props: BoxProps) {
@@ -212,6 +220,7 @@ export function MenuItem(props: MenuItemProps) {
 export function Swiper<T>({
   lightColor,
   darkColor,
+  passRef,
   ...otherProps
 }: SwiperProps<T>) {
   const backgroundColor = useThemeColor(
@@ -220,7 +229,11 @@ export function Swiper<T>({
   );
 
   return (
-    <DefaultSwiper.default backgroundColor={backgroundColor} {...otherProps} />
+    <DefaultSwiper
+      ref={passRef}
+      backgroundColor={backgroundColor}
+      {...otherProps}
+    />
   );
 }
 

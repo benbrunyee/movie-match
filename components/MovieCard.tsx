@@ -17,11 +17,15 @@ import { Box, BoxProps, ContainerProps, Text } from "./Themed";
 
 export interface MovieCardProps extends ContainerProps {
   movie: Movie;
+  onCrossPress?: () => void;
+  onCheckPress?: () => void;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({
   movie,
   style,
+  onCrossPress = () => {},
+  onCheckPress = () => {},
   ...otherProps
 }) => {
   return (
@@ -88,8 +92,13 @@ const MovieCard: React.FC<MovieCardProps> = ({
             name="times"
             style={styles.leftActionButton}
             color="#F62323"
+            onPress={() => onCrossPress()}
           />
-          <ActionButton name="check" color="#1EEC64" />
+          <ActionButton
+            name="check"
+            color="#1EEC64"
+            onPress={() => onCheckPress()}
+          />
         </View>
       </View>
     </Box>
@@ -102,7 +111,7 @@ function CoverGradient() {
   return (
     <Svg height="100%" width="100%">
       <Defs>
-        <LinearGradient id="grad" x1="0" y1="1" x2="0" y2="0.5">
+        <LinearGradient id="grad" x1="0" y1="1" x2="0" y2="0.4">
           <Stop
             offset="0.65"
             stopColor={dark ? "#000" : "#FFF"}
@@ -179,6 +188,7 @@ const styles = StyleSheet.create({
   fill: {
     flex: 1,
   },
+  // TODO: Add relative parent for this component
   background: {
     position: "absolute",
     top: 0,
@@ -187,7 +197,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   content: {
-    flex: 1.1,
+    flex: 1.4,
     paddingHorizontal: Styling.spacingLarge,
   },
   contentSection: {

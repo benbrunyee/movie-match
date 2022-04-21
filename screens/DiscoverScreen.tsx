@@ -1,6 +1,7 @@
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
+import DefaultSwiper from "react-native-deck-swiper";
 import MovieCard from "../components/MovieCard";
 import { Box, Swiper, Text } from "../components/Themed";
 import { useUserContext } from "../context/UserContext";
@@ -40,6 +41,7 @@ export default function DiscoverScreen({
   const [userContext] = useUserContext();
   const firstLoad = useRef(true);
   const bottomBarHeight = useBottomTabBarHeight();
+  let swiperRef: DefaultSwiper<Movie> | undefined
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -221,10 +223,31 @@ export default function DiscoverScreen({
   return (
     <View style={styles.container}>
       <Swiper
+        passRef={(swiper) => {
+          if (swiper) {
+            swiperRef = swiper;
+          }
+        }}
         cards={movies}
         keyExtractor={(movie) => movie.id}
         renderCard={(movie) => (
-          <MovieCard movie={movie} style={{ marginBottom: bottomBarHeight }} />
+          <MovieCard
+            movie={movie}
+            style={{ marginBottom: bottomBarHeight }}
+            onCheckPress={() => {
+              console.debug("Check pressed");
+              if (swiperRef) {
+                swiperRef.swipeRight();
+              }
+            }}
+            onCrossPress={() => {
+              console.debug("Cross pressed");
+              console.log(swiperRef)
+              if (swiperRef) {
+                swiperRef.swipeLeft();
+              }
+            }}
+          />
         )}
         onSwipedLeft={swipeLeft}
         onSwipedRight={swipeRight}
@@ -235,6 +258,8 @@ export default function DiscoverScreen({
         verticalSwipe={false}
         cardVerticalMargin={0}
         cardHorizontalMargin={0}
+        stackSize={3}
+        showSecondCard={true}
       />
       {
         // TODO: Add buttons here instead of on the card

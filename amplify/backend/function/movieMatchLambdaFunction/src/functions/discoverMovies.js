@@ -63,37 +63,128 @@ var apiGenres;
 function default_1(event) {
     var _a;
     return __awaiter(this, void 0, void 0, function () {
-        var input, urlParams, discoverUrl, movies, movieEntries;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var input, urlParams, discoverUrl, movies, _b, movieEntries;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     input = (_a = event.arguments) === null || _a === void 0 ? void 0 : _a.input;
                     if (!input) return [3, 2];
                     return [4, createUrlParams(input)];
                 case 1:
-                    urlParams = _b.sent();
-                    _b.label = 2;
+                    urlParams = _c.sent();
+                    _c.label = 2;
                 case 2:
                     console.debug("URL Params for movie discovery: \"" + urlParams + "\"");
                     discoverUrl = common_1.API_URL + "/discover/movie?api_key=" + common_1.API_KEY + (urlParams ? "&" + urlParams : "");
                     console.debug("URL Request: " + discoverUrl);
-                    return [4, fetch(discoverUrl)];
-                case 3: return [4, (_b.sent()).json()];
+                    if (!event.identity.username) return [3, 3];
+                    _b = getNewMovies(event.identity.username, discoverUrl, input || {});
+                    return [3, 5];
+                case 3: return [4, fetch(discoverUrl)];
                 case 4:
-                    movies = (_b.sent());
+                    _b = (_c.sent()).json();
+                    _c.label = 5;
+                case 5: return [4, (_b)];
+                case 6:
+                    movies = _c.sent();
                     if (typeof movies.success !== "undefined" && !movies.success) {
                         throw new Error("Failed to discover movies: " + JSON.stringify(movies, null, 2));
                     }
                     console.debug("Movies found: " + JSON.stringify(movies, null, 2));
                     return [4, addMoviesToDb(movies)];
-                case 5:
-                    movieEntries = _b.sent();
+                case 7:
+                    movieEntries = _c.sent();
                     return [2, { items: movieEntries }];
             }
         });
     });
 }
 exports["default"] = default_1;
+function generateRandomNumber(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+}
+function getNewMovies(sub, initialUrl, searchOptions) {
+    var _a, _b, _c;
+    return __awaiter(this, void 0, void 0, function () {
+        var validMovies, movies, url, attempt, user, page, newParams, firstMovieIdentifier;
+        return __generator(this, function (_d) {
+            switch (_d.label) {
+                case 0:
+                    validMovies = false;
+                    url = initialUrl;
+                    attempt = 0;
+                    console.debug("Attempting to find movies that the user has not already reacted to");
+                    return [4, common_1.getUser(sub)];
+                case 1:
+                    user = _d.sent();
+                    _d.label = 2;
+                case 2:
+                    if (!!validMovies) return [3, 8];
+                    attempt += 1;
+                    if (attempt >= 50) {
+                        throw new Error("Tried 50 times to find new movies.");
+                    }
+                    if (!(attempt > 1)) return [3, 4];
+                    console.debug("Using a random page for next api call");
+                    page = generateRandomNumber(1, searchOptions.page || 500);
+                    console.debug("Page to be used for next API call: " + page);
+                    return [4, createUrlParams(__assign(__assign({}, searchOptions), { page: page }))];
+                case 3:
+                    newParams = _d.sent();
+                    url = url.replace(/\?.*/, "") + "?api_key=" + common_1.API_KEY + (newParams ? "&" + newParams : "");
+                    _d.label = 4;
+                case 4:
+                    console.debug("Calling API, attempt number: " + attempt);
+                    console.debug("Calling URL: " + url);
+                    return [4, fetch(url)];
+                case 5: return [4, (_d.sent()).json()];
+                case 6:
+                    movies = (_d.sent());
+                    console.debug("Output from Movie API: " + JSON.stringify(movies, null, 2));
+                    if (typeof movies.success !== "undefined" && !movies.success) {
+                        throw new Error("Failed to discover movies: " + JSON.stringify(movies, null, 2));
+                    }
+                    firstMovieIdentifier = (_b = (_a = movies === null || movies === void 0 ? void 0 : movies.results) === null || _a === void 0 ? void 0 : _a[0]) === null || _b === void 0 ? void 0 : _b.id;
+                    if (!firstMovieIdentifier) {
+                        console.debug("Could not find first movie ID... Continuing");
+                        return [3, 2];
+                    }
+                    return [4, hasUserReacted(firstMovieIdentifier, ((_c = user.movieReactions) === null || _c === void 0 ? void 0 : _c.items) || [])];
+                case 7:
+                    validMovies = !(_d.sent());
+                    console.debug("User " + (validMovies ? "has not" : "has") + " reacted to this set of movies.");
+                    return [3, 2];
+                case 8:
+                    console.debug("Found a set of movies that the user has not reacted to");
+                    if (!movies) {
+                        throw new Error("Failed to find movies the user has not already reacted to");
+                    }
+                    return [2, movies];
+            }
+        });
+    });
+}
+function hasUserReacted(identifier, movieReactions) {
+    return __awaiter(this, void 0, void 0, function () {
+        var movie;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4, common_1.getMovieByIdentifier(identifier)];
+                case 1:
+                    movie = _a.sent();
+                    if (!movie) {
+                        console.debug("Movie identifier: " + identifier + " not yet discovered in our database, the user would've inheritely not have reacted to this movie");
+                        return [2, false];
+                    }
+                    if (movieReactions.find(function (reaction) { return reaction.movie.identifier === identifier; })) {
+                        console.debug("User has already reacted to movie with identifier: " + identifier);
+                        return [2, true];
+                    }
+                    return [2, false];
+            }
+        });
+    });
+}
 function addMoviesToDb(discoveredMovies) {
     return __awaiter(this, void 0, void 0, function () {
         var genreFetch, genreObj, newMovies, promises, _loop_1, _i, newMovies_1, movie, dbMovies;

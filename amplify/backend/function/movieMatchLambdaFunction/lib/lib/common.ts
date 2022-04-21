@@ -48,7 +48,7 @@ export async function getMovieByIdentifier(
   );
 
   if (!movie.data?.movieByIdentifier?.items?.[0]) {
-    console.warn(`Could find movie by identifier: ${identifier}`);
+    console.warn(`Couldn't find movie by identifier: ${identifier}`);
     return;
   }
 

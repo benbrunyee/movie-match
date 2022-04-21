@@ -6,10 +6,11 @@ import {
   Genre,
   Movie,
   MovieApiOutput,
+  MovieReaction,
   QueryMovieList
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
-import { API_KEY, API_URL, getMovieByIdentifier } from "../lib/common";
+import { API_KEY, API_URL, getMovieByIdentifier, getUser } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 import { createMovie } from "../lib/graphql/mutations";
 
@@ -68,7 +69,10 @@ export default async function (
   console.debug(`URL Request: ${discoverUrl}`);
 
   // Get the movies
-  const movies = (await (await fetch(discoverUrl)).json()) as DiscoverMovieApi;
+  // TODO: Don't return movies that the user has already reacted to
+  const movies = await (event.identity.username
+    ? getNewMovies(event.identity.username, discoverUrl, input || {})
+    : ((await fetch(discoverUrl)).json() as Promise<DiscoverMovieApi>));
 
   if (typeof movies.success !== "undefined" && !movies.success) {
     throw new Error(
@@ -82,6 +86,118 @@ export default async function (
   const movieEntries = await addMoviesToDb(movies);
 
   return { items: movieEntries };
+}
+
+function generateRandomNumber(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1) + min);
+}
+
+async function getNewMovies(
+  sub: string,
+  initialUrl: string,
+  searchOptions: DiscoverMoviesInput
+): Promise<DiscoverMovieApi> {
+  let validMovies = false;
+  let movies: DiscoverMovieApi | undefined;
+  let url = initialUrl;
+  let attempt = 0;
+
+  console.debug(
+    "Attempting to find movies that the user has not already reacted to"
+  );
+
+  const user = await getUser(sub);
+
+  while (!validMovies) {
+    attempt += 1;
+
+    if (attempt >= 50) {
+      throw new Error("Tried 50 times to find new movies.");
+    }
+
+    // If not the first attempt, then alter the page for the API call
+    if (attempt > 1) {
+      console.debug("Using a random page for next api call");
+      const page = generateRandomNumber(1, searchOptions.page || 500);
+      console.debug(`Page to be used for next API call: ${page}`);
+
+      const newParams = await createUrlParams({
+        ...searchOptions,
+        page,
+      });
+
+      url = `${url.replace(/\?.*/, "")}?api_key=${API_KEY}${
+        newParams ? `&${newParams}` : ""
+      }`;
+    }
+
+    console.debug(`Calling API, attempt number: ${attempt}`);
+    console.debug(`Calling URL: ${url}`);
+    movies = (await (await fetch(url)).json()) as DiscoverMovieApi;
+
+    console.debug(`Output from Movie API: ${JSON.stringify(movies, null, 2)}`);
+
+    if (typeof movies.success !== "undefined" && !movies.success) {
+      throw new Error(
+        `Failed to discover movies: ${JSON.stringify(movies, null, 2)}`
+      );
+    }
+
+    const firstMovieIdentifier = movies?.results?.[0]?.id;
+
+    if (!firstMovieIdentifier) {
+      console.debug("Could not find first movie ID... Continuing");
+      continue;
+    }
+
+    validMovies = !(await hasUserReacted(
+      firstMovieIdentifier,
+      (user.movieReactions?.items as MovieReaction[]) || []
+    ));
+
+    console.debug(
+      `User ${validMovies ? "has not" : "has"} reacted to this set of movies.`
+    );
+  }
+
+  console.debug("Found a set of movies that the user has not reacted to");
+
+  if (!movies) {
+    throw new Error(
+      "Failed to find movies the user has not already reacted to"
+    );
+  }
+
+  return movies;
+}
+
+async function hasUserReacted(
+  identifier: number,
+  movieReactions: MovieReaction[]
+): Promise<boolean> {
+  const movie = await getMovieByIdentifier(identifier);
+
+  if (!movie) {
+    // If the movie doesn't exist in our database then it hasn't been discovered
+    // before by any user
+    console.debug(
+      `Movie identifier: ${identifier} not yet discovered in our database, the user would've inheritely not have reacted to this movie`
+    );
+    return false;
+  }
+
+  // TODO: This is not efficient as the user has more movie reactions
+  // TODO: Add a secondary index to obtain movie reactions by movie identifier / ID
+  if (
+    movieReactions.find((reaction) => reaction.movie.identifier === identifier)
+  ) {
+    console.debug(
+      `User has already reacted to movie with identifier: ${identifier}`
+    );
+    return true;
+  }
+
+  return false;
 }
 
 async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
