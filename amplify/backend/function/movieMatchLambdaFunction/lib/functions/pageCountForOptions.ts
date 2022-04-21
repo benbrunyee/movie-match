@@ -12,7 +12,7 @@ export interface EventInterface extends EventIdentity {
 export default async function (event: EventInterface) {
   const input = event.arguments?.input;
 
-  let urlParams: string | undefined;
+  let urlParams: string = "";
 
   if (input) {
     urlParams = await createUrlParams(input);
@@ -29,7 +29,7 @@ export default async function (event: EventInterface) {
   // Make the request
   const movies = (await (await fetch(discoverUrl)).json()) as DiscoverMovieApi;
 
-  if (typeof movies.success !== "undefined" && !movies.success) {
+  if (typeof movies.success !== "undefined" && !movies.success || !movies.total_pages) {
     throw new Error(
       `Failed to determine page count for search options: ${JSON.stringify(
         movies,

@@ -9,12 +9,21 @@ import {
   CreateMovieReactionMutationVariables,
   DiscoverMoviesInput,
   DiscoverMoviesQuery,
-  DiscoverMoviesQueryVariables, GetUserQuery, GetUserQueryVariables, ListPartnerPendingMovieMatchesQuery,
-  Movie as MovieApi, PageCountForOptionsQuery, PageCountForOptionsQueryVariables, Reaction
+  DiscoverMoviesQueryVariables,
+  GetUserQuery,
+  GetUserQueryVariables,
+  ListPartnerPendingMovieMatchesQuery,
+  Movie as MovieApi,
+  PageCountForOptionsQuery,
+  PageCountForOptionsQueryVariables,
+  Reaction
 } from "../src/API";
 import { createMovieReaction } from "../src/graphql/mutations";
 import {
-  discoverMovies as discoverMoviesApi, getUser, listPartnerPendingMovieMatches, pageCountForOptions
+  discoverMovies as discoverMoviesApi,
+  getUser,
+  listPartnerPendingMovieMatches,
+  pageCountForOptions
 } from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
@@ -80,11 +89,10 @@ export default function DiscoverScreen({
       }
 
       const discoveredMovies = await discoverMovies({
-        page: generateRandomNumber(1, maxPage),
+        // Maximum page to specify is 500
+        page: generateRandomNumber(1, maxPage > 500 ? 500 : maxPage),
         ...(searchOptions || {}),
       });
-
-      console.log(discoverMovies);
 
       setMovies((cur) => [...cur, ...discoveredMovies]);
       // setMovies((cur) => [

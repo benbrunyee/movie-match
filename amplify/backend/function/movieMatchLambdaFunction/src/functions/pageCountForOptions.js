@@ -46,6 +46,7 @@ function default_1(event) {
             switch (_b.label) {
                 case 0:
                     input = (_a = event.arguments) === null || _a === void 0 ? void 0 : _a.input;
+                    urlParams = "";
                     if (!input) return [3, 2];
                     return [4, discoverMovies_1.createUrlParams(input)];
                 case 1:
@@ -59,7 +60,7 @@ function default_1(event) {
                 case 3: return [4, (_b.sent()).json()];
                 case 4:
                     movies = (_b.sent());
-                    if (typeof movies.success !== "undefined" && !movies.success) {
+                    if (typeof movies.success !== "undefined" && !movies.success || !movies.total_pages) {
                         throw new Error("Failed to determine page count for search options: " + JSON.stringify(movies, null, 2));
                     }
                     console.debug("Total pages for search options: " + movies.total_pages);
