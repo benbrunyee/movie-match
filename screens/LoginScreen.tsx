@@ -65,13 +65,9 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
 
       if (innerType === "SIGNIN") {
         // Sign the user in
-        try {
-          await signIn(form.email, form.password);
-          const userData = await configureUser();
-          setUserContext(userData);
-        } catch (e) {
-          throw new Error("Failed to login");
-        }
+        await signIn(form.email, form.password);
+        const userData = await configureUser();
+        setUserContext(userData);
       } else if (innerType === "SIGNUP") {
         if (form.password !== form.repeatPassword) {
           console.warn("Passwords do not match");
@@ -80,14 +76,10 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
         }
 
         // Sign up the user
-        try {
-          await signUp(form.email, form.password);
+        await signUp(form.email, form.password);
 
-          // Store the email in storage
-          await AsyncStorage.setItem("@signUpUsername", form.email);
-        } catch (e) {
-          throw new Error("Failed to sign up");
-        }
+        // Store the email in storage
+        await AsyncStorage.setItem("@signUpUsername", form.email);
 
         navigation.navigate("Verification");
       } else {
@@ -136,7 +128,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
             >
               Let's get you started
             </Text>
-            <Seperator style={{ width: 250 }}/>
+            <Seperator style={{ width: 250 }} />
           </View>
           {
             // Switch
@@ -232,6 +224,14 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
             <SocialButton type="APPLE" style={styles.socialButton} />
             <SocialButton type="GOOGLE" style={styles.socialButton} />
           </View>
+        </View>
+        {
+          // Error message
+        }
+        <View style={styles.errorMessage}>
+          <Text variant="smallCaption" lightColor="#FF5F5F" darkColor="#FF5F5F">
+            {error}
+          </Text>
         </View>
         {
           // Submit button
@@ -388,6 +388,12 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     marginBottom: Styling.spacingSmall,
+  },
+  errorMessage: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    padding: Styling.spacingMedium,
   },
 });
 export default LoginScreen;
