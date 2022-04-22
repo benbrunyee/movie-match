@@ -10,10 +10,12 @@ import {
   View
 } from "react-native";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import TMDBLogo from "../assets/images/tmdb-logo.svg";
 import Styling from "../constants/Styling";
 import { Movie } from "../src/API";
 import { IMAGE_PREFIX } from "../utils/movieApi";
-import { Box, BoxProps, ContainerProps, Text } from "./Themed";
+import CategoryLabel from "./CategoryLabel";
+import { Box, ContainerProps, Text } from "./Themed";
 
 export interface MovieCardProps extends ContainerProps {
   movie: Movie;
@@ -36,14 +38,19 @@ const MovieCard: React.FC<MovieCardProps> = ({
       darkColor="#000"
     >
       <View style={styles.background}>
-        <Image
-          source={{
-            uri: IMAGE_PREFIX + movie.coverUri,
-          }}
-          resizeMode="cover"
-          style={styles.background}
-        />
+        {movie.coverUri ? (
+          <Image
+            source={{
+              uri: IMAGE_PREFIX + movie.coverUri,
+            }}
+            resizeMode="cover"
+            style={styles.background}
+          />
+        ) : null}
         <CoverGradient />
+        <View style={styles.attributionLogo}>
+          <TMDBLogo width="auto" height={25} opacity={0.3} />
+        </View>
       </View>
       <View style={styles.fill} />
       <View style={styles.fill} />
@@ -64,11 +71,14 @@ const MovieCard: React.FC<MovieCardProps> = ({
         <View style={styles.categoryLabels}>
           {movie.genres.map((genre, i) =>
             // Only show 8 labels in total
-            i + 1 < 9 ? (
+            i < 8 ? (
               <CategoryLabel
                 key={genre}
-                labelText={i + 1 < 8 ? genre : "..."}
-                style={i !== movie.genres.length - 1 ? styles.spacingRight : {}}
+                labelText={i < 7 ? genre : "..."}
+                style={[
+                  i !== movie.genres.length - 1 ? styles.spacingRight : {},
+                  styles.categoryLabel,
+                ]}
               />
             ) : null
           )}
@@ -161,34 +171,10 @@ function ActionButton({
   );
 }
 
-interface CategoryLabelProps extends BoxProps {
-  labelText: string;
-}
-
-function CategoryLabel({
-  labelText,
-  style,
-  ...otherProps
-}: CategoryLabelProps) {
-  return (
-    <Box
-      {...otherProps}
-      style={[styles.categoryLabel, style]}
-      lightColor="#EEEEEE"
-      darkColor="#101010"
-    >
-      <Text variant="smallCaption" lightColor="#555555" darkColor="#555555">
-        {labelText}
-      </Text>
-    </Box>
-  );
-}
-
 const styles = StyleSheet.create({
   fill: {
     flex: 1,
   },
-  // TODO: Add relative parent for this component
   background: {
     position: "absolute",
     top: 0,
@@ -218,9 +204,6 @@ const styles = StyleSheet.create({
     marginRight: Styling.spacingSmall,
   },
   categoryLabel: {
-    borderRadius: 100,
-    paddingHorizontal: Styling.spacingSmall,
-    paddingVertical: 2,
     marginBottom: Styling.spacingSmall,
   },
   categoryLabels: {
@@ -245,6 +228,13 @@ const styles = StyleSheet.create({
   },
   leftActionButton: {
     marginRight: Styling.spacingLarge * 2,
+  },
+  attributionLogo: {
+    position: "absolute",
+    right: Styling.spacingMedium,
+    top: Styling.spacingLarge,
+    height: 25,
+    width: 40,
   },
 });
 export default MovieCard;
