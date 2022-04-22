@@ -10,16 +10,18 @@ import {
   CreateMovieReactionMutationVariables,
   DiscoverMoviesInput,
   DiscoverMoviesQuery,
-  DiscoverMoviesQueryVariables,
-  Genre,
-  ListPartnerPendingMovieMatchesQuery,
+  DiscoverMoviesQueryVariables, GetUserQuery, GetUserQueryVariables, ListPartnerPendingMovieMatchesQuery,
   Movie as MovieApi,
+  PageCountForOptionsQuery,
+  PageCountForOptionsQueryVariables,
   Reaction
 } from "../src/API";
 import { createMovieReaction } from "../src/graphql/mutations";
 import {
   discoverMovies as discoverMoviesApi,
-  listPartnerPendingMovieMatches
+  getUser,
+  listPartnerPendingMovieMatches,
+  pageCountForOptions
 } from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
@@ -44,98 +46,98 @@ export default function DiscoverScreen({
 
   const findMovies = useCallback(async () => {
     try {
-      // const userData = await callGraphQL<GetUserQuery, GetUserQueryVariables>(
-      //   getUser,
+      const userData = await callGraphQL<GetUserQuery, GetUserQueryVariables>(
+        getUser,
+        {
+          id: userContext.sub,
+        }
+      );
+
+      if (!userData.data?.getUser) {
+        throw new Error("Could not load user data");
+      }
+
+      let partnerMovies: Movie[] = [];
+
+      if (userContext.connectedPartner) {
+        partnerMovies = await loadPartnerPendingMatches();
+      }
+
+      // Mark all parter movies as partner movies
+      partnerMovies = partnerMovies.map((movie) => ({
+        ...movie,
+        isPartnerMovie: true,
+      }));
+
+      // Set the partner movies
+      setMovies(partnerMovies);
+
+      const searchOptions = userData.data.getUser.searchOptions;
+
+      const maxPage = (
+        await callGraphQL<
+          PageCountForOptionsQuery,
+          PageCountForOptionsQueryVariables
+        >(pageCountForOptions, {
+          input: searchOptions,
+        })
+      ).data?.pageCountForOptions;
+
+      if (!maxPage) {
+        throw new Error("Failed to determine max page for search options");
+      }
+
+      const discoveredMovies = await discoverMovies({
+        // Maximum page to specify is 500
+        page: generateRandomNumber(1, maxPage > 500 ? 500 : maxPage),
+        ...(searchOptions || {}),
+      });
+
+      setMovies((cur) => [...cur, ...discoveredMovies]);
+      // setMovies((cur) => [
       //   {
-      //     id: userContext.sub,
-      //   }
-      // );
-
-      // if (!userData.data?.getUser) {
-      //   throw new Error("Could not load user data");
-      // }
-
-      // let partnerMovies: Movie[] = [];
-
-      // if (userContext.connectedPartner) {
-      //   partnerMovies = await loadPartnerPendingMatches();
-      // }
-
-      // // Mark all parter movies as partner movies
-      // partnerMovies = partnerMovies.map((movie) => ({
-      //   ...movie,
-      //   isPartnerMovie: true,
-      // }));
-
-      // // Set the partner movies
-      // setMovies(partnerMovies);
-
-      // const searchOptions = userData.data.getUser.searchOptions;
-
-      // const maxPage = (
-      //   await callGraphQL<
-      //     PageCountForOptionsQuery,
-      //     PageCountForOptionsQueryVariables
-      //   >(pageCountForOptions, {
-      //     input: searchOptions,
-      //   })
-      // ).data?.pageCountForOptions;
-
-      // if (!maxPage) {
-      //   throw new Error("Failed to determine max page for search options");
-      // }
-
-      // const discoveredMovies = await discoverMovies({
-      //   // Maximum page to specify is 500
-      //   page: generateRandomNumber(1, maxPage > 500 ? 500 : maxPage),
-      //   ...(searchOptions || {}),
-      // });
-
-      // setMovies((cur) => [...cur, ...discoveredMovies]);
-      setMovies((cur) => [
-        {
-          id: "304ab148-37eb-43ab-a3f2-d857350b72df",
-          identifier: 347755,
-          createdAt: "2022-04-20T19:55:19.396Z",
-          name: "Wind Walkers Wind Walkers Wind Walkers Wind Walkers",
-          coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
-          rating: 6.8,
-          ratingCount: 14,
-          description: `A group of friends and family descend into the Everglades swamplands for their annual hunting trip only to discover that they are the ones being hunted. A malevolent entity is tracking them and they begin to realise one of their party may be possessed by something brought home from a tour of duty in the Middle East - a demon of war so horrible and deadly they are unaware of its devilish presence. Or are they facing something even more unspeakable, a legendary Native American curse about to unleash its dreadful legacy of thirsting for colonial revenge by claiming more souls?`,
-          genres: [
-            Genre.Action,
-            Genre.Adventure,
-            Genre.Animation,
-            Genre.Comedy,
-            Genre.Crime,
-            Genre.Documentary,
-            Genre.Drama,
-            Genre.Family,
-            Genre.Fantasy,
-          ],
-          trailerUri: null,
-          releaseYear: 2015,
-          updatedAt: "2022-04-20T19:55:19.396Z",
-          owner: null,
-          __typename: "Movie",
-        },
-        {
-          id: "304ab148-37eb-43ab-a3f2-d857350b72dff",
-          identifier: 347755,
-          createdAt: "2022-04-20T19:55:19.396Z",
-          name: "Wind Walkers",
-          coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
-          rating: 6.8,
-          ratingCount: 14,
-          description: `A group of friends and family descend into the Everglades swamplands.`,
-          genres: [Genre.Action, Genre.Adventure, Genre.Animation],
-          trailerUri: null,
-          releaseYear: 2015,
-          updatedAt: "2022-04-20T19:55:19.396Z",
-          owner: null,
-          __typename: "Movie",
-        },
-      ]);
+      //     id: "304ab148-37eb-43ab-a3f2-d857350b72df",
+      //     identifier: 347755,
+      //     createdAt: "2022-04-20T19:55:19.396Z",
+      //     name: "Wind Walkers Wind Walkers Wind Walkers Wind Walkers",
+      //     coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
+      //     rating: 6.8,
+      //     ratingCount: 14,
+      //     description: `A group of friends and family descend into the Everglades swamplands for their annual hunting trip only to discover that they are the ones being hunted. A malevolent entity is tracking them and they begin to realise one of their party may be possessed by something brought home from a tour of duty in the Middle East - a demon of war so horrible and deadly they are unaware of its devilish presence. Or are they facing something even more unspeakable, a legendary Native American curse about to unleash its dreadful legacy of thirsting for colonial revenge by claiming more souls?`,
+      //     genres: [
+      //       Genre.Action,
+      //       Genre.Adventure,
+      //       Genre.Animation,
+      //       Genre.Comedy,
+      //       Genre.Crime,
+      //       Genre.Documentary,
+      //       Genre.Drama,
+      //       Genre.Family,
+      //       Genre.Fantasy,
+      //     ],
+      //     trailerUri: null,
+      //     releaseYear: 2015,
+      //     updatedAt: "2022-04-20T19:55:19.396Z",
+      //     owner: null,
+      //     __typename: "Movie",
+      //   },
+      //   {
+      //     id: "304ab148-37eb-43ab-a3f2-d857350b72dff",
+      //     identifier: 347755,
+      //     createdAt: "2022-04-20T19:55:19.396Z",
+      //     name: "Wind Walkers",
+      //     coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
+      //     rating: 6.8,
+      //     ratingCount: 14,
+      //     description: `A group of friends and family descend into the Everglades swamplands.`,
+      //     genres: [Genre.Action, Genre.Adventure, Genre.Animation],
+      //     trailerUri: null,
+      //     releaseYear: 2015,
+      //     updatedAt: "2022-04-20T19:55:19.396Z",
+      //     owner: null,
+      //     __typename: "Movie",
+      //   },
+      // ]);
     } catch (e) {
       console.error(e);
       setError("Failed to load movies");

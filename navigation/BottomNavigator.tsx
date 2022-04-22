@@ -1,12 +1,19 @@
 import { FontAwesome } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import {
+  BottomTabHeaderProps,
+  createBottomTabNavigator
+} from "@react-navigation/bottom-tabs";
+import { useTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Auth } from "aws-amplify";
 import { brand } from "expo-device";
 import React from "react";
-import { Alert, Pressable } from "react-native";
+import { Alert, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Box, Text } from "../components/Themed";
 import Colors from "../constants/Colors";
+import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import useColorScheme from "../hooks/useColorScheme";
 import DiscoverScreen from "../screens/DiscoverScreen";
@@ -49,7 +56,8 @@ function BottomTabNavigator() {
         name="Matches"
         component={MatchesScreen}
         options={{
-          title: "Matches",
+          header: Header,
+          headerTitle: "Matches",
           tabBarIcon: ({ color }) => (
             <TabBarIcon name="circle-o" color={color} />
           ),
@@ -59,7 +67,8 @@ function BottomTabNavigator() {
         name="Settings"
         component={Settings}
         options={{
-          title: "Settings",
+          header: Header,
+          headerTitle: "Settings",
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
           headerRight: () => (
             <Pressable
@@ -126,14 +135,55 @@ function HeaderRightIcon(props: {
 }) {
   const colorScheme = useColorScheme();
 
-  return (
-    <FontAwesome
-      size={25}
-      color={Colors[colorScheme].text}
-      style={{ marginRight: 15 }}
-      {...props}
-    />
-  );
+  return <FontAwesome size={20} color={Colors[colorScheme].text} {...props} />;
 }
+
+const Header: React.FC<BottomTabHeaderProps> = ({
+  layout,
+  options: { headerTitle, headerRight = () => null },
+}) => {
+  const { dark } = useTheme();
+  const { top } = useSafeAreaInsets();
+  const button = headerRight({});
+
+  return (
+    <Box
+      style={[
+        styles.tab,
+        {
+          paddingTop: top ? top + Styling.spacingSmall : Styling.spacingMedium,
+          shadowColor: dark ? "#FFF" : "#000",
+          width: layout.width,
+        },
+      ]}
+      darkColor="#000"
+      lightColor="#FFF"
+    >
+      <Text variant="caption" style={[styles.text]}>
+        {headerTitle}
+      </Text>
+      {button}
+    </Box>
+  );
+};
+
+const styles = StyleSheet.create({
+  tab: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    shadowOffset: {
+      height: 2,
+      width: 0,
+    },
+    shadowOpacity: 0.1,
+    paddingHorizontal: Styling.spacingMedium,
+    paddingBottom: Styling.spacingMedium,
+  },
+  text: {
+    textTransform: "uppercase",
+    fontFamily: "montserrat-bold",
+  },
+});
 
 export default BottomTabNavigator;

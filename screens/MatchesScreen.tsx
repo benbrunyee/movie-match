@@ -168,6 +168,7 @@ const MovieBox = (item: MovieItem): JSX.Element => {
           {item.genres.map((genre, i) =>
             i < 4 ? (
               <CategoryLabel
+                key={genre}
                 labelText={i < 3 ? genre : "..."}
                 style={[
                   styles.categoryLabel,
