@@ -1,11 +1,15 @@
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, PressableProps, StyleSheet } from "react-native";
 import DefaultSwiper from "react-native-deck-swiper";
 import MovieCard from "../components/MovieCard";
 import { ErrorText, FadedErrorText } from "../components/Notification";
 import { Box, Swiper, Text } from "../components/Themed";
-import { useNotificationDispatch } from "../context/NotificationContext";
+import Styling from "../constants/Styling";
+import {
+  NotificationItemProps,
+  useNotificationDispatch
+} from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
 import {
   CreateMovieReactionMutation,
@@ -69,34 +73,18 @@ export default function DiscoverScreen({
         partnerMovies = await loadPartnerPendingMatches();
       } else {
         // Show notification
-        console.log("No partner");
         notificationDispatch({
           type: "ADD",
           item: {
-            item: ({ dismiss }) => (
-              <Pressable
-                onPress={() => {
-                  navigation.navigate("Settings");
-                  dismiss();
-                }}
-              >
-                <ErrorText
-                  variant="smallCaption"
-                  style={{ fontFamily: "montserrat-bold" }}
-                >
-                  Warning
-                </ErrorText>
-                <ErrorText
-                  variant="smallCaption"
-                  style={{ flex: 1, flexWrap: "wrap" }}
-                >
-                  You aren't connected to another user. There will be no
-                  matches.
-                </ErrorText>
-                <FadedErrorText style={{ fontSize: 10 }}>
-                  Click to get connected
-                </FadedErrorText>
-              </Pressable>
+            item: (props) => (
+              <ConnectionNotification
+                {...props}
+                onPress={() =>
+                  navigation.navigate("Settings", {
+                    screen: "ConnectPartnerModal",
+                  })
+                }
+              />
             ),
             type: "ERROR",
             position: "TOP",
@@ -184,7 +172,7 @@ export default function DiscoverScreen({
       setError("Failed to load movies");
       return;
     }
-  }, []);
+  }, [userContext]);
 
   const reloadMovies = useCallback(() => {
     setIsLoading(true);
@@ -302,6 +290,31 @@ export default function DiscoverScreen({
   );
 }
 
+const ConnectionNotification = ({
+  dismiss,
+  onPress,
+}: NotificationItemProps & PressableProps) => (
+  <Pressable
+    onPress={(e) => {
+      onPress && onPress(e);
+      dismiss();
+    }}
+  >
+    <ErrorText
+      variant="caption"
+      style={[notificationStyles.title, notificationStyles.marginBottom]}
+    >
+      Warning
+    </ErrorText>
+    <ErrorText variant="caption" style={notificationStyles.marginBottom}>
+      You aren't connected to another user. There will be no matches.
+    </ErrorText>
+    <FadedErrorText style={notificationStyles.fadedText} variant="smallCaption">
+      Click to get connected
+    </FadedErrorText>
+  </Pressable>
+);
+
 async function loadPartnerPendingMatches(): Promise<Movie[]> {
   const movies = await callGraphQL<ListPartnerPendingMovieMatchesQuery>(
     listPartnerPendingMovieMatches
@@ -364,5 +377,17 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+  },
+});
+
+const notificationStyles = StyleSheet.create({
+  title: {
+    fontFamily: "montserrat-bold",
+  },
+  marginBottom: {
+    marginBottom: Styling.spacingSmall,
+  },
+  fadedText: {
+    fontFamily: "montserrat-italic",
   },
 });

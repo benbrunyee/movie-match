@@ -5,10 +5,9 @@ import {
   createBottomTabNavigator
 } from "@react-navigation/bottom-tabs";
 import { useTheme } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Auth } from "aws-amplify";
 import { brand } from "expo-device";
-import React from "react";
+import React, { useCallback } from "react";
 import { Alert, Pressable, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Box, Text } from "../components/Themed";
@@ -27,11 +26,47 @@ import Settings from "./Settings";
  * https://reactnavigation.org/docs/bottom-tab-navigator
  */
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
-const Tab = createNativeStackNavigator<any>();
 
+// TODO: React has detected a change in the order of Hooks called by BottomTabNavigator
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
   const [, setUserContext] = useUserContext();
+
+  const signOut = useCallback(() => {
+    const onPress = () =>
+      Auth.forgetDevice()
+        .catch(() => {})
+        .finally(() => {
+          Auth.signOut().then(async () => {
+            await AsyncStorage.clear();
+
+            setUserContext({
+              email: "",
+              sub: "",
+              signedIn: false,
+              connectedPartner: "",
+              userDbObj: {},
+            });
+          });
+        });
+
+    // Brand returns null if on web
+    if (!brand) {
+      // If web, just sign out
+      onPress();
+      return;
+    }
+
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      {
+        text: "Yes",
+        onPress,
+      },
+      {
+        text: "No",
+      },
+    ]);
+  }, [setUserContext]);
 
   return (
     <BottomTab.Navigator
@@ -72,41 +107,7 @@ function BottomTabNavigator() {
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
           headerRight: () => (
             <Pressable
-              onPress={() => {
-                const onPress = () =>
-                  Auth.forgetDevice()
-                    .catch(() => {})
-                    .finally(() => {
-                      Auth.signOut().then(async () => {
-                        await AsyncStorage.clear();
-
-                        setUserContext({
-                          email: "",
-                          sub: "",
-                          signedIn: false,
-                          connectedPartner: "",
-                          userDbObj: {},
-                        });
-                      });
-                    });
-
-                // Brand returns null if on web
-                if (!brand) {
-                  // If web, just sign out
-                  onPress();
-                  return;
-                }
-
-                Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-                  {
-                    text: "Yes",
-                    onPress,
-                  },
-                  {
-                    text: "No",
-                  },
-                ]);
-              }}
+              onPress={signOut}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.5 : 1,
               })}
