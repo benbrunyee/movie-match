@@ -113,17 +113,17 @@ const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = ({
   }
 
   return matches.length > 0 ? (
-    <View style={[styles.container, styles.fill]}>
+    <Box style={[styles.container, styles.fill]}>
       <FlatList
         data={matches}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <MovieBox {...item} />}
       />
-    </View>
+    </Box>
   ) : (
-    <View style={styles.messageContainer}>
+    <Box style={styles.messageContainer}>
       <Text variant="title">Nothing to load</Text>
-    </View>
+    </Box>
   );
 };
 

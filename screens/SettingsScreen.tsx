@@ -1,7 +1,7 @@
 import { brand } from "expo-device";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
-import { MenuItem, Text } from "../components/Themed";
+import { Box, MenuItem, Text } from "../components/Themed";
 import { useUserContext } from "../context/UserContext";
 import {
   AcceptRequestMutation,
@@ -82,14 +82,14 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <Box style={[styles.container, styles.centered]}>
         <Text variant="title">Loading...</Text>
-      </View>
+      </Box>
     );
   }
 
   return (
-    <View>
+    <Box style={styles.container}>
       <View>
         {connectionRequest ? (
           <MenuItem
@@ -117,13 +117,15 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
           </MenuItem>
         ))}
       </View>
-    </View>
+    </Box>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  centered: {
     alignItems: "center",
     justifyContent: "center",
   },

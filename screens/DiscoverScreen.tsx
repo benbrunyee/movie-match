@@ -1,6 +1,6 @@
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import DefaultSwiper from "react-native-deck-swiper";
 import MovieCard from "../components/MovieCard";
 import { Box, Swiper, Text } from "../components/Themed";
@@ -10,7 +10,10 @@ import {
   CreateMovieReactionMutationVariables,
   DiscoverMoviesInput,
   DiscoverMoviesQuery,
-  DiscoverMoviesQueryVariables, GetUserQuery, GetUserQueryVariables, ListPartnerPendingMovieMatchesQuery,
+  DiscoverMoviesQueryVariables,
+  GetUserQuery,
+  GetUserQueryVariables,
+  ListPartnerPendingMovieMatchesQuery,
   Movie as MovieApi,
   PageCountForOptionsQuery,
   PageCountForOptionsQueryVariables,
@@ -163,24 +166,24 @@ export default function DiscoverScreen({
 
   const swipeRight = useCallback(
     (i: number) => {
-      // const movie = movies[i];
-      // if (movie) {
-      //   likeMovie(movie);
-      // } else {
-      //   console.error("Could not find movie based on swipe index");
-      // }
+      const movie = movies[i];
+      if (movie) {
+        likeMovie(movie);
+      } else {
+        console.error("Could not find movie based on swipe index");
+      }
     },
     [likeMovie, movies]
   );
 
   const swipeLeft = useCallback(
     (i: number) => {
-      // const movie = movies[i];
-      // if (movie) {
-      //   dislikeMovie(movie);
-      // } else {
-      //   console.error("Could not find movie based on swipe index");
-      // }
+      const movie = movies[i];
+      if (movie) {
+        dislikeMovie(movie);
+      } else {
+        console.error("Could not find movie based on swipe index");
+      }
     },
     [dislikeMovie, movies]
   );
@@ -199,7 +202,7 @@ export default function DiscoverScreen({
 
   if (isLoading) {
     return (
-      <Box style={styles.container}>
+      <Box style={styles.container} lightColor="#FFF" darkColor="#000">
         <Text variant="title">Loading...</Text>
       </Box>
     );
@@ -207,14 +210,14 @@ export default function DiscoverScreen({
 
   if (error) {
     return (
-      <Box style={styles.container}>
+      <Box style={styles.container} lightColor="#FFF" darkColor="#000">
         <Text variant="body">{error}</Text>
       </Box>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <Box style={styles.container} lightColor="#FFF" darkColor="#000">
       <Swiper
         passRef={(swiper) => {
           if (swiper) {
@@ -257,7 +260,7 @@ export default function DiscoverScreen({
       {
         // TODO: Add buttons here instead of on the card
       }
-    </View>
+    </Box>
   );
 }
 
