@@ -5,6 +5,8 @@ import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { NotificationDisplay } from "./components/Notification";
+import { NotificationProvider } from "./context/NotificationContext";
 import { UserContext, UserContextObject } from "./context/UserContext";
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
@@ -61,10 +63,13 @@ const App = () => {
   } else {
     return (
       <UserContext.Provider value={[userContext, setUserContext]}>
-        <SafeAreaProvider>
-          <Navigation colorScheme={colorScheme} />
-          <StatusBar />
-        </SafeAreaProvider>
+        <NotificationProvider>
+          <NotificationDisplay />
+          <SafeAreaProvider>
+            <Navigation colorScheme={colorScheme} />
+            <StatusBar />
+          </SafeAreaProvider>
+        </NotificationProvider>
       </UserContext.Provider>
     );
   }

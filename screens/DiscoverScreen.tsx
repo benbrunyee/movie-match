@@ -1,9 +1,11 @@
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { StyleSheet } from "react-native";
+import { Pressable, StyleSheet } from "react-native";
 import DefaultSwiper from "react-native-deck-swiper";
 import MovieCard from "../components/MovieCard";
+import { ErrorText, FadedErrorText } from "../components/Notification";
 import { Box, Swiper, Text } from "../components/Themed";
+import { useNotificationDispatch } from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
 import {
   CreateMovieReactionMutation,
@@ -42,6 +44,7 @@ export default function DiscoverScreen({
   const firstLoad = useRef(true);
   const bottomBarHeight = useBottomTabBarHeight();
   let swiperRef: DefaultSwiper<Movie> | undefined;
+  const notificationDispatch = useNotificationDispatch();
 
   const [movies, setMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -64,6 +67,41 @@ export default function DiscoverScreen({
 
       if (userContext.connectedPartner) {
         partnerMovies = await loadPartnerPendingMatches();
+      } else {
+        // Show notification
+        console.log("No partner");
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            item: ({ dismiss }) => (
+              <Pressable
+                onPress={() => {
+                  navigation.navigate("Settings");
+                  dismiss();
+                }}
+              >
+                <ErrorText
+                  variant="smallCaption"
+                  style={{ fontFamily: "montserrat-bold" }}
+                >
+                  Warning
+                </ErrorText>
+                <ErrorText
+                  variant="smallCaption"
+                  style={{ flex: 1, flexWrap: "wrap" }}
+                >
+                  You aren't connected to another user. There will be no
+                  matches.
+                </ErrorText>
+                <FadedErrorText style={{ fontSize: 10 }}>
+                  Click to get connected
+                </FadedErrorText>
+              </Pressable>
+            ),
+            type: "ERROR",
+            position: "TOP",
+          },
+        });
       }
 
       // Mark all parter movies as partner movies

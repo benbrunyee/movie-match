@@ -36,8 +36,10 @@ export default async function configureUser(): Promise<UserContextObject> {
       sub: authStatus.attributes.sub,
     });
 
-    if (userCreation.data?.createUser) {
+    if (userCreation.data?.createUser && !userCreation.errors?.length) {
       userDbData = userCreation.data.createUser;
+    } else {
+      throw new Error("Failed to create user database object");
     }
   } else {
     userDbData = userDb.data.getUser;
