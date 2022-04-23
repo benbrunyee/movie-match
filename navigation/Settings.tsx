@@ -144,7 +144,12 @@ const SettingsInnerHeader: React.FC<NativeStackHeaderProps> = ({
       <View style={styles.left}>
         {route.name !== "SettingsScreen" ? (
           <Pressable onPress={() => navigation.goBack()}>
-            <FontAwesome name="arrow-left" size={20} style={styles.leftIcon} />
+            <FontAwesome
+              name="arrow-left"
+              size={20}
+              style={styles.leftIcon}
+              color={dark ? "#FFF" : "#000"}
+            />
           </Pressable>
         ) : null}
         <Text variant="caption" style={[styles.text]}>
