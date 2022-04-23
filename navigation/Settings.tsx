@@ -59,11 +59,11 @@ const Settings: React.FC = () => {
 
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
       {
-        text: "Yes",
-        onPress,
+        text: "No",
       },
       {
-        text: "No",
+        text: "Yes",
+        onPress,
       },
     ]);
   }, [setUserContext]);

@@ -189,12 +189,12 @@ const showPendingConReq = async (id: string) => {
   await new Promise<void>((resolve) => {
     Alert.alert("Accept connection request?", undefined, [
       {
-        text: "Yes",
-        onPress: () => acceptConReq(id).finally(resolve),
-      },
-      {
         text: "No",
         onPress: () => resolve(),
+      },
+      {
+        text: "Yes",
+        onPress: () => acceptConReq(id).finally(resolve),
       },
     ]);
   });
