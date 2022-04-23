@@ -1,5 +1,9 @@
 import { MovieReaction, QueryMovieList, Reaction } from "../lib/API";
-import { getMoviesByIdentifier, getUser } from "../lib/common";
+import {
+  getMoviesByIdentifier,
+  getUser,
+  listAllMovieReactions
+} from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 
 export interface EventInterface extends EventIdentity {}
@@ -30,15 +34,9 @@ export default async function (
     throw new Error("User does not have a connected partner");
   }
 
-  // Get the partner's info
-  const connectedPartner = await getUser(user.connectedUser);
-  console.debug(
-    `Successfully got connected partner's info: ${user.connectedUser}`
-  );
-
   // Get both of their reactions
-  const userReactions = user.movieReactions?.items;
-  const partnerReactions = connectedPartner.movieReactions?.items;
+  const userReactions = await listAllMovieReactions(user.sub);
+  const partnerReactions = await listAllMovieReactions(user.connectedUser);
 
   if (!(partnerReactions && userReactions)) {
     throw new Error("Could not find movie reactions for partner and/or user");

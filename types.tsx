@@ -23,11 +23,6 @@ export type RootStackParamList = {
   Verification: undefined;
 };
 
-export type ModalStackParamList = {
-  ConnectParter: undefined;
-  SearchOptions: undefined;
-};
-
 export type RootStackScreenProps<Screen extends keyof RootStackParamList> =
   NativeStackScreenProps<RootStackParamList, Screen>;
 
@@ -39,7 +34,7 @@ export type RootTabParamList = {
 
 export type SettingsParamList = {
   SettingsScreen: undefined;
-  ConnectPartnerModal: undefined;
+  ConnectPartner: undefined;
   SearchOptions: undefined;
 };
 

@@ -6,7 +6,7 @@ import {
   UpdateUserMutationVariables
 } from "../lib/API";
 import callGraphQl from "../lib/appSync";
-import { getMovieByIds, getUser, removeDuplicates } from "../lib/common";
+import { getMovieByIds, getUser, listAllMovieReactions, removeDuplicates } from "../lib/common";
 import EventIdentity from "../lib/eventIdentity";
 import { updateUser } from "../lib/graphql/mutations";
 
@@ -37,35 +37,27 @@ export default async (
     return { allMatches: [], newMatches: [] };
   }
 
-  const connectedUserObj = await getUser(connectedUserId);
-  console.debug(
-    `Successfully got connected partner user obj for ID: ${connectedUserId}`
-  );
-
-  if (!(user.movieReactions && connectedUserObj.movieReactions)) {
-    console.warn("Movie reactions for one or both user's are not present");
-    console.warn("Returning an empty results");
-    return { allMatches: [], newMatches: [] };
-  }
+  const userMovieReactions = await listAllMovieReactions(requestee);
+  const partnerMovieReactions = await listAllMovieReactions(connectedUserId);
 
   console.debug(
     `User movie reactions: ${JSON.stringify(
-      user.movieReactions?.items || [],
+      userMovieReactions,
       null,
       2
     )}`
   );
   console.debug(
     `Partner movie reactions: ${JSON.stringify(
-      connectedUserObj.movieReactions?.items || [],
+      partnerMovieReactions,
       null,
       2
     )}`
   );
 
   const movieMatches = findMovieMatches(
-    user.movieReactions.items as MovieReaction[],
-    connectedUserObj.movieReactions.items as MovieReaction[]
+    userMovieReactions as MovieReaction[],
+    partnerMovieReactions as MovieReaction[]
   );
 
   console.debug(

@@ -43,8 +43,128 @@ export const createUser = /* GraphQL */ `
           }
           createdAt
           reaction
+          userId
+          user {
+            id
+            sub
+            email
+            requests {
+              items {
+                id
+                sender
+                receiver
+                status
+                createdAt
+                updatedAt
+                userRequestsId
+              }
+              nextToken
+            }
+            movieReactions {
+              items {
+                id
+                movie {
+                  id
+                  identifier
+                  createdAt
+                  name
+                  coverUri
+                  rating
+                  ratingCount
+                  description
+                  genres
+                  trailerUri
+                  releaseYear
+                  updatedAt
+                  owner
+                }
+                createdAt
+                reaction
+                userId
+                user {
+                  id
+                  sub
+                  email
+                  requests {
+                    items {
+                      id
+                      sender
+                      receiver
+                      status
+                      createdAt
+                      updatedAt
+                      userRequestsId
+                    }
+                    nextToken
+                  }
+                  movieReactions {
+                    items {
+                      id
+                      movie {
+                        id
+                        identifier
+                        createdAt
+                        name
+                        coverUri
+                        rating
+                        ratingCount
+                        description
+                        genres
+                        trailerUri
+                        releaseYear
+                        updatedAt
+                        owner
+                      }
+                      createdAt
+                      reaction
+                      userId
+                      user {
+                        id
+                        sub
+                        email
+                        movieMatches
+                        connectedUser
+                        createdAt
+                        updatedAt
+                        owner
+                      }
+                      updatedAt
+                      movieReactionMovieId
+                      owner
+                    }
+                    nextToken
+                  }
+                  movieMatches
+                  searchOptions {
+                    region
+                    includeAdult
+                    releasedAfterYear
+                    genres
+                  }
+                  connectedUser
+                  createdAt
+                  updatedAt
+                  owner
+                }
+                updatedAt
+                movieReactionMovieId
+                owner
+              }
+              nextToken
+            }
+            movieMatches
+            searchOptions {
+              region
+              includeAdult
+              releasedAfterYear
+              genres
+            }
+            connectedUser
+            createdAt
+            updatedAt
+            owner
+          }
           updatedAt
-          userMovieReactionsId
           movieReactionMovieId
           owner
         }
@@ -105,8 +225,128 @@ export const updateUser = /* GraphQL */ `
           }
           createdAt
           reaction
+          userId
+          user {
+            id
+            sub
+            email
+            requests {
+              items {
+                id
+                sender
+                receiver
+                status
+                createdAt
+                updatedAt
+                userRequestsId
+              }
+              nextToken
+            }
+            movieReactions {
+              items {
+                id
+                movie {
+                  id
+                  identifier
+                  createdAt
+                  name
+                  coverUri
+                  rating
+                  ratingCount
+                  description
+                  genres
+                  trailerUri
+                  releaseYear
+                  updatedAt
+                  owner
+                }
+                createdAt
+                reaction
+                userId
+                user {
+                  id
+                  sub
+                  email
+                  requests {
+                    items {
+                      id
+                      sender
+                      receiver
+                      status
+                      createdAt
+                      updatedAt
+                      userRequestsId
+                    }
+                    nextToken
+                  }
+                  movieReactions {
+                    items {
+                      id
+                      movie {
+                        id
+                        identifier
+                        createdAt
+                        name
+                        coverUri
+                        rating
+                        ratingCount
+                        description
+                        genres
+                        trailerUri
+                        releaseYear
+                        updatedAt
+                        owner
+                      }
+                      createdAt
+                      reaction
+                      userId
+                      user {
+                        id
+                        sub
+                        email
+                        movieMatches
+                        connectedUser
+                        createdAt
+                        updatedAt
+                        owner
+                      }
+                      updatedAt
+                      movieReactionMovieId
+                      owner
+                    }
+                    nextToken
+                  }
+                  movieMatches
+                  searchOptions {
+                    region
+                    includeAdult
+                    releasedAfterYear
+                    genres
+                  }
+                  connectedUser
+                  createdAt
+                  updatedAt
+                  owner
+                }
+                updatedAt
+                movieReactionMovieId
+                owner
+              }
+              nextToken
+            }
+            movieMatches
+            searchOptions {
+              region
+              includeAdult
+              releasedAfterYear
+              genres
+            }
+            connectedUser
+            createdAt
+            updatedAt
+            owner
+          }
           updatedAt
-          userMovieReactionsId
           movieReactionMovieId
           owner
         }
@@ -167,8 +407,128 @@ export const deleteUser = /* GraphQL */ `
           }
           createdAt
           reaction
+          userId
+          user {
+            id
+            sub
+            email
+            requests {
+              items {
+                id
+                sender
+                receiver
+                status
+                createdAt
+                updatedAt
+                userRequestsId
+              }
+              nextToken
+            }
+            movieReactions {
+              items {
+                id
+                movie {
+                  id
+                  identifier
+                  createdAt
+                  name
+                  coverUri
+                  rating
+                  ratingCount
+                  description
+                  genres
+                  trailerUri
+                  releaseYear
+                  updatedAt
+                  owner
+                }
+                createdAt
+                reaction
+                userId
+                user {
+                  id
+                  sub
+                  email
+                  requests {
+                    items {
+                      id
+                      sender
+                      receiver
+                      status
+                      createdAt
+                      updatedAt
+                      userRequestsId
+                    }
+                    nextToken
+                  }
+                  movieReactions {
+                    items {
+                      id
+                      movie {
+                        id
+                        identifier
+                        createdAt
+                        name
+                        coverUri
+                        rating
+                        ratingCount
+                        description
+                        genres
+                        trailerUri
+                        releaseYear
+                        updatedAt
+                        owner
+                      }
+                      createdAt
+                      reaction
+                      userId
+                      user {
+                        id
+                        sub
+                        email
+                        movieMatches
+                        connectedUser
+                        createdAt
+                        updatedAt
+                        owner
+                      }
+                      updatedAt
+                      movieReactionMovieId
+                      owner
+                    }
+                    nextToken
+                  }
+                  movieMatches
+                  searchOptions {
+                    region
+                    includeAdult
+                    releasedAfterYear
+                    genres
+                  }
+                  connectedUser
+                  createdAt
+                  updatedAt
+                  owner
+                }
+                updatedAt
+                movieReactionMovieId
+                owner
+              }
+              nextToken
+            }
+            movieMatches
+            searchOptions {
+              region
+              includeAdult
+              releasedAfterYear
+              genres
+            }
+            connectedUser
+            createdAt
+            updatedAt
+            owner
+          }
           updatedAt
-          userMovieReactionsId
           movieReactionMovieId
           owner
         }
@@ -326,8 +686,158 @@ export const createMovieReaction = /* GraphQL */ `
       }
       createdAt
       reaction
+      userId
+      user {
+        id
+        sub
+        email
+        requests {
+          items {
+            id
+            sender
+            receiver
+            status
+            createdAt
+            updatedAt
+            userRequestsId
+          }
+          nextToken
+        }
+        movieReactions {
+          items {
+            id
+            movie {
+              id
+              identifier
+              createdAt
+              name
+              coverUri
+              rating
+              ratingCount
+              description
+              genres
+              trailerUri
+              releaseYear
+              updatedAt
+              owner
+            }
+            createdAt
+            reaction
+            userId
+            user {
+              id
+              sub
+              email
+              requests {
+                items {
+                  id
+                  sender
+                  receiver
+                  status
+                  createdAt
+                  updatedAt
+                  userRequestsId
+                }
+                nextToken
+              }
+              movieReactions {
+                items {
+                  id
+                  movie {
+                    id
+                    identifier
+                    createdAt
+                    name
+                    coverUri
+                    rating
+                    ratingCount
+                    description
+                    genres
+                    trailerUri
+                    releaseYear
+                    updatedAt
+                    owner
+                  }
+                  createdAt
+                  reaction
+                  userId
+                  user {
+                    id
+                    sub
+                    email
+                    requests {
+                      items {
+                        id
+                        sender
+                        receiver
+                        status
+                        createdAt
+                        updatedAt
+                        userRequestsId
+                      }
+                      nextToken
+                    }
+                    movieReactions {
+                      items {
+                        id
+                        createdAt
+                        reaction
+                        userId
+                        updatedAt
+                        movieReactionMovieId
+                        owner
+                      }
+                      nextToken
+                    }
+                    movieMatches
+                    searchOptions {
+                      region
+                      includeAdult
+                      releasedAfterYear
+                      genres
+                    }
+                    connectedUser
+                    createdAt
+                    updatedAt
+                    owner
+                  }
+                  updatedAt
+                  movieReactionMovieId
+                  owner
+                }
+                nextToken
+              }
+              movieMatches
+              searchOptions {
+                region
+                includeAdult
+                releasedAfterYear
+                genres
+              }
+              connectedUser
+              createdAt
+              updatedAt
+              owner
+            }
+            updatedAt
+            movieReactionMovieId
+            owner
+          }
+          nextToken
+        }
+        movieMatches
+        searchOptions {
+          region
+          includeAdult
+          releasedAfterYear
+          genres
+        }
+        connectedUser
+        createdAt
+        updatedAt
+        owner
+      }
       updatedAt
-      userMovieReactionsId
       movieReactionMovieId
       owner
     }
@@ -357,8 +867,158 @@ export const updateMovieReaction = /* GraphQL */ `
       }
       createdAt
       reaction
+      userId
+      user {
+        id
+        sub
+        email
+        requests {
+          items {
+            id
+            sender
+            receiver
+            status
+            createdAt
+            updatedAt
+            userRequestsId
+          }
+          nextToken
+        }
+        movieReactions {
+          items {
+            id
+            movie {
+              id
+              identifier
+              createdAt
+              name
+              coverUri
+              rating
+              ratingCount
+              description
+              genres
+              trailerUri
+              releaseYear
+              updatedAt
+              owner
+            }
+            createdAt
+            reaction
+            userId
+            user {
+              id
+              sub
+              email
+              requests {
+                items {
+                  id
+                  sender
+                  receiver
+                  status
+                  createdAt
+                  updatedAt
+                  userRequestsId
+                }
+                nextToken
+              }
+              movieReactions {
+                items {
+                  id
+                  movie {
+                    id
+                    identifier
+                    createdAt
+                    name
+                    coverUri
+                    rating
+                    ratingCount
+                    description
+                    genres
+                    trailerUri
+                    releaseYear
+                    updatedAt
+                    owner
+                  }
+                  createdAt
+                  reaction
+                  userId
+                  user {
+                    id
+                    sub
+                    email
+                    requests {
+                      items {
+                        id
+                        sender
+                        receiver
+                        status
+                        createdAt
+                        updatedAt
+                        userRequestsId
+                      }
+                      nextToken
+                    }
+                    movieReactions {
+                      items {
+                        id
+                        createdAt
+                        reaction
+                        userId
+                        updatedAt
+                        movieReactionMovieId
+                        owner
+                      }
+                      nextToken
+                    }
+                    movieMatches
+                    searchOptions {
+                      region
+                      includeAdult
+                      releasedAfterYear
+                      genres
+                    }
+                    connectedUser
+                    createdAt
+                    updatedAt
+                    owner
+                  }
+                  updatedAt
+                  movieReactionMovieId
+                  owner
+                }
+                nextToken
+              }
+              movieMatches
+              searchOptions {
+                region
+                includeAdult
+                releasedAfterYear
+                genres
+              }
+              connectedUser
+              createdAt
+              updatedAt
+              owner
+            }
+            updatedAt
+            movieReactionMovieId
+            owner
+          }
+          nextToken
+        }
+        movieMatches
+        searchOptions {
+          region
+          includeAdult
+          releasedAfterYear
+          genres
+        }
+        connectedUser
+        createdAt
+        updatedAt
+        owner
+      }
       updatedAt
-      userMovieReactionsId
       movieReactionMovieId
       owner
     }
@@ -388,8 +1048,158 @@ export const deleteMovieReaction = /* GraphQL */ `
       }
       createdAt
       reaction
+      userId
+      user {
+        id
+        sub
+        email
+        requests {
+          items {
+            id
+            sender
+            receiver
+            status
+            createdAt
+            updatedAt
+            userRequestsId
+          }
+          nextToken
+        }
+        movieReactions {
+          items {
+            id
+            movie {
+              id
+              identifier
+              createdAt
+              name
+              coverUri
+              rating
+              ratingCount
+              description
+              genres
+              trailerUri
+              releaseYear
+              updatedAt
+              owner
+            }
+            createdAt
+            reaction
+            userId
+            user {
+              id
+              sub
+              email
+              requests {
+                items {
+                  id
+                  sender
+                  receiver
+                  status
+                  createdAt
+                  updatedAt
+                  userRequestsId
+                }
+                nextToken
+              }
+              movieReactions {
+                items {
+                  id
+                  movie {
+                    id
+                    identifier
+                    createdAt
+                    name
+                    coverUri
+                    rating
+                    ratingCount
+                    description
+                    genres
+                    trailerUri
+                    releaseYear
+                    updatedAt
+                    owner
+                  }
+                  createdAt
+                  reaction
+                  userId
+                  user {
+                    id
+                    sub
+                    email
+                    requests {
+                      items {
+                        id
+                        sender
+                        receiver
+                        status
+                        createdAt
+                        updatedAt
+                        userRequestsId
+                      }
+                      nextToken
+                    }
+                    movieReactions {
+                      items {
+                        id
+                        createdAt
+                        reaction
+                        userId
+                        updatedAt
+                        movieReactionMovieId
+                        owner
+                      }
+                      nextToken
+                    }
+                    movieMatches
+                    searchOptions {
+                      region
+                      includeAdult
+                      releasedAfterYear
+                      genres
+                    }
+                    connectedUser
+                    createdAt
+                    updatedAt
+                    owner
+                  }
+                  updatedAt
+                  movieReactionMovieId
+                  owner
+                }
+                nextToken
+              }
+              movieMatches
+              searchOptions {
+                region
+                includeAdult
+                releasedAfterYear
+                genres
+              }
+              connectedUser
+              createdAt
+              updatedAt
+              owner
+            }
+            updatedAt
+            movieReactionMovieId
+            owner
+          }
+          nextToken
+        }
+        movieMatches
+        searchOptions {
+          region
+          includeAdult
+          releasedAfterYear
+          genres
+        }
+        connectedUser
+        createdAt
+        updatedAt
+        owner
+      }
       updatedAt
-      userMovieReactionsId
       movieReactionMovieId
       owner
     }

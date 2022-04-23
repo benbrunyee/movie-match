@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.getConnectionRequest = exports.acceptRequest = exports.getUser = exports.getMovieByIds = exports.getMovie = exports.getApiMovie = exports.listMovies = exports.getMoviesByIdentifier = exports.getMovieByIdentifier = exports.removeDuplicates = exports.API_KEY = exports.API_URL = void 0;
+exports.listAllMovieReactions = exports.getConnectionRequest = exports.acceptRequest = exports.getUser = exports.getMovieByIds = exports.getMovie = exports.getApiMovie = exports.listMovies = exports.getMoviesByIdentifier = exports.getMovieByIdentifier = exports.removeDuplicates = exports.API_KEY = exports.API_URL = void 0;
 var API_1 = require("./API");
 var appSync_1 = require("./appSync");
 var mutations_1 = require("./graphql/mutations");
@@ -226,3 +226,24 @@ function getConnectionRequest(id) {
     });
 }
 exports.getConnectionRequest = getConnectionRequest;
+function listAllMovieReactions(owner) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function () {
+        var request;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
+                case 0: return [4, appSync_1["default"]({ movieReactionsByUser: queries_1.movieReactionsByUser }, {
+                        limit: 999999,
+                        userId: owner
+                    })];
+                case 1:
+                    request = _c.sent();
+                    if (!((_b = (_a = request.data) === null || _a === void 0 ? void 0 : _a.movieReactionsByUser) === null || _b === void 0 ? void 0 : _b.items)) {
+                        throw new Error("Could not find movie reactions for user: " + owner);
+                    }
+                    return [2, request.data.movieReactionsByUser.items];
+            }
+        });
+    });
+}
+exports.listAllMovieReactions = listAllMovieReactions;

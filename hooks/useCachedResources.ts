@@ -18,6 +18,7 @@ export default function useCachedResources() {
           "montserrat-medium": require("../assets/fonts/Montserrat-Medium.ttf"),
           "montserrat-bold": require("../assets/fonts/Montserrat-Bold.ttf"),
           "montserrat-italic": require("../assets/fonts/Montserrat-Italic.ttf"),
+          "montserrat-semibold": require("../assets/fonts/Montserrat-SemiBold.ttf"),
         });
       } catch (e) {
         // We might want to provide this error information to an error reporting service

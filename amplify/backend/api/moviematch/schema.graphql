@@ -70,7 +70,7 @@ type User
   sub: ID!
   email: String!
   requests: [ConnectionRequest!] @hasMany
-  movieReactions: [MovieReaction!] @hasMany
+  movieReactions: [MovieReaction!] @hasMany(indexName: "movieReactionsByUser", fields: ["id"])
   movieMatches: [ID!]
   searchOptions: SearchOptions
   connectedUser: String
@@ -135,6 +135,8 @@ type MovieReaction
   movie: Movie! @hasOne
   createdAt: AWSDateTime!
   reaction: Reaction!
+  userId: ID! @index(name: "movieReactionsByUser", queryField: "movieReactionsByUser")
+  user: User! @belongsTo(fields: ["userId"])
 }
 
 # Types

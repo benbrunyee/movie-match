@@ -27,9 +27,9 @@ const linking: LinkingOptions<RootStackParamList> = {
                   SettingsScreen: "settings",
                 },
               },
-              ConnectPartnerModal: {
+              ConnectPartner: {
                 screens: {
-                  ConnectParterModal: "connect-partner",
+                  ConnectPartner: "connect-partner",
                 },
               },
               SearchOptions: {

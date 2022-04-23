@@ -57,6 +57,8 @@ export default async function (
   let urlParams: string | undefined;
 
   if (input) {
+    // TODO: Don't show movies that have not yet been released
+    // TODO: Most movies being shown are not popular and some are YouTube videos
     urlParams = await createUrlParams(input);
   }
 

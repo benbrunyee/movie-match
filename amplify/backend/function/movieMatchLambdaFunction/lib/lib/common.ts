@@ -12,6 +12,8 @@ import {
   MovieApiOutput,
   MovieByIdentifierQuery,
   MovieByIdentifierQueryVariables,
+  MovieReactionsByUserQuery,
+  MovieReactionsByUserQueryVariables,
   UpdateConnectionRequestMutation,
   UpdateConnectionRequestMutationVariables
 } from "./API";
@@ -22,7 +24,8 @@ import {
   getMovie as getMovieApi,
   getUser as getGraphUser,
   listMovies as listGraphMovies,
-  movieByIdentifier
+  movieByIdentifier,
+  movieReactionsByUser
 } from "./graphql/queries";
 
 export const API_URL = "https://api.themoviedb.org/3";
@@ -55,9 +58,7 @@ export async function getMovieByIdentifier(
   return movie.data.movieByIdentifier.items[0];
 }
 
-export async function getMoviesByIdentifier(
-  identifiers: number[]
-) {
+export async function getMoviesByIdentifier(identifiers: number[]) {
   const promises: Promise<Movie | void>[] = [];
 
   for (let identifier of identifiers) {
@@ -173,4 +174,23 @@ export async function getConnectionRequest(id: string) {
   }
 
   return request.data.getConnectionRequest;
+}
+
+export async function listAllMovieReactions(owner: string) {
+  const request = await callGraphQl<
+    MovieReactionsByUserQuery,
+    MovieReactionsByUserQueryVariables
+  >(
+    { movieReactionsByUser },
+    {
+      limit: 999999,
+      userId: owner,
+    }
+  );
+
+  if (!request.data?.movieReactionsByUser?.items) {
+    throw new Error(`Could not find movie reactions for user: ${owner}`);
+  }
+
+  return request.data.movieReactionsByUser.items;
 }

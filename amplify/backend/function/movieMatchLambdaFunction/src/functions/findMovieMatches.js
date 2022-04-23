@@ -41,10 +41,9 @@ var appSync_1 = require("../lib/appSync");
 var common_1 = require("../lib/common");
 var mutations_1 = require("../lib/graphql/mutations");
 exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0, function () {
-    var requestee, user, connectedUserId, connectedUserObj, movieMatches, allMatchIds, newMatchIds, allMovies, newMovies;
-    var _a, _b;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var requestee, user, connectedUserId, userMovieReactions, partnerMovieReactions, movieMatches, allMatchIds, newMatchIds, allMovies, newMovies;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
             case 0:
                 requestee = event.identity.username;
                 if (!requestee) {
@@ -52,7 +51,7 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                 }
                 return [4, common_1.getUser(requestee)];
             case 1:
-                user = _c.sent();
+                user = _a.sent();
                 console.debug("Successfully got user obj for ID: " + requestee);
                 connectedUserId = user.connectedUser;
                 console.debug("Got connected partner user ID: " + connectedUserId);
@@ -61,35 +60,32 @@ exports["default"] = (function (event) { return __awaiter(void 0, void 0, void 0
                     console.warn("Returning an empty results");
                     return [2, { allMatches: [], newMatches: [] }];
                 }
-                return [4, common_1.getUser(connectedUserId)];
+                return [4, common_1.listAllMovieReactions(requestee)];
             case 2:
-                connectedUserObj = _c.sent();
-                console.debug("Successfully got connected partner user obj for ID: " + connectedUserId);
-                if (!(user.movieReactions && connectedUserObj.movieReactions)) {
-                    console.warn("Movie reactions for one or both user's are not present");
-                    console.warn("Returning an empty results");
-                    return [2, { allMatches: [], newMatches: [] }];
-                }
-                console.debug("User movie reactions: " + JSON.stringify(((_a = user.movieReactions) === null || _a === void 0 ? void 0 : _a.items) || [], null, 2));
-                console.debug("Partner movie reactions: " + JSON.stringify(((_b = connectedUserObj.movieReactions) === null || _b === void 0 ? void 0 : _b.items) || [], null, 2));
-                movieMatches = findMovieMatches(user.movieReactions.items, connectedUserObj.movieReactions.items);
+                userMovieReactions = _a.sent();
+                return [4, common_1.listAllMovieReactions(connectedUserId)];
+            case 3:
+                partnerMovieReactions = _a.sent();
+                console.debug("User movie reactions: " + JSON.stringify(userMovieReactions, null, 2));
+                console.debug("Partner movie reactions: " + JSON.stringify(partnerMovieReactions, null, 2));
+                movieMatches = findMovieMatches(userMovieReactions, partnerMovieReactions);
                 console.debug("Found movie matches: " + JSON.stringify(movieMatches, null, 2));
                 allMatchIds = common_1.removeDuplicates(getMovieIdsFromReactions(movieMatches));
                 console.debug("Found matches for the following movie IDs: " + JSON.stringify(allMatchIds, null, 2));
                 return [4, updateUserMovieMatches(requestee, allMatchIds)];
-            case 3:
-                _c.sent();
-                return [4, updateUserMovieMatches(connectedUserId, allMatchIds)];
             case 4:
-                _c.sent();
+                _a.sent();
+                return [4, updateUserMovieMatches(connectedUserId, allMatchIds)];
+            case 5:
+                _a.sent();
                 newMatchIds = getUniqueNewMatches(user.movieMatches || [], allMatchIds);
                 console.debug("Found additional movie matches, IDs: " + JSON.stringify(newMatchIds, null, 2));
                 return [4, common_1.getMovieByIds(allMatchIds)];
-            case 5:
-                allMovies = _c.sent();
-                return [4, common_1.getMovieByIds(newMatchIds)];
             case 6:
-                newMovies = _c.sent();
+                allMovies = _a.sent();
+                return [4, common_1.getMovieByIds(newMatchIds)];
+            case 7:
+                newMovies = _a.sent();
                 console.debug("All matches: " + JSON.stringify(allMovies, null, 2));
                 console.debug("New matches: " + JSON.stringify(newMovies, null, 2));
                 return [2, { allMatches: allMovies, newMatches: newMovies }];

@@ -21,6 +21,8 @@ import {
   GetUserQueryVariables,
   ListPartnerPendingMovieMatchesQuery,
   Movie as MovieApi,
+  MovieReactionsByUserQuery,
+  MovieReactionsByUserQueryVariables,
   PageCountForOptionsQuery,
   PageCountForOptionsQueryVariables,
   Reaction
@@ -30,6 +32,7 @@ import {
   discoverMovies as discoverMoviesApi,
   getUser,
   listPartnerPendingMovieMatches,
+  movieReactionsByUser,
   pageCountForOptions
 } from "../src/graphql/queries";
 import { RootTabScreenProps } from "../types";
@@ -331,19 +334,45 @@ function generateRandomNumber(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
-// TODO: Shouldn't create mulitple reactions per movie
 async function addReaction(
   userId: string,
   movieId: string,
   reaction: Reaction
 ) {
+  try {
+    // TODO: Is this the most efficient way of checking?
+    // TODO: Store this in a state so we don't call this on every swipe
+    const existingReaction = await callGraphQL<
+      MovieReactionsByUserQuery,
+      MovieReactionsByUserQueryVariables
+    >(movieReactionsByUser, {
+      userId,
+      limit: 999999,
+      filter: {
+        movieReactionMovieId: { eq: movieId },
+      },
+    });
+
+    if (existingReaction.data?.movieReactionsByUser?.items?.[0]?.id) {
+      console.warn(
+        "Reaction already exists for this movie, therefore not creating a reaction for this movie"
+      );
+      return;
+    }
+  } catch (e) {
+    console.error(e);
+    throw new Error(
+      "Could not determine if user had already reacted to the movie"
+    );
+  }
+
   return await callGraphQL<
     CreateMovieReactionMutation,
     CreateMovieReactionMutationVariables
   >(createMovieReaction, {
     input: {
       reaction,
-      userMovieReactionsId: userId,
+      userId: userId,
       movieReactionMovieId: movieId,
     },
   });

@@ -1,7 +1,10 @@
+import { FontAwesome } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 import { brand } from "expo-device";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
-import { Box, MenuItem, Text } from "../components/Themed";
+import { Box, MenuItem, MenuItemProps, Text } from "../components/Themed";
+import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import {
   AcceptRequestMutation,
@@ -15,16 +18,19 @@ import { listConnectionRequests } from "../src/graphql/queries";
 import { SettingsParamList, SettingsTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
 
-interface ModalInterface {
+interface ScreenInterface {
   text: string;
+  iconName: React.ComponentProps<typeof FontAwesome>["name"];
 }
 
-const MODALS: { [key in keyof Partial<SettingsParamList>]: ModalInterface } = {
-  ConnectPartnerModal: {
+const SCREENS: { [key in keyof Partial<SettingsParamList>]: ScreenInterface } = {
+  ConnectPartner: {
     text: "Connect to partner",
+    iconName: "group",
   },
   SearchOptions: {
     text: "Search options",
+    iconName: "search",
   },
 };
 
@@ -36,6 +42,7 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
   const [connectionRequest, setConnectionRequest] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
+  const [profileColor, setProfileColor] = useState("#FFF");
 
   const reloadConReq = useCallback(async () => {
     if (!isLoading) {
@@ -80,6 +87,18 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
     return unsubscribe;
   }, [navigation]);
 
+  useEffect(() => {
+    let string: string = "";
+
+    for (let c of userContext.sub) {
+      string += c.charCodeAt(0);
+    }
+
+    const number = parseInt(string);
+
+    setProfileColor(genColor(number));
+  }, [userContext]);
+
   if (isLoading) {
     return (
       <Box style={[styles.container, styles.centered]}>
@@ -89,11 +108,29 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
   }
 
   return (
-    <Box style={styles.container}>
-      <View>
+    <Box style={styles.container} darkColor="#000">
+      <View style={styles.profileSection}>
+        <View style={[styles.profileImage, { backgroundColor: profileColor }]}>
+          <Text
+            variant="bigTitle"
+            style={styles.profileImageText}
+            darkColor="#FFF"
+            lightColor="#111"
+          >
+            {userContext.email.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+        <Text style={styles.email} variant="subtitle">
+          {userContext.email}
+        </Text>
+      </View>
+      <View style={styles.menuContainer}>
         {connectionRequest ? (
-          <MenuItem
-            bottomBorder
+          <MenuOption
+            iconName="bell"
+            iconColor="#1EEC64"
+            text="Connection Request!"
+            bottomSpacing={true}
             onPress={async () => {
               setIsAccepting(true);
               await showPendingConReq(connectionRequest);
@@ -101,35 +138,80 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
               setIsAccepting(false);
             }}
             disabled={isAccepting}
-          >
-            <Text>Pending connection request</Text>
-          </MenuItem>
+          />
         ) : null}
-        {Object.entries(MODALS).map(([modal, obj]) => (
-          <MenuItem
+        {Object.entries(SCREENS).map(([modal, obj], i) => (
+          <MenuOption
             key={modal}
-            bottomBorder
             onPress={() => {
               navigation.navigate(modal as keyof SettingsParamList);
             }}
+            iconName={obj.iconName}
+            text={obj.text}
+            bottomSpacing={i + 1 < Object.entries(SCREENS).length}
           >
             <Text>{obj.text}</Text>
-          </MenuItem>
+          </MenuOption>
         ))}
       </View>
     </Box>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
+interface MenuOptionProps extends MenuItemProps {
+  bottomSpacing?: boolean;
+  iconName: React.ComponentProps<typeof FontAwesome>["name"];
+  iconColor?: string;
+  text: string;
+}
+
+const MenuOption = ({
+  text,
+  iconName,
+  iconColor,
+  bottomSpacing,
+  ...otherProps
+}: MenuOptionProps) => {
+  const { dark } = useTheme();
+
+  if (!iconColor) {
+    iconColor = dark ? "#FFF" : "#111";
+  }
+
+  return (
+    <MenuItem
+      {...otherProps}
+      style={[menuStyles.container, menuStyles.bottomSpacing]}
+    >
+      <View style={menuStyles.content}>
+        <View style={menuStyles.iconContainer}>
+          <FontAwesome name={iconName} size={25} color={iconColor} />
+        </View>
+        <View>
+          <Text variant="caption" style={menuStyles.text}>
+            {text}
+          </Text>
+        </View>
+      </View>
+      <FontAwesome
+        name="arrow-right"
+        size={10}
+        color={dark ? "#FFF" : "#111"}
+      />
+    </MenuItem>
+  );
+};
+
+function genColor(seed: number) {
+  let color = Math.floor(Math.abs(Math.sin(seed) * 16777215)).toString(16);
+
+  // pad any colors shorter than 6 characters with leading 0s
+  while (color.length < 6) {
+    color = "0" + color;
+  }
+
+  return `#${color}`;
+}
 
 const showPendingConReq = async (id: string) => {
   if (!brand) {
@@ -167,5 +249,61 @@ const acceptConReq = async (id: string) => {
     alert("Failed to accept connection request");
   }
 };
+
+const menuStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  content: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  bottomSpacing: {
+    marginBottom: Styling.spacingSmall,
+  },
+  iconContainer: {
+    width: 35,
+    height: 25,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: Styling.spacingSmall
+  },
+  text: {
+    fontFamily: "montserrat-semibold",
+  },
+});
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  centered: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileSection: {
+    padding: Styling.spacingLarge,
+    alignItems: "center",
+  },
+  profileImage: {
+    borderRadius: 100,
+    width: 100,
+    height: 100,
+    marginBottom: Styling.spacingSmall,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileImageText: {
+    color: "#FFF",
+  },
+  email: {
+    fontFamily: "montserrat-bold",
+  },
+  menuContainer: {
+    paddingHorizontal: Styling.spacingMedium,
+  },
+});
 
 export default SettingsScreen;

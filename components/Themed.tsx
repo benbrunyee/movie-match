@@ -52,8 +52,7 @@ export type TextInputProps = ThemeProps & FontProps & DefaultTextInput["props"];
 export type ButtonProps = ThemeProps & PressableProps;
 export type TabProps = ThemeProps & { selected?: boolean } & PressableProps;
 export type ContainerProps = ThemeProps & DefaultView["props"];
-export type MenuItemProps = ThemeProps &
-  PressableProps & { topBorder?: boolean; bottomBorder?: boolean };
+export type MenuItemProps = ThemeProps & PressableProps;
 export type SwiperProps<T> = DefaultSwiper<T>["props"] & {
   passRef: React.Ref<DefaultSwiper<T>>;
 } & ThemeProps;
@@ -177,14 +176,7 @@ export function Container(props: ContainerProps) {
 }
 
 export function MenuItem(props: MenuItemProps) {
-  const {
-    bottomBorder,
-    topBorder,
-    lightColor,
-    darkColor,
-    style,
-    ...otherProps
-  } = props;
+  const { lightColor, darkColor, style, ...otherProps } = props;
   const backgroundColor = useThemeColor(
     { light: lightColor, dark: darkColor },
     "menuItemDefault"
@@ -193,22 +185,14 @@ export function MenuItem(props: MenuItemProps) {
     { light: lightColor, dark: darkColor },
     "menuItemPressed"
   );
-  const borderColor = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    "borderColor"
-  );
 
   return (
     <Pressable
       style={({ pressed }) => [
         {
           backgroundColor: pressed ? backgroundColorPressed : backgroundColor,
-          ...(bottomBorder && {
-            borderBottomWidth: 1,
-            borderBottomColor: borderColor,
-          }),
-          ...(topBorder && { borderTopWidth: 1, borderTopColor: borderColor }),
           padding: Styling.spacingMedium,
+          borderRadius: Styling.borderRadius,
         },
         typeof style === "function" ? style({ pressed }) : style,
       ]}

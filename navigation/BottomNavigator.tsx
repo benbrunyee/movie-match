@@ -1,14 +1,11 @@
 import { FontAwesome } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   BottomTabHeaderProps,
   createBottomTabNavigator
 } from "@react-navigation/bottom-tabs";
 import { useTheme } from "@react-navigation/native";
-import { Auth } from "aws-amplify";
-import { brand } from "expo-device";
-import React, { useCallback } from "react";
-import { Alert, Pressable, StyleSheet } from "react-native";
+import React from "react";
+import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Box, Text } from "../components/Themed";
 import Colors from "../constants/Colors";
@@ -32,42 +29,6 @@ function BottomTabNavigator() {
   const colorScheme = useColorScheme();
   const [, setUserContext] = useUserContext();
 
-  const signOut = useCallback(() => {
-    const onPress = () =>
-      Auth.forgetDevice()
-        .catch(() => {})
-        .finally(() => {
-          Auth.signOut().then(async () => {
-            await AsyncStorage.clear();
-
-            setUserContext({
-              email: "",
-              sub: "",
-              signedIn: false,
-              connectedPartner: "",
-              userDbObj: {},
-            });
-          });
-        });
-
-    // Brand returns null if on web
-    if (!brand) {
-      // If web, just sign out
-      onPress();
-      return;
-    }
-
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      {
-        text: "Yes",
-        onPress,
-      },
-      {
-        text: "No",
-      },
-    ]);
-  }, [setUserContext]);
-
   return (
     <BottomTab.Navigator
       initialRouteName={DEFAULT_ROOT_ROUTE}
@@ -81,9 +42,7 @@ function BottomTabNavigator() {
         component={DiscoverScreen}
         options={{
           title: "Discover",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="circle-o-notch" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           headerShown: false,
         }}
       />
@@ -91,30 +50,17 @@ function BottomTabNavigator() {
         name="Matches"
         component={MatchesScreen}
         options={{
-          header: Header,
+          header: BottomTabHeader,
           headerTitle: "Matches",
-          tabBarIcon: ({ color }) => (
-            <TabBarIcon name="circle-o" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
         }}
       />
       <BottomTab.Screen
         name="Settings"
         component={Settings}
         options={{
-          header: Header,
-          headerTitle: "Settings",
+          headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
-          headerRight: () => (
-            <Pressable
-              onPress={signOut}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-              })}
-            >
-              <HeaderRightIcon name="sign-out" />
-            </Pressable>
-          ),
         }}
       />
     </BottomTab.Navigator>
@@ -131,21 +77,14 @@ function TabBarIcon(props: {
   return <FontAwesome size={25} {...props} />;
 }
 
-function HeaderRightIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-}) {
-  const colorScheme = useColorScheme();
-
-  return <FontAwesome size={20} color={Colors[colorScheme].text} {...props} />;
-}
-
-const Header: React.FC<BottomTabHeaderProps> = ({
+export const BottomTabHeader: React.FC<BottomTabHeaderProps> = ({
   layout,
-  options: { headerTitle, headerRight = () => null },
+  options: { headerTitle, headerRight = () => null, headerLeft = () => null },
 }) => {
   const { dark } = useTheme();
   const { top } = useSafeAreaInsets();
-  const button = headerRight({});
+  const headerRightElem = headerRight({});
+  const headerLeftElem = headerLeft({});
 
   return (
     <Box
@@ -160,10 +99,11 @@ const Header: React.FC<BottomTabHeaderProps> = ({
       darkColor="#000"
       lightColor="#FFF"
     >
+      {headerLeftElem}
       <Text variant="caption" style={[styles.text]}>
         {headerTitle}
       </Text>
-      {button}
+      {headerRightElem}
     </Box>
   );
 };
@@ -171,7 +111,7 @@ const Header: React.FC<BottomTabHeaderProps> = ({
 const styles = StyleSheet.create({
   tab: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "baseline",
     justifyContent: "space-between",
     shadowOffset: {
       height: 2,
@@ -184,6 +124,7 @@ const styles = StyleSheet.create({
   text: {
     textTransform: "uppercase",
     fontFamily: "montserrat-bold",
+    letterSpacing: 5,
   },
 });
 

@@ -20,7 +20,7 @@ import { SettingsTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
 
 const ConnectPartnerModal: React.FC<
-  SettingsTabScreenProps<"ConnectPartnerModal">
+  SettingsTabScreenProps<"ConnectPartner">
 > = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);

@@ -39,11 +39,10 @@ exports.__esModule = true;
 var API_1 = require("../lib/API");
 var common_1 = require("../lib/common");
 function default_1(event) {
-    var _a, _b;
     return __awaiter(this, void 0, void 0, function () {
-        var username, user, connectedPartner, userReactions, partnerReactions, partnerLikeReations, userMovieIds, partnerMovieIds, unmatchedMovieIdentifiers, movieData;
-        return __generator(this, function (_c) {
-            switch (_c.label) {
+        var username, user, userReactions, partnerReactions, partnerLikeReations, userMovieIds, partnerMovieIds, unmatchedMovieIdentifiers, movieData;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
                 case 0:
                     username = event.identity.username;
                     if (!username) {
@@ -51,17 +50,17 @@ function default_1(event) {
                     }
                     return [4, common_1.getUser(username)];
                 case 1:
-                    user = _c.sent();
+                    user = _a.sent();
                     console.debug("Successfully got user info for: " + username);
                     if (!user.connectedUser) {
                         throw new Error("User does not have a connected partner");
                     }
-                    return [4, common_1.getUser(user.connectedUser)];
+                    return [4, common_1.listAllMovieReactions(user.sub)];
                 case 2:
-                    connectedPartner = _c.sent();
-                    console.debug("Successfully got connected partner's info: " + user.connectedUser);
-                    userReactions = (_a = user.movieReactions) === null || _a === void 0 ? void 0 : _a.items;
-                    partnerReactions = (_b = connectedPartner.movieReactions) === null || _b === void 0 ? void 0 : _b.items;
+                    userReactions = _a.sent();
+                    return [4, common_1.listAllMovieReactions(user.connectedUser)];
+                case 3:
+                    partnerReactions = _a.sent();
                     if (!(partnerReactions && userReactions)) {
                         throw new Error("Could not find movie reactions for partner and/or user");
                     }
@@ -79,8 +78,8 @@ function default_1(event) {
                         return [2, { items: [] }];
                     }
                     return [4, common_1.getMoviesByIdentifier(unmatchedMovieIdentifiers)];
-                case 3:
-                    movieData = _c.sent();
+                case 4:
+                    movieData = _a.sent();
                     console.debug("Listed movies from IDs in overlap: " + JSON.stringify(movieData, null, 2));
                     return [2, { items: movieData }];
             }
