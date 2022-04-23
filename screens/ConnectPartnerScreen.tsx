@@ -73,7 +73,7 @@ const ConnectPartnerModal: React.FC<
   }, []);
 
   return (
-    <View style={styles.container}>
+    <Box style={styles.container} darkColor="#101010" lightColor="#EEEEEE">
       <View style={styles.switchContainer}>
         <SwitchTab
           tabs={TABS}
@@ -102,7 +102,7 @@ const ConnectPartnerModal: React.FC<
           </View>
         )}
       </View>
-    </View>
+    </Box>
   );
 };
 
