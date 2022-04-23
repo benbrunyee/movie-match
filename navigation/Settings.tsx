@@ -134,6 +134,7 @@ const SettingsInnerHeader: React.FC<NativeStackHeaderProps> = ({
         styles.tab,
         {
           paddingTop: top ? top + Styling.spacingSmall : Styling.spacingMedium,
+          // TODO: Shadow not showing
           shadowColor: dark ? "#FFF" : "#000",
           width,
         },
