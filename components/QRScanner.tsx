@@ -1,15 +1,12 @@
 import {
   BarCodeScanner as Scanner,
-  BarCodeScannerProps,
+  BarCodeScannerProps
 } from "expo-barcode-scanner";
 import React, { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { Button, Text } from "./Themed";
 
-const BarCodeScanner: React.FC<BarCodeScannerProps> = ({
-  style,
-  ...otherProps
-}) => {
+const QRScanner: React.FC<BarCodeScannerProps> = ({ style, ...otherProps }) => {
   const [hasPermission, setHasPermission] = useState(false);
 
   useEffect(() => {
@@ -25,7 +22,7 @@ const BarCodeScanner: React.FC<BarCodeScannerProps> = ({
     return (
       <View>
         <Button onPress={requestPerms}>
-          <Text style={{ textAlign: "center" }}>Request permissions</Text>
+          <Text variant="caption">Request Permissions</Text>
         </Button>
       </View>
     );
@@ -44,4 +41,4 @@ const BarCodeScanner: React.FC<BarCodeScannerProps> = ({
   );
 };
 
-export default BarCodeScanner;
+export default QRScanner;

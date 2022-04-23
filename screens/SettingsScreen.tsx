@@ -3,6 +3,7 @@ import { useTheme } from "@react-navigation/native";
 import { brand } from "expo-device";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
+import ProfileHeader from "../components/ProfileHeader";
 import { Box, MenuItem, MenuItemProps, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
@@ -23,16 +24,17 @@ interface ScreenInterface {
   iconName: React.ComponentProps<typeof FontAwesome>["name"];
 }
 
-const SCREENS: { [key in keyof Partial<SettingsParamList>]: ScreenInterface } = {
-  ConnectPartner: {
-    text: "Connect to partner",
-    iconName: "group",
-  },
-  SearchOptions: {
-    text: "Search options",
-    iconName: "search",
-  },
-};
+const SCREENS: { [key in keyof Partial<SettingsParamList>]: ScreenInterface } =
+  {
+    ConnectPartner: {
+      text: "Connect to partner",
+      iconName: "group",
+    },
+    SearchOptions: {
+      text: "Search options",
+      iconName: "search",
+    },
+  };
 
 const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
   navigation,
@@ -42,7 +44,6 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
   const [connectionRequest, setConnectionRequest] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
-  const [profileColor, setProfileColor] = useState("#FFF");
 
   const reloadConReq = useCallback(async () => {
     if (!isLoading) {
@@ -87,18 +88,6 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
     return unsubscribe;
   }, [navigation]);
 
-  useEffect(() => {
-    let string: string = "";
-
-    for (let c of userContext.sub) {
-      string += c.charCodeAt(0);
-    }
-
-    const number = parseInt(string);
-
-    setProfileColor(genColor(number));
-  }, [userContext]);
-
   if (isLoading) {
     return (
       <Box style={[styles.container, styles.centered]}>
@@ -110,19 +99,7 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
   return (
     <Box style={styles.container} darkColor="#000">
       <View style={styles.profileSection}>
-        <View style={[styles.profileImage, { backgroundColor: profileColor }]}>
-          <Text
-            variant="bigTitle"
-            style={styles.profileImageText}
-            darkColor="#FFF"
-            lightColor="#111"
-          >
-            {userContext.email.charAt(0).toUpperCase()}
-          </Text>
-        </View>
-        <Text style={styles.email} variant="subtitle">
-          {userContext.email}
-        </Text>
+        <ProfileHeader />
       </View>
       <View style={styles.menuContainer}>
         {connectionRequest ? (
@@ -202,17 +179,6 @@ const MenuOption = ({
   );
 };
 
-function genColor(seed: number) {
-  let color = Math.floor(Math.abs(Math.sin(seed) * 16777215)).toString(16);
-
-  // pad any colors shorter than 6 characters with leading 0s
-  while (color.length < 6) {
-    color = "0" + color;
-  }
-
-  return `#${color}`;
-}
-
 const showPendingConReq = async (id: string) => {
   if (!brand) {
     alert("Accepting connection request");
@@ -268,7 +234,7 @@ const menuStyles = StyleSheet.create({
     height: 25,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: Styling.spacingSmall
+    marginRight: Styling.spacingSmall,
   },
   text: {
     fontFamily: "montserrat-semibold",
@@ -285,21 +251,6 @@ const styles = StyleSheet.create({
   },
   profileSection: {
     padding: Styling.spacingLarge,
-    alignItems: "center",
-  },
-  profileImage: {
-    borderRadius: 100,
-    width: 100,
-    height: 100,
-    marginBottom: Styling.spacingSmall,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  profileImageText: {
-    color: "#FFF",
-  },
-  email: {
-    fontFamily: "montserrat-bold",
   },
   menuContainer: {
     paddingHorizontal: Styling.spacingMedium,

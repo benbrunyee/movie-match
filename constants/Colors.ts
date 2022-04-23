@@ -17,8 +17,8 @@ export default {
     tabBackgroundDefault: "#eee",
     tabBackgroundSelected: "#ddd",
     tabBackgroundPressed: "#ddd",
-    buttonBackgroundDefault: "#eee",
-    buttonBackgroundPressed: "#ccc",
+    buttonBackgroundDefault: "#FFFFFF",
+    buttonBackgroundPressed: "#F5F5F5",
     borderColor: "#ddd",
   },
   dark: {
@@ -36,8 +36,8 @@ export default {
     tabBackgroundDefault: "#666",
     tabBackgroundSelected: "#444",
     tabBackgroundPressed: "#444",
-    buttonBackgroundDefault: "#666",
-    buttonBackgroundPressed: "#888",
+    buttonBackgroundDefault: "#101010",
+    buttonBackgroundPressed: "#222222",
     borderColor: "#444",
   },
 };

@@ -111,7 +111,7 @@ export const BottomTabHeader: React.FC<BottomTabHeaderProps> = ({
 const styles = StyleSheet.create({
   tab: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
     justifyContent: "space-between",
     shadowOffset: {
       height: 2,

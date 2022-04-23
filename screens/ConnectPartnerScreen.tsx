@@ -2,8 +2,11 @@ import { BarCodeScannedCallback } from "expo-barcode-scanner";
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import BarCodeScanner from "../components/BarCodeScanner";
-import { Text, useThemeColor } from "../components/Themed";
+import QRBorder from "../assets/images/qr-border.svg";
+import ProfileHeader from "../components/ProfileHeader";
+import QRScanner from "../components/QRScanner";
+import SwitchTab from "../components/SwitchTab";
+import { Box } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
 import {
@@ -11,49 +14,24 @@ import {
   CreateConnectionRequestMutation,
   CreateConnectionRequestMutationVariables,
   ListConnectionRequestsQuery,
-  ListConnectionRequestsQueryVariables,
-  ListUsersQuery
+  ListConnectionRequestsQueryVariables
 } from "../src/API";
 import { createConnectionRequest } from "../src/graphql/mutations";
-import { listConnectionRequests, listUsers } from "../src/graphql/queries";
+import { listConnectionRequests } from "../src/graphql/queries";
 import { SettingsTabScreenProps } from "../types";
 import { callGraphQL } from "../utils/amplify";
+
+const TABS = ["SCAN", "MY CODE"] as const;
 
 const ConnectPartnerModal: React.FC<
   SettingsTabScreenProps<"ConnectPartner">
 > = () => {
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const borderBottomColor = useThemeColor({}, "borderColor");
-  const [status, setStatus] = useState<"CONNECTED" | "DISCONNECTED">(
-    "DISCONNECTED"
-  );
   const [scanned, setScanned] = useState(false);
+  const [selectedTab, setSelectedTab] = useState<typeof TABS[number]>("SCAN");
 
   const [userContext] = useUserContext();
 
   useEffect(() => {
-    async function onLoad() {
-      setIsLoading(true);
-
-      // Load the connected partner if there is one
-      try {
-        const user = await callGraphQL<ListUsersQuery>(listUsers);
-        const userObj = user.data?.listUsers?.items?.[0];
-
-        if (userObj?.connectedUser) {
-          setStatus("CONNECTED");
-        }
-      } catch (e) {
-        console.error(e);
-        setError("Failed to load data");
-      }
-
-      setIsLoading(false);
-    }
-
-    onLoad();
-
     // Set a timeout to reset the barcode scanner
     const timeout = setInterval(() => {
       setScanned(false);
@@ -94,53 +72,44 @@ const ConnectPartnerModal: React.FC<
       });
   }, []);
 
-  if (error) {
-    return (
-      <View>
-        <Text>{error}</Text>
-      </View>
-    );
-  }
-
-  if (isLoading) {
-    return <View></View>;
-  }
-
   return (
-    <View>
-      {isLoading ? (
-        <Text variant="title">Loading...</Text>
-      ) : (
-        <>
-          <View
-            style={[
-              styles.titleContainer,
-              {
-                borderBottomColor,
-              },
-            ]}
-          >
-            <Text variant="title">Connect partner</Text>
+    <View style={styles.container}>
+      <View style={styles.switchContainer}>
+        <SwitchTab
+          tabs={TABS}
+          selectedTab={selectedTab}
+          onSwitch={(tab) => setSelectedTab(tab)}
+        />
+      </View>
+      <View style={styles.content}>
+        {selectedTab === "SCAN" ? (
+          <View style={styles.scannerContainer}>
+            <QRScanner
+              barCodeTypes={["qr"]}
+              onBarCodeScanned={scanned ? undefined : handleScan}
+            >
+              <Overlay />
+            </QRScanner>
           </View>
-          <View style={styles.topSection}>
-            <Text
-              style={{
-                color: status === "CONNECTED" ? "green" : "red",
-              }}
-            >{`Status: ${status}`}</Text>
-            <Text>Your QR code</Text>
-            <QRCode value={userContext.sub} size={250} />
-          </View>
-          <View style={styles.bottomSection}>
-            <Text variant="subtitle">Scan Partner's QR Code</Text>
-            <View style={styles.cameraContainer}>
-              <BarCodeScanner
-                onBarCodeScanned={scanned ? undefined : handleScan}
-              />
+        ) : (
+          <View style={styles.qrContent}>
+            <View style={styles.profileContainer}>
+              <ProfileHeader />
             </View>
+            <Box style={styles.qrContainer} lightColor="#FFF" darkColor="#FFF">
+              <QRCode value={userContext.sub} size={250} />
+            </Box>
           </View>
-        </>
-      )}
+        )}
+      </View>
+    </View>
+  );
+};
+
+const Overlay = () => {
+  return (
+    <View style={styles.overlay}>
+      <QRBorder height="60%" width="60%" />
     </View>
   );
 };
@@ -186,35 +155,45 @@ async function createConnectRequest(senderSub: string, receiverSub: string) {
   return res;
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
-    alignItems: "center",
-    padding: Styling.spacingMedium,
-    marginBottom: Styling.spacingMedium,
-    borderBottomWidth: 1,
-  },
-  topSection: {
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cameraContainer: {
-    width: 250,
-    aspectRatio: 1,
-    borderRadius: Styling.borderRadius,
-    overflow: "hidden",
-    marginTop: Styling.spacingMedium,
-  },
-  bottomSection: {
-    alignItems: "center",
-    marginTop: Styling.spacingLarge,
-  },
-});
-
 export class DuplicateConnectionError extends Error {
   constructor(message?: string) {
     super(message);
     this.name = "DuplicateConnectionError";
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: Styling.spacingMedium,
+  },
+  switchContainer: {
+    padding: Styling.spacingMedium,
+  },
+  content: {
+    flex: 1,
+  },
+  scannerContainer: {
+    flex: 1,
+    borderRadius: Styling.borderRadius,
+    overflow: "hidden",
+  },
+  overlay: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  profileContainer: {
+    marginBottom: Styling.spacingMedium,
+  },
+  qrContent: {
+    flex: 1,
+    alignItems: "center",
+  },
+  qrContainer: {
+    borderRadius: Styling.borderRadius,
+    padding: Styling.spacingMedium,
+  },
+});
 
 export default ConnectPartnerModal;

@@ -143,7 +143,7 @@ const SettingsInnerHeader: React.FC<NativeStackHeaderProps> = ({
     >
       <View style={styles.left}>
         {route.name !== "SettingsScreen" ? (
-          <Pressable onPress={() => navigation.navigate("SettingsScreen")}>
+          <Pressable onPress={() => navigation.goBack()}>
             <FontAwesome name="arrow-left" size={20} style={styles.leftIcon} />
           </Pressable>
         ) : null}
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   },
   left: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
   },
   leftIcon: {
     marginRight: Styling.spacingMedium,

@@ -84,7 +84,7 @@ export default function DiscoverScreen({
                 {...props}
                 onPress={() =>
                   navigation.navigate("Settings", {
-                    screen: "ConnectPartnerModal",
+                    screen: "ConnectPartner",
                   })
                 }
               />
