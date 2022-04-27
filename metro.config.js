@@ -9,7 +9,6 @@ module.exports = (() => {
 
     config.resolver = {
       ...resolver,
-      blacklistRE: exclusionList([/amplify\/#current-cloud-backend\/.*/]),
       assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
       sourceExts: [...resolver.sourceExts, "svg"],
     };

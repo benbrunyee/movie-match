@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow create: if
+        request.auth.uid == uid &&
+        !exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        !request.resource.data.keys().hasAny(["connectedUser"])
+      allow read: if
+        request.auth != null
+      allow update: if
+        request.auth.uid == uid &&
+        !request.resource.data.keys().hasAny(["connectedUser"])
+      allow delete: if
+        false
+    }
+    match /users/{uid}/private/{privateDoc=**} {
+      allow read, write: if
+        request.auth.uid == uid
+    }
+    match /movieReactions/{id} {
+      allow create: if
+        request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        request.resource.data.owner == request.auth.uid
+      allow read: if
+        request.auth.uid == resource.data.owner ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).connectedUser == resource.data.owner
+      allow update: if
+        request.auth.uid == resource.data.owner &&
+        request.resource.data.owner == resource.data.owner
+      allow delete: if
+        request.auth.uid == resource.data.owner
+    }
+    match /connectionRequests/{uid} {
+        allow create: if
+          request.auth != null &&
+          request.resouce.keys().hasAll(["sender", "receiver", "status"]) &&
+          exists(/databases/$(database)/documents/users/$(request.resource.data.receiver)) &&
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+          request.auth.uid == request.resource.data.sender &&
+          request.resource.data.status == "PENDING"
+        allow read: if
+          resource.data.receiver == request.auth.uid ||
+          resource.data.sender == request.auth.uid
+        allow update: if
+          resource.data.receiver == request.auth.uid &&
+          request.resouce.data.keys().hasOnly(["status"])
+        allow delete: if
+          resource.data.receiver == request.auth.uid ||
+          resource.data.sender == request.auth.uid
+    }
+    match /movies/{movie=**} {
+      allow read, write: if
+        false
+    }
+    match /genres/{genre=**} {
+      allow read, write: if
+        false
+    }
+    match /regions/{region=**} {
+      allow read, write: if
+        false
+    }
+  }
+}

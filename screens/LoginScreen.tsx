@@ -1,7 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@react-navigation/native";
-import { Auth } from "aws-amplify";
-import React, { useCallback, useEffect, useState } from "react";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword
+} from "firebase/auth";
+import React, { useCallback, useState } from "react";
 import {
   Dimensions,
   ImageBackground,
@@ -50,24 +53,13 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
   const backgroundImage = dark ? DarkBackground : LightBackground;
   const windowWidth = Dimensions.get("window").width;
 
-  const { fromVerification } = route.params || {};
-
-  useEffect(() => {
-    if (fromVerification) {
-      // Sign the user in automatically
-      handleSubmitWrapper("SIGNIN");
-    }
-  }, [fromVerification]);
-
   const handleSubmit = useCallback(
     async (providedType?: typeof type) => {
       const innerType = providedType || type;
 
       if (innerType === "SIGNIN") {
         // Sign the user in
-        await signIn(form.email, form.password);
-        const userData = await configureUser();
-        setUserContext(userData);
+        await signInWithEmailAndPassword(getAuth(), form.email, form.password);
       } else if (innerType === "SIGNUP") {
         if (form.password !== form.repeatPassword) {
           console.warn("Passwords do not match");
@@ -76,16 +68,18 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
         }
 
         // Sign up the user
-        await signUp(form.email, form.password);
-
-        // Store the email in storage
-        await AsyncStorage.setItem("@signUpUsername", form.email);
-
-        navigation.navigate("Verification");
+        await createUserWithEmailAndPassword(
+          getAuth(),
+          form.email,
+          form.password
+        );
       } else {
         console.error(`Login type not configured: ${innerType}`);
         throw new Error("Failed to proceed");
       }
+
+      const userData = await configureUser();
+      setUserContext(userData);
     },
     [type, form]
   );
@@ -188,6 +182,7 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
                 <Text variant="smallCaption">Repeat Password</Text>
                 <StyledTextInput
                   value={form.repeatPassword}
+                  autoCompleteType="password"
                   autoCorrect={false}
                   textContentType="password"
                   secureTextEntry={true}
@@ -228,11 +223,17 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
         {
           // Error message
         }
-        <View style={styles.errorMessage}>
-          <Text variant="smallCaption" lightColor="#FF5F5F" darkColor="#FF5F5F">
-            {error}
-          </Text>
-        </View>
+        {error ? (
+          <View style={styles.errorMessage}>
+            <Text
+              variant="smallCaption"
+              lightColor="#FF5F5F"
+              darkColor="#FF5F5F"
+            >
+              {error}
+            </Text>
+          </View>
+        ) : null}
         {
           // Submit button
         }
@@ -314,19 +315,6 @@ function Text({ lightColor, darkColor, style, ...otherProps }: TextProps) {
       style={[styles.text, style]}
     />
   );
-}
-async function signIn(email: string, password: string) {
-  await Auth.signIn({
-    username: email,
-    password: password,
-  });
-}
-
-async function signUp(email: string, password: string) {
-  await Auth.signUp({
-    username: email,
-    password: password,
-  });
 }
 
 const styles = StyleSheet.create({

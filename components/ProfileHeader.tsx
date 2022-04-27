@@ -13,7 +13,7 @@ const ProfileHeader = ({}: ProfileHeaderProps): JSX.Element => {
   useEffect(() => {
     let string: string = "";
 
-    for (let c of userContext.sub) {
+    for (let c of userContext.uid) {
       string += c.charCodeAt(0);
     }
 

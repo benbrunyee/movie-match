@@ -1,4 +1,14 @@
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where
+} from "firebase/firestore/lite";
+import { httpsCallable } from "firebase/functions";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, PressableProps, StyleSheet } from "react-native";
 import DefaultSwiper from "react-native-deck-swiper";
@@ -11,36 +21,15 @@ import {
   useNotificationDispatch
 } from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
+import { db, functions } from "../firebase";
 import {
-  CreateMovieReactionMutation,
-  CreateMovieReactionMutationVariables,
-  DiscoverMoviesInput,
-  DiscoverMoviesQuery,
-  DiscoverMoviesQueryVariables,
-  GetUserQuery,
-  GetUserQueryVariables,
-  ListPartnerPendingMovieMatchesQuery,
-  Movie as MovieApi,
-  MovieReactionsByUserQuery,
-  MovieReactionsByUserQueryVariables,
-  PageCountForOptionsQuery,
-  PageCountForOptionsQueryVariables,
-  Reaction
-} from "../src/API";
-import { createMovieReaction } from "../src/graphql/mutations";
-import {
-  discoverMovies as discoverMoviesApi,
-  getUser,
-  listPartnerPendingMovieMatches,
-  movieReactionsByUser,
-  pageCountForOptions
-} from "../src/graphql/queries";
+  DiscoverSearchOptions,
+  MovieBase,
+  MovieReaction
+} from "../functions/src/util/apiTypes";
 import { RootTabScreenProps } from "../types";
-import { callGraphQL } from "../utils/amplify";
 
-const MIN_PAGE = 1;
-
-export interface Movie extends MovieApi {
+export interface Movie extends MovieBase {
   isPartnerMovie?: boolean;
 }
 
@@ -57,16 +46,96 @@ export default function DiscoverScreen({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const discoverMovies = useCallback(
+    async (searchOptions?: DiscoverSearchOptions): Promise<Movie[]> => {
+      const discover = httpsCallable(functions, "discoverMovies");
+      const movies = (await discover(searchOptions)).data as Movie[];
+
+      if (!movies.length) {
+        throw new Error("Could not find any movies");
+      }
+
+      return movies;
+    },
+    []
+  );
+
+  const loadPartnerPendingMatches = useCallback(async (): Promise<Movie[]> => {
+    const partnerQ = query(
+      collection(db, "movieReactions"),
+      where("owner", "==", userContext.connectedPartner),
+      where("reaction", "==", "LIKE")
+    );
+    const partnerMovies = (await getDocs(partnerQ)).docs.map<MovieReaction>(
+      (doc) => doc.data() as MovieReaction
+    );
+
+    const currentReactionsQ = query(
+      collection(db, "movieReactions"),
+      where("owner", "==", userContext.uid)
+    );
+    const reactedMovieIds = (await getDocs(currentReactionsQ)).docs
+      .map<MovieReaction>((doc) => doc.data() as MovieReaction)
+      .map((reaction) => reaction.movieId);
+
+    const movieIds = partnerMovies
+      .filter((reaction) => !reactedMovieIds.includes(reaction.movieId))
+      .map<string>((doc) => doc.movieId);
+
+    const movies = (
+      await Promise.all(movieIds.map((id) => getDoc(doc(db, "movies", id))))
+    ).map((doc) => doc.data() as Movie);
+
+    if (!movies.length) {
+      throw new Error("Failed to list partner pending movies");
+    }
+
+    return movies;
+  }, [userContext.connectedPartner]);
+
+  const addReaction = useCallback(
+    async (
+      userId: string,
+      movieId: string,
+      reaction: MovieReaction["reaction"]
+    ) => {
+      const movieReaction: MovieReaction = {
+        movieId,
+        owner: userId,
+        reaction: reaction,
+      };
+
+      try {
+        const q = query(
+          collection(db, "movieReactions"),
+          where("movieId", "==", movieId),
+          where("owner", "==", userId)
+        );
+        const existingReaction = await getDocs(q);
+
+        if (!existingReaction.empty) {
+          console.warn(
+            "Reaction already exists for this movie, therefore not creating a reaction for this movie"
+          );
+          return;
+        }
+      } catch (e) {
+        console.error(e);
+        throw new Error(
+          "Could not determine if user had already reacted to the movie"
+        );
+      }
+
+      await addDoc(collection(db, "movieReactions"), movieReaction);
+    },
+    []
+  );
+
   const findMovies = useCallback(async () => {
     try {
-      const userData = await callGraphQL<GetUserQuery, GetUserQueryVariables>(
-        getUser,
-        {
-          id: userContext.sub,
-        }
-      );
+      const userDoc = await getDoc(doc(db, "users", userContext.uid));
 
-      if (!userData.data?.getUser) {
+      if (!userDoc.exists()) {
         throw new Error("Could not load user data");
       }
 
@@ -104,16 +173,13 @@ export default function DiscoverScreen({
       // Set the partner movies
       setMovies(partnerMovies);
 
-      const searchOptions = userData.data.getUser.searchOptions;
+      // TODO: Remove casting everywhere
+      const searchOptions = userDoc.data()
+        .searchOptions as DiscoverSearchOptions;
 
       const maxPage = (
-        await callGraphQL<
-          PageCountForOptionsQuery,
-          PageCountForOptionsQueryVariables
-        >(pageCountForOptions, {
-          input: searchOptions,
-        })
-      ).data?.pageCountForOptions;
+        await httpsCallable(functions, "getPageCountForOptions")(searchOptions)
+      ).data as number;
 
       if (!maxPage) {
         throw new Error("Failed to determine max page for search options");
@@ -183,14 +249,20 @@ export default function DiscoverScreen({
   }, [findMovies]);
 
   const likeMovie = useCallback((movie: Movie) => {
-    addReaction(userContext.sub, movie.id, Reaction.LIKE);
+    addReaction(userContext.uid, movie.id, "LIKE").catch((err) => {
+      console.error(err);
+      setError("Failed to add reaction");
+    });
     if (movie.isPartnerMovie) {
       alert("You found a match!");
     }
   }, []);
 
   const dislikeMovie = useCallback((movie: Movie) => {
-    addReaction(userContext.sub, movie.id, Reaction.DISLIKE);
+    addReaction(userContext.uid, movie.id, "DISLIKE").catch((err) => {
+      console.error(err);
+      setError("Failed to add reaction");
+    });
   }, []);
 
   const swipeRight = useCallback(
@@ -272,6 +344,7 @@ export default function DiscoverScreen({
                 swiperRef.swipeLeft();
               }
             }}
+            onRefreshPress={reloadMovies}
           />
         )}
         onSwipedLeft={swipeLeft}
@@ -318,81 +391,8 @@ const ConnectionNotification = ({
   </Pressable>
 );
 
-async function loadPartnerPendingMatches(): Promise<Movie[]> {
-  const movies = await callGraphQL<ListPartnerPendingMovieMatchesQuery>(
-    listPartnerPendingMovieMatches
-  );
-
-  if (!movies.data?.listPartnerPendingMovieMatches?.items) {
-    throw new Error("Failed to list partner pending movies");
-  }
-
-  return movies.data.listPartnerPendingMovieMatches.items;
-}
-
 function generateRandomNumber(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
-}
-
-async function addReaction(
-  userId: string,
-  movieId: string,
-  reaction: Reaction
-) {
-  try {
-    // TODO: Is this the most efficient way of checking?
-    // TODO: Store this in a state so we don't call this on every swipe
-    const existingReaction = await callGraphQL<
-      MovieReactionsByUserQuery,
-      MovieReactionsByUserQueryVariables
-    >(movieReactionsByUser, {
-      userId,
-      limit: 999999,
-      filter: {
-        movieReactionMovieId: { eq: movieId },
-      },
-    });
-
-    if (existingReaction.data?.movieReactionsByUser?.items?.[0]?.id) {
-      console.warn(
-        "Reaction already exists for this movie, therefore not creating a reaction for this movie"
-      );
-      return;
-    }
-  } catch (e) {
-    console.error(e);
-    throw new Error(
-      "Could not determine if user had already reacted to the movie"
-    );
-  }
-
-  return await callGraphQL<
-    CreateMovieReactionMutation,
-    CreateMovieReactionMutationVariables
-  >(createMovieReaction, {
-    input: {
-      reaction,
-      userId: userId,
-      movieReactionMovieId: movieId,
-    },
-  });
-}
-
-async function discoverMovies(
-  searchOptions?: DiscoverMoviesInput
-): Promise<Movie[]> {
-  const movies = await callGraphQL<
-    DiscoverMoviesQuery,
-    DiscoverMoviesQueryVariables
-  >(discoverMoviesApi, {
-    input: searchOptions,
-  });
-
-  if (!movies.data?.discoverMovies) {
-    throw new Error("Could not find any movies");
-  }
-
-  return movies.data.discoverMovies.items;
 }
 
 const styles = StyleSheet.create({

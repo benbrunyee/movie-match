@@ -1,73 +1,47 @@
-import { GraphQLResult } from "@aws-amplify/api-graphql";
-import { Auth } from "aws-amplify";
-import { UserContextObject } from "../context/UserContext";
 import {
-  CreateUserInput,
-  CreateUserMutation,
-  CreateUserMutationVariables,
-  FindMovieMatchesQuery,
-  GetUserQuery,
-  GetUserQueryVariables,
-  User
-} from "../src/API";
-import { createUser } from "../src/graphql/mutations";
-import { findMovieMatches, getUser } from "../src/graphql/queries";
-import { callGraphQL } from "./amplify";
+  doc,
+  DocumentData, getDoc, setDoc
+} from "firebase/firestore/lite";
+import { UserContextObject } from "../context/UserContext";
+import { auth, db } from "../firebase";
 
 export default async function configureUser(): Promise<UserContextObject> {
-  const authStatus = await Auth.currentAuthenticatedUser();
-  let userDbData: Omit<User, "__typename"> | undefined;
+  let userDbData: DocumentData | undefined = undefined;
 
-  console.debug(authStatus);
+  const { currentUser } = auth;
 
-  // Check the database object
-  const userDb: GraphQLResult<GetUserQuery> = await callGraphQL<
-    GetUserQuery,
-    GetUserQueryVariables
-  >(getUser, {
-    id: authStatus.attributes.sub,
-  });
-
-  if (!userDb?.data?.getUser) {
-    // Create the database object since this is first login
-    const userCreation = await createDbOj({
-      id: authStatus.attributes.sub,
-      email: authStatus.attributes.email,
-      sub: authStatus.attributes.sub,
-    });
-
-    if (userCreation.data?.createUser && !userCreation.errors?.length) {
-      userDbData = userCreation.data.createUser;
-    } else {
-      throw new Error("Failed to create user database object");
-    }
-  } else {
-    userDbData = userDb.data.getUser;
+  if (!currentUser) {
+    throw new Error("User not logged in, cannot configure user.");
   }
 
-  if (userDb?.data?.getUser?.connectedUser) {
-    // Refresh matches on load
-    await callGraphQL<FindMovieMatchesQuery>(findMovieMatches);
+  console.debug(currentUser);
+
+  // Check the database object
+  const userRef = doc(db, "users", currentUser.uid);
+  const userDoc = await getDoc(userRef);
+
+  if (!userDoc.exists()) {
+    const newUserDoc = {
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+    };
+
+    await setDoc(doc(db, "users", currentUser.uid), newUserDoc);
+
+    userDbData = newUserDoc;
+  } else {
+    userDbData = userDoc.data();
   }
 
   const userContext = {
     signedIn: true,
-    sub: authStatus.attributes.sub,
-    email: authStatus.attributes.email,
-    connectedPartner: userDb?.data?.getUser?.connectedUser || "",
-    userDbObj: userDbData || {},
+    uid: currentUser.uid,
+    email: currentUser.email || "",
+    connectedPartner: userDbData.connectedUser || "",
+    userDbObj: userDbData,
   };
 
   console.log(`User context: ${JSON.stringify(userContext, null, 2)}`);
 
   return userContext;
-}
-
-async function createDbOj(options: CreateUserInput) {
-  return await callGraphQL<CreateUserMutation, CreateUserMutationVariables>(
-    createUser,
-    {
-      input: options,
-    }
-  );
 }

@@ -1,38 +1,73 @@
 import { useTheme } from "@react-navigation/native";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  limit,
+  query,
+  where
+} from "firebase/firestore/lite";
 import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, Image, StyleSheet, View } from "react-native";
-import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import { Defs, LinearGradient, Rect, Stop, Svg } from "react-native-svg";
 import CategoryLabel from "../components/CategoryLabel";
 import { Box, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
-import { FindMovieMatchesQuery, Movie as MovieApi } from "../src/API";
-import { findMovieMatches } from "../src/graphql/queries";
+import { useUserContext } from "../context/UserContext";
+import { db } from "../firebase";
+import { MovieBase } from "../functions/src/util/apiTypes";
 import { RootTabScreenProps } from "../types";
-import { callGraphQL } from "../utils/amplify";
 import { IMAGE_PREFIX } from "../utils/movieApi";
-
-export interface MovieItem extends MovieApi {
-  isNew?: boolean;
-}
 
 const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = ({
   navigation,
 }) => {
-  const [matches, setMatches] = useState<MovieItem[]>([]);
+  const [matches, setMatches] = useState<MovieBase[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [userContext] = useUserContext();
 
   const loadMatches = useCallback(async () => {
+    if (!userContext.connectedPartner) {
+      console.debug("No connected partner so nothing to load");
+      return;
+    }
+
     try {
-      const movies = await callGraphQL<FindMovieMatchesQuery>(findMovieMatches);
+      const partnerLikedMovieIds = (
+        await getDocs(
+          query(
+            collection(db, "movieReactions"),
+            where("owner", "==", userContext.connectedPartner),
+            where("reaction", "==", "LIKE"),
+            // TODO: Lazy load more if scrolled
+            limit(100)
+          )
+        )
+      ).docs.map((doc) => doc.data().movieId);
+      const userLikedMovieIds = (
+        await getDocs(
+          query(
+            collection(db, "movieReactions"),
+            where("owner", "==", userContext.uid),
+            where("reaction", "==", "LIKE"),
+            // TODO: Lazy load more if scrolled
+            limit(100)
+          )
+        )
+      ).docs.map((doc) => doc.data().movieId);
 
-      if (!movies.data?.findMovieMatches) {
-        throw new Error("Failed to find movie matches");
-      }
+      const matchedIds = partnerLikedMovieIds.filter((movie) =>
+        userLikedMovieIds.includes(movie)
+      );
 
-      const allMatches = movies.data.findMovieMatches.allMatches;
+      // TODO: Doesn't get new matches
+      const movies = (
+        await Promise.all(matchedIds.map((id) => getDoc(doc(db, "movies", id))))
+      ).map((movie) => movie.data() as MovieBase);
 
-      setMatches([...allMatches]);
+      setMatches(movies);
       // setMatches([
       //   {
       //     id: "304ab148-37eb-43ab-a3f2-d857350b72df",
@@ -82,7 +117,7 @@ const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = ({
       setError("Failed to load movies");
       return;
     }
-  }, []);
+  }, [userContext]);
 
   // Load the matched movies
   useEffect(() => {
@@ -127,7 +162,7 @@ const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = ({
   );
 };
 
-const MovieBox = (item: MovieItem): JSX.Element => {
+const MovieBox = (item: MovieBase): JSX.Element => {
   const { dark } = useTheme();
 
   return (

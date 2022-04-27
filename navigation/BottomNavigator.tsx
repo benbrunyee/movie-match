@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Box, Text } from "../components/Themed";
 import Colors from "../constants/Colors";
 import Styling from "../constants/Styling";
-import { useUserContext } from "../context/UserContext";
+import { useNotificationDispatch } from "../context/NotificationContext";
 import useColorScheme from "../hooks/useColorScheme";
 import DiscoverScreen from "../screens/DiscoverScreen";
 import MatchesScreen from "../screens/MatchesScreen";
@@ -27,7 +27,7 @@ const BottomTab = createBottomTabNavigator<RootTabParamList>();
 // TODO: React has detected a change in the order of Hooks called by BottomTabNavigator
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
-  const [, setUserContext] = useUserContext();
+  const notificationDispatch = useNotificationDispatch();
 
   return (
     <BottomTab.Navigator
@@ -35,6 +35,15 @@ function BottomTabNavigator() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
         tabBarShowLabel: false,
+      }}
+      screenListeners={{
+        blur: () => {
+          // Remove notifications if switching tab
+          console.log("Removing notifications");
+          notificationDispatch({
+            type: "CLEAR",
+          });
+        },
       }}
     >
       <BottomTab.Screen

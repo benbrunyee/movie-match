@@ -1,11 +1,9 @@
 import { FontAwesome } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
   NativeStackHeaderProps
 } from "@react-navigation/native-stack";
-import { Auth } from "aws-amplify";
 import { brand } from "expo-device";
 import React, { useCallback } from "react";
 import {
@@ -19,7 +17,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Box, Text } from "../components/Themed";
 import Colors from "../constants/Colors";
 import Styling from "../constants/Styling";
+import { useNotificationDispatch } from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
+import { auth } from "../firebase";
 import useColorScheme from "../hooks/useColorScheme";
 import ConnectPartner from "../screens/ConnectPartnerScreen";
 import SearchOptionsScreen from "../screens/SearchOptions";
@@ -31,29 +31,13 @@ const Stack = createNativeStackNavigator<SettingsParamList>();
 
 const Settings: React.FC = () => {
   const [, setUserContext] = useUserContext();
+  const notificationDispatch = useNotificationDispatch();
 
   const signOut = useCallback(() => {
-    const onPress = () =>
-      Auth.forgetDevice()
-        .catch(() => {})
-        .finally(() => {
-          Auth.signOut().then(async () => {
-            await AsyncStorage.clear();
-
-            setUserContext({
-              email: "",
-              sub: "",
-              signedIn: false,
-              connectedPartner: "",
-              userDbObj: {},
-            });
-          });
-        });
-
     // Brand returns null if on web
     if (!brand) {
       // If web, just sign out
-      onPress();
+      auth.signOut();
       return;
     }
 
@@ -63,13 +47,23 @@ const Settings: React.FC = () => {
       },
       {
         text: "Yes",
-        onPress,
+        onPress: () => auth.signOut(),
       },
     ]);
   }, [setUserContext]);
 
   return (
-    <Stack.Navigator initialRouteName={DEFAULT_SETTINGS_ROUTE}>
+    <Stack.Navigator
+      initialRouteName={DEFAULT_SETTINGS_ROUTE}
+      screenListeners={{
+        blur: () => {
+          // Remove notifications if switching tab
+          notificationDispatch({
+            type: "CLEAR",
+          });
+        },
+      }}
+    >
       <Stack.Screen
         name="SettingsScreen"
         component={SettingsScreen}

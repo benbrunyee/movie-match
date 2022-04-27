@@ -1,6 +1,7 @@
 import { Picker } from "@react-native-picker/picker";
+import { doc, getDoc, setDoc } from "firebase/firestore/lite";
 import { Formik } from "formik";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ScrollView,
   ScrollViewProps,
@@ -11,23 +12,17 @@ import {
 import { sizes } from "../constants/Font";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
+import { db } from "../firebase";
 import {
+  DiscoverSearchOptions,
   Genre,
-  GetUserQuery,
-  GetUserQueryVariables,
-  Region,
-  SearchOptions,
-  UpdateUserMutation,
-  UpdateUserMutationVariables
-} from "../src/API";
-import { updateUser } from "../src/graphql/mutations";
-import { getUser } from "../src/graphql/queries";
-import { callGraphQL } from "../utils/amplify";
+  Region
+} from "../functions/src/util/apiTypes";
 import MultiSelectModal, { SelectObject } from "./MultiSelectModal";
 import { Box, Button, Text, useThemeColor } from "./Themed";
 
 export interface SearchOptionsFormProps extends ScrollViewProps {
-  afterSubmit?: (values: Omit<SearchOptions, "__typename">) => void;
+  afterSubmit?: (values: DiscoverSearchOptions) => void;
 }
 
 const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
@@ -37,9 +32,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   const borderTopColor = useThemeColor({}, "borderColor");
   const [userContext] = useUserContext();
 
-  const [initialValues, setInitialValues] = useState<
-    Omit<SearchOptions, "__typename">
-  >({
+  const [initialValues, setInitialValues] = useState<DiscoverSearchOptions>({
     genres: [],
     includeAdult: false,
     region: undefined,
@@ -52,21 +45,40 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   const curYear = new Date().getFullYear();
   const oldestYear = 1900;
 
-  useEffect(() => {
-    async function onLoad() {
+  const handleFormSubmit = useCallback(
+    async (values: DiscoverSearchOptions) => {
       try {
-        const userData = await callGraphQL<GetUserQuery, GetUserQueryVariables>(
-          getUser,
+        await setDoc(
+          doc(db, "users", userContext.uid),
           {
-            id: userContext.sub,
+            searchOptions: {
+              ...values,
+              releasedAfterYear: values.releasedAfterYear
+                ? values.releasedAfterYear
+                : undefined,
+            },
+          },
+          {
+            merge: true,
           }
         );
 
-        const currentOptions = userData?.data?.getUser?.searchOptions;
+        alert("Settings saved");
+      } catch (e) {
+        console.error(e);
+        alert("Failed to save settings");
+      }
+    },
+    [userContext.uid]
+  );
 
-        if (!userData.data?.getUser) {
-          throw new Error("Failed to load user data");
-        }
+  useEffect(() => {
+    async function onLoad() {
+      try {
+        const userData = await getDoc(doc(db, "users", userContext.uid));
+
+        const currentOptions = userData.data()
+          ?.searchOptions as DiscoverSearchOptions;
 
         if (currentOptions) {
           setInitialValues({
@@ -111,7 +123,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
         onSubmit={(values) => {
           {
             console.log(values);
-            handleFormSubmit(values, userContext.sub).finally(
+            handleFormSubmit(values).finally(
               () => afterSubmit && afterSubmit(values)
             );
           }
@@ -206,7 +218,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   );
 };
 
-const formatGenres = (genres: (Genre | null)[]): SelectObject[] => {
+const formatGenres = (genres: string[]): SelectObject[] => {
   return genres.reduce<SelectObject[]>((r, genre) => {
     if (genre) {
       r.push({
@@ -231,33 +243,6 @@ const FormField = ({ label, field }: FormFieldProps): JSX.Element => {
       <View style={styles.formField}>{field}</View>
     </View>
   );
-};
-
-const handleFormSubmit = async (
-  values: Omit<SearchOptions, "__typename">,
-  userId: string
-) => {
-  try {
-    await callGraphQL<UpdateUserMutation, UpdateUserMutationVariables>(
-      updateUser,
-      {
-        input: {
-          id: userId,
-          searchOptions: {
-            ...values,
-            releasedAfterYear: values.releasedAfterYear
-              ? values.releasedAfterYear
-              : undefined,
-          },
-        },
-      }
-    );
-
-    alert("Settings saved");
-  } catch (e) {
-    console.error(e);
-    alert("Failed to save settings");
-  }
 };
 
 const styles = StyleSheet.create({

@@ -12,15 +12,16 @@ import {
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import TMDBLogo from "../assets/images/tmdb-logo.svg";
 import Styling from "../constants/Styling";
-import { Movie } from "../src/API";
+import { MovieBase } from "../functions/src/util/apiTypes";
 import { IMAGE_PREFIX } from "../utils/movieApi";
 import CategoryLabel from "./CategoryLabel";
 import { Box, ContainerProps, Text } from "./Themed";
 
 export interface MovieCardProps extends ContainerProps {
-  movie: Movie;
+  movie: MovieBase;
   onCrossPress?: () => void;
   onCheckPress?: () => void;
+  onRefreshPress?: () => void;
 }
 
 const MovieCard: React.FC<MovieCardProps> = ({
@@ -28,6 +29,7 @@ const MovieCard: React.FC<MovieCardProps> = ({
   style,
   onCrossPress = () => {},
   onCheckPress = () => {},
+  onRefreshPress = () => {},
   ...otherProps
 }) => {
   return (
@@ -100,9 +102,16 @@ const MovieCard: React.FC<MovieCardProps> = ({
         <View style={[styles.actionButtons]}>
           <ActionButton
             name="times"
-            style={styles.leftActionButton}
+            style={styles.rightButtonMargin}
             color="#F62323"
             onPress={() => onCrossPress()}
+          />
+          <ActionButton
+            name="refresh"
+            style={styles.rightButtonMargin}
+            color="#CCC"
+            size="small"
+            onPress={() => onRefreshPress()}
           />
           <ActionButton
             name="check"
@@ -139,12 +148,13 @@ type ActionButtonProps = Pick<
   React.ComponentProps<typeof FontAwesome>,
   "name" | "color"
 > &
-  PressableProps;
+  PressableProps & { size?: "small" | "regular" };
 
 function ActionButton({
   name,
   color,
   style,
+  size = "regular",
   ...otherProps
 }: ActionButtonProps) {
   const { dark } = useTheme();
@@ -154,6 +164,9 @@ function ActionButton({
       {...otherProps}
       style={({ pressed }) => [
         styles.actionButton,
+        size === "regular"
+          ? styles.actionRegularButton
+          : styles.actionSmallButton,
         {
           backgroundColor: dark
             ? pressed
@@ -166,7 +179,11 @@ function ActionButton({
         typeof style === "function" ? style({ pressed }) : style,
       ]}
     >
-      <FontAwesome name={name} size={15} color={color} />
+      <FontAwesome
+        name={name}
+        size={size === "regular" ? 15 : 10}
+        color={color}
+      />
     </Pressable>
   );
 }
@@ -218,16 +235,23 @@ const styles = StyleSheet.create({
     paddingVertical: Styling.spacingMedium,
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "flex-end",
   },
   actionButton: {
-    height: 50,
-    width: 50,
     borderRadius: 100,
     alignItems: "center",
     justifyContent: "center",
   },
-  leftActionButton: {
-    marginRight: Styling.spacingLarge * 2,
+  actionRegularButton: {
+    height: 50,
+    width: 50,
+  },
+  actionSmallButton: {
+    height: 40,
+    width: 40,
+  },
+  rightButtonMargin: {
+    marginRight: Styling.spacingLarge,
   },
   attributionLogo: {
     position: "absolute",

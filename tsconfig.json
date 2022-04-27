@@ -3,6 +3,6 @@
   "compilerOptions": {
     "strict": true
   },
-  "exclude": ["amplify", "*.test.tsx", "*.test.ts", "*.test.jsx", "*.test.js"],
+  "exclude": ["*.test.tsx", "*.test.ts", "*.test.jsx", "*.test.js"],
   "allowSyntheticDefaultImports": true
 }

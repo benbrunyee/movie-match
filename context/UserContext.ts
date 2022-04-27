@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 import { User } from "../src/API";
 
 export interface UserContextObject {
-  sub: string;
+  uid: string;
   email: string;
   signedIn: boolean;
   connectedPartner: string;
@@ -14,7 +14,7 @@ export const UserContext = createContext<
 >([
   {
     email: "",
-    sub: "",
+    uid: "",
     signedIn: false,
     connectedPartner: "",
     userDbObj: {}

@@ -1,4 +1,10 @@
 import { BarCodeScannedCallback } from "expo-barcode-scanner";
+import {
+  addDoc,
+  collection, getDocs,
+  getFirestore,
+  query, where
+} from "firebase/firestore/lite";
 import React, { useCallback, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -9,17 +15,7 @@ import SwitchTab from "../components/SwitchTab";
 import { Box } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
-import {
-  ConnectionRequestStatus,
-  CreateConnectionRequestMutation,
-  CreateConnectionRequestMutationVariables,
-  ListConnectionRequestsQuery,
-  ListConnectionRequestsQueryVariables
-} from "../src/API";
-import { createConnectionRequest } from "../src/graphql/mutations";
-import { listConnectionRequests } from "../src/graphql/queries";
 import { SettingsTabScreenProps } from "../types";
-import { callGraphQL } from "../utils/amplify";
 
 const TABS = ["SCAN", "MY CODE"] as const;
 
@@ -30,6 +26,32 @@ const ConnectPartnerModal: React.FC<
   const [selectedTab, setSelectedTab] = useState<typeof TABS[number]>("SCAN");
 
   const [userContext] = useUserContext();
+
+  const createConnectRequest = useCallback(
+    async (senderId: string, receiverId: string) => {
+      const db = getFirestore();
+
+      // Check if there is an existing entry
+      const q = query(
+        collection(db, "connectionRequests"),
+        where("receivier", "==", receiverId),
+        where("sender", "==", senderId)
+      );
+      const existingEntries = (await getDocs(q)).docs;
+
+      if (existingEntries.length > 0) {
+        throw new DuplicateConnectionError();
+      }
+
+      // Create a new entry
+      await addDoc(collection(db, "connectionRequests"), {
+        sender: senderId,
+        receiver: receiverId,
+        status: "PENDING",
+      });
+    },
+    []
+  );
 
   useEffect(() => {
     // Set a timeout to reset the barcode scanner
@@ -50,12 +72,12 @@ const ConnectPartnerModal: React.FC<
       return;
     }
 
-    if (data === userContext.sub) {
+    if (data === userContext.uid) {
       alert("Cannot request yourself");
       return;
     }
 
-    createConnectRequest(userContext.sub, data)
+    createConnectRequest(userContext.uid, data)
       .then(() => {
         alert("Sent request");
       })
@@ -97,7 +119,7 @@ const ConnectPartnerModal: React.FC<
               <ProfileHeader />
             </View>
             <Box style={styles.qrContainer} lightColor="#FFF" darkColor="#FFF">
-              <QRCode value={userContext.sub} size={250} />
+              <QRCode value={userContext.uid} size={250} />
             </Box>
           </View>
         )}
@@ -113,47 +135,6 @@ const Overlay = () => {
     </View>
   );
 };
-
-async function createConnectRequest(senderSub: string, receiverSub: string) {
-  // Check if there is an existing entry
-  const existingEntries = (
-    await callGraphQL<
-      ListConnectionRequestsQuery,
-      ListConnectionRequestsQueryVariables
-    >(listConnectionRequests, {
-      filter: {
-        and: [
-          {
-            receiver: { eq: receiverSub },
-            sender: { eq: senderSub },
-          },
-        ],
-      },
-    })
-  ).data?.listConnectionRequests?.items;
-
-  if (!existingEntries) {
-    throw new Error("Could not list existing connections");
-  }
-
-  if (existingEntries.length > 0) {
-    throw new DuplicateConnectionError();
-  }
-
-  // Create a new entry
-  const res = await callGraphQL<
-    CreateConnectionRequestMutation,
-    CreateConnectionRequestMutationVariables
-  >(createConnectionRequest, {
-    input: {
-      sender: senderSub,
-      receiver: receiverSub,
-      status: ConnectionRequestStatus.PENDING,
-    },
-  });
-
-  return res;
-}
 
 export class DuplicateConnectionError extends Error {
   constructor(message?: string) {

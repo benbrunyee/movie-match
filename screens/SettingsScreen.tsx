@@ -1,23 +1,22 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
 import { brand } from "expo-device";
+import {
+  collection,
+  doc,
+  getDocs,
+  query,
+  updateDoc,
+  where
+} from "firebase/firestore/lite";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import ProfileHeader from "../components/ProfileHeader";
 import { Box, MenuItem, MenuItemProps, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { useUserContext } from "../context/UserContext";
-import {
-  AcceptRequestMutation,
-  AcceptRequestMutationVariables,
-  ConnectionRequestStatus,
-  ListConnectionRequestsQuery,
-  ListConnectionRequestsQueryVariables
-} from "../src/API";
-import { acceptRequest } from "../src/graphql/mutations";
-import { listConnectionRequests } from "../src/graphql/queries";
+import { db } from "../firebase";
 import { SettingsParamList, SettingsTabScreenProps } from "../types";
-import { callGraphQL } from "../utils/amplify";
 
 interface ScreenInterface {
   text: string;
@@ -45,35 +44,52 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
 
+  const showPendingConReq = useCallback(async (id: string) => {
+    if (!brand) {
+      alert("Accepting connection request");
+      await acceptConReq(id);
+      return;
+    }
+
+    await new Promise<void>((resolve) => {
+      Alert.alert("Accept connection request?", undefined, [
+        {
+          text: "No",
+          onPress: () => resolve(),
+        },
+        {
+          text: "Yes",
+          onPress: () => acceptConReq(id).finally(resolve),
+        },
+      ]);
+    });
+  }, []);
+
+  const acceptConReq = useCallback(async (id: string) => {
+    try {
+      await updateDoc(doc(db, "connectionRequests", id), {
+        status: "ACCEPTED",
+      });
+    } catch (e) {
+      console.error(e);
+      alert("Failed to accept connection request");
+    }
+  }, []);
+
   const reloadConReq = useCallback(async () => {
     if (!isLoading) {
       setIsLoading(true);
     }
 
     try {
-      const requests = await callGraphQL<
-        ListConnectionRequestsQuery,
-        ListConnectionRequestsQueryVariables
-      >(listConnectionRequests, {
-        filter: {
-          and: [
-            {
-              receiver: { eq: userContext.sub },
-            },
-            {
-              status: { eq: ConnectionRequestStatus.PENDING },
-            },
-          ],
-        },
-      });
+      const q = query(
+        collection(db, "connectionRequests"),
+        where("receiver", "==", userContext.uid),
+        where("status", "==", "PENDING")
+      );
+      const requests = await getDocs(q);
 
-      const conReqs = requests.data?.listConnectionRequests?.items;
-
-      if (!conReqs) {
-        throw new Error("Failed to load connection requests");
-      }
-
-      setConnectionRequest(conReqs?.[0]?.id || "");
+      setConnectionRequest(requests.docs?.[0]?.id || "");
     } catch (e) {
       console.error(e);
       alert("Failed to load connection requests");
@@ -177,43 +193,6 @@ const MenuOption = ({
       />
     </MenuItem>
   );
-};
-
-const showPendingConReq = async (id: string) => {
-  if (!brand) {
-    alert("Accepting connection request");
-    await acceptConReq(id);
-    return;
-  }
-
-  await new Promise<void>((resolve) => {
-    Alert.alert("Accept connection request?", undefined, [
-      {
-        text: "No",
-        onPress: () => resolve(),
-      },
-      {
-        text: "Yes",
-        onPress: () => acceptConReq(id).finally(resolve),
-      },
-    ]);
-  });
-};
-
-const acceptConReq = async (id: string) => {
-  try {
-    await callGraphQL<AcceptRequestMutation, AcceptRequestMutationVariables>(
-      acceptRequest,
-      {
-        input: {
-          requestId: id,
-        },
-      }
-    );
-  } catch (e) {
-    console.error(e);
-    alert("Failed to accept connection request");
-  }
 };
 
 const menuStyles = StyleSheet.create({
