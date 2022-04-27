@@ -1,11 +1,13 @@
-import { BarCodeScannedCallback } from "expo-barcode-scanner";
+import { BarCodeScannedCallback, BarCodeScanner } from "expo-barcode-scanner";
 import {
   addDoc,
-  collection, getDocs,
+  collection,
+  getDocs,
   getFirestore,
-  query, where
+  query,
+  where
 } from "firebase/firestore/lite";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import QRBorder from "../assets/images/qr-border.svg";
@@ -34,7 +36,7 @@ const ConnectPartnerModal: React.FC<
       // Check if there is an existing entry
       const q = query(
         collection(db, "connectionRequests"),
-        where("receivier", "==", receiverId),
+        where("receiver", "==", receiverId),
         where("sender", "==", senderId)
       );
       const existingEntries = (await getDocs(q)).docs;
@@ -53,46 +55,38 @@ const ConnectPartnerModal: React.FC<
     []
   );
 
-  useEffect(() => {
-    // Set a timeout to reset the barcode scanner
-    const timeout = setInterval(() => {
-      setScanned(false);
-    }, 5000);
+  const handleScan = useCallback<BarCodeScannedCallback>(
+    ({ data, type }) => {
+      setScanned(true);
 
-    return () => {
-      clearInterval(timeout);
-    };
-  }, []);
+      if (type !== "org.iso.QRCode" || !data) {
+        alert("Invalid QR Code.");
+        return;
+      }
 
-  const handleScan: BarCodeScannedCallback = useCallback(({ data, type }) => {
-    setScanned(true);
+      if (data === userContext.uid) {
+        alert("Cannot request yourself");
+        return;
+      }
 
-    if (type !== "org.iso.QRCode" || !data) {
-      alert("Invalid QR Code.");
-      return;
-    }
+      createConnectRequest(userContext.uid, data)
+        .then(() => {
+          alert("Sent request");
+        })
+        .catch((err) => {
+          console.error(err);
 
-    if (data === userContext.uid) {
-      alert("Cannot request yourself");
-      return;
-    }
-
-    createConnectRequest(userContext.uid, data)
-      .then(() => {
-        alert("Sent request");
-      })
-      .catch((err) => {
-        console.error(err);
-
-        if (err.name === "DuplicateConnectionError") {
-          alert("Request already made");
-          return;
-        } else {
-          alert("Failed to request user");
-          return;
-        }
-      });
-  }, []);
+          if (err.name === "DuplicateConnectionError") {
+            alert("Request already made");
+            return;
+          } else {
+            alert("Failed to request user");
+            return;
+          }
+        });
+    },
+    [userContext.uid]
+  );
 
   return (
     <Box style={styles.container} darkColor="#101010" lightColor="#EEEEEE">
@@ -107,8 +101,8 @@ const ConnectPartnerModal: React.FC<
         {selectedTab === "SCAN" ? (
           <View style={styles.scannerContainer}>
             <QRScanner
-              barCodeTypes={["qr"]}
               onBarCodeScanned={scanned ? undefined : handleScan}
+              barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
             >
               <Overlay />
             </QRScanner>

@@ -4,6 +4,7 @@ import { brand } from "expo-device";
 import {
   collection,
   doc,
+  getDoc,
   getDocs,
   query,
   updateDoc,
@@ -38,7 +39,7 @@ const SCREENS: { [key in keyof Partial<SettingsParamList>]: ScreenInterface } =
 const SettingsScreen = ({
   navigation,
 }: SettingsTabScreenProps<"SettingsScreen">): JSX.Element => {
-  const [userContext] = useUserContext();
+  const [userContext, setUserContext] = useUserContext();
   // Store the ID of the connection request if there is one
   const [connectionRequest, setConnectionRequest] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -75,6 +76,16 @@ const SettingsScreen = ({
           },
         ]);
       });
+
+      const conReqDoc = (
+        await getDoc(doc(db, "connectionRequests", id))
+      ).data();
+
+      conReqDoc?.sender &&
+        setUserContext((cur) => ({
+          ...cur,
+          connectedPartner: conReqDoc.sender,
+        }));
     },
     [acceptConReq]
   );

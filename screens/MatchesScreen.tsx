@@ -65,7 +65,7 @@ const MatchesScreen = ({
       // TODO: Doesn't get new matches
       const movies = (
         await Promise.all(matchedIds.map((id) => getDoc(doc(db, "movies", id))))
-      ).map((movie) => movie.data() as MovieBase);
+      ).map((movie) => ({ ...movie.data(), id: movie.id } as MovieBase));
 
       setMatches(movies);
       // setMatches([

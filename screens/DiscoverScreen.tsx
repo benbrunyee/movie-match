@@ -84,11 +84,7 @@ export default function DiscoverScreen({
 
     const movies = (
       await Promise.all(movieIds.map((id) => getDoc(doc(db, "movies", id))))
-    ).map((doc) => doc.data() as Movie);
-
-    if (!movies.length) {
-      throw new Error("Failed to list partner pending movies");
-    }
+    ).map((doc) => ({ ...doc.data(), id: doc.id } as Movie));
 
     return movies;
   }, [userContext.connectedPartner]);
@@ -104,6 +100,8 @@ export default function DiscoverScreen({
         owner: userId,
         reaction: reaction,
       };
+
+      console.log(movieReaction);
 
       try {
         const q = query(

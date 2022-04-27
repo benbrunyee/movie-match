@@ -1,4 +1,5 @@
 import { useTheme } from "@react-navigation/native";
+import { brand } from "expo-device";
 import {
   createUserWithEmailAndPassword,
   getAuth,
@@ -101,7 +102,7 @@ const LoginScreen = ({
           // Logo
         }
         <View style={styles.logo}>
-          <Logo height={25} width="auto" />
+          {brand ? <Logo height={25} width="auto" /> : null}
         </View>
         <View style={styles.content}>
           {

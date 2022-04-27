@@ -1,5 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import { useTheme } from "@react-navigation/native";
+import { brand } from "expo-device";
 import React from "react";
 import {
   Image,
@@ -51,7 +52,7 @@ const MovieCard = ({
         ) : null}
         <CoverGradient />
         <View style={styles.attributionLogo}>
-          <TMDBLogo width="auto" height={25} opacity={0.3} />
+          {brand ? <TMDBLogo width="auto" height={25} opacity={0.3} /> : null}
         </View>
       </View>
       <View style={styles.fill} />

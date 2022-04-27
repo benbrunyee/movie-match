@@ -6,7 +6,10 @@ import React, { useCallback, useEffect, useState } from "react";
 import { View } from "react-native";
 import { Button, Text } from "./Themed";
 
-const QRScanner: React.FC<BarCodeScannerProps> = ({ style, ...otherProps }) => {
+const QRScanner = ({
+  style,
+  ...otherProps
+}: BarCodeScannerProps): JSX.Element => {
   const [hasPermission, setHasPermission] = useState(false);
 
   useEffect(() => {

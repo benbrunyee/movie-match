@@ -16,7 +16,7 @@ import DiscoverScreen from "../screens/DiscoverScreen";
 import MatchesScreen from "../screens/MatchesScreen";
 import { RootTabParamList } from "../types";
 import { DEFAULT_ROOT_ROUTE } from "./defaultRoutes";
-import SettingsNavigator from "./Settings";
+import SettingsNavigator from "./SettingsNavigator";
 
 /**
  * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
