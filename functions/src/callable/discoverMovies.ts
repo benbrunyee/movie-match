@@ -53,10 +53,10 @@ const URL_PARAMS: { [k in keyof DiscoverSearchOptions]: string } = {
   releasedAfterYear: "primary_release_date.gte",
 };
 
-export default async function (
+export default async (
   data: DiscoverSearchOptions,
   context: https.CallableContext
-) {
+) => {
   const input = data;
 
   // TODO: Don't show movies that have not yet been released
@@ -90,12 +90,25 @@ export default async function (
   const movieEntries = await addMoviesToDb(movies);
 
   return movieEntries;
-}
+};
 
+/**
+ * Generates a random number between 2 specified values
+ * @param {number} min Minimum number
+ * @param {number} max Maximum number
+ * @return {number} Random number between min and max
+ */
 function generateRandomNumber(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
 
+/**
+ * Gets movies from TMDB using the "discover" url.
+ * @param {string} uid Unique ID of the user
+ * @param {string} initialUrl A URL to query first
+ * @param {DiscoverSearchOptions} searchOptions Search options as object for initialUrl
+ * @return {Promise<DiscoverMovieApi>} Output from TMDB
+ */
 async function getNewMovies(
   uid: string,
   initialUrl: string,
@@ -190,6 +203,12 @@ async function getNewMovies(
   return movies;
 }
 
+/**
+ * Determines if a user has reacted to a movie based on movie identifier
+ * @param {number} identifier Movie identifier
+ * @param {string} uid Unique ID of the user
+ * @return {boolean} Whether the user has reacted or not
+ */
 async function hasUserReacted(
   identifier: number,
   uid: string
@@ -228,7 +247,14 @@ async function hasUserReacted(
   return false;
 }
 
-async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
+/**
+ * Adds movies from TMDB to firestore
+ * @param {DiscoverMovieApi} discoveredMovies Output from TMDB
+ * @return {Promise<MovieBase[]>} Firestore docs for the movies specified
+ */
+async function addMoviesToDb(
+  discoveredMovies: DiscoverMovieApi
+): Promise<MovieBase[]> {
   const genreFetch = await getGenreIds();
 
   const genreObj = genreFetch.genres.reduce<{ [key: number]: MovieGenre }>(
@@ -241,9 +267,9 @@ async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
 
   const newMovies = (discoveredMovies.results || []).map<CreateMovieInput>(
     (movie) => {
-      let movieGenres: Genre[] = [];
+      const movieGenres: Genre[] = [];
 
-      for (let genreId of movie.genre_ids) {
+      for (const genreId of movie.genre_ids) {
         const genreName = genreObj[genreId]?.name;
 
         if (genreName && (Genre as any)[genreName]) {
@@ -268,9 +294,9 @@ async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
     }
   );
 
-  let promises: Promise<MovieBase>[] = [];
+  const promises: Promise<MovieBase>[] = [];
 
-  for (let movie of newMovies) {
+  for (const movie of newMovies) {
     promises.push(
       new Promise<MovieBase>((resolve, reject) => {
         firestore
@@ -298,6 +324,10 @@ async function addMoviesToDb(discoveredMovies: DiscoverMovieApi) {
   return dbMovies;
 }
 
+/**
+ * Calls TMDB for genres and their associated ID
+ * @return {MovieGenreApi} Output from TMDB for genres
+ */
 async function getGenreIds() {
   return (await (
     await axios.get(
@@ -306,44 +336,53 @@ async function getGenreIds() {
   ).data) as MovieGenreApi;
 }
 
-export async function createUrlParams(searchOptions?: DiscoverSearchOptions) {
+/**
+ * Creates URL params from search options provided
+ * @param {DiscoverSearchOptions} searchOptions Search options to convert into URL params
+ * @return {Promise<string>} URL query params
+ */
+export async function createUrlParams(
+  searchOptions?: DiscoverSearchOptions
+): Promise<string> {
   let urlParams = "";
 
   if (searchOptions) {
     let searchOption: keyof typeof searchOptions;
     for (searchOption in searchOptions) {
-      const searchValue = searchOptions[searchOption];
+      if (Object.prototype.hasOwnProperty.call(searchOptions, searchOption)) {
+        const searchValue = searchOptions[searchOption];
 
-      if (searchValue == null) {
-        continue;
-      }
+        if (!searchValue) {
+          continue;
+        }
 
-      if (searchOption !== "genres") {
-        urlParams += `${URL_PARAMS[searchOption]}=${searchValue}&`;
-      } else {
-        if (
-          searchValue &&
-          Array.isArray(searchValue) &&
-          searchValue.length > 0
-        ) {
-          urlParams += `${URL_PARAMS[searchOption]}=`;
+        if (searchOption !== "genres") {
+          urlParams += `${URL_PARAMS[searchOption]}=${searchValue}&`;
+        } else {
+          if (
+            searchValue &&
+            Array.isArray(searchValue) &&
+            searchValue.length > 0
+          ) {
+            urlParams += `${URL_PARAMS[searchOption]}=`;
 
-          const genres = (await getGenreIds()).genres.reduce<{
-            [key: string]: MovieGenre;
-          }>((r, genre) => {
-            r[genre.name] = genre;
-            return r;
-          }, {});
+            const genres = (await getGenreIds()).genres.reduce<{
+              [key: string]: MovieGenre;
+            }>((r, genre) => {
+              r[genre.name] = genre;
+              return r;
+            }, {});
 
-          urlParams += searchValue.reduce<string>((r, genreName) => {
-            if (genreName && genres[genreName.toString()]) {
-              r += `${genres[genreName.toString()].id},`;
-            }
+            urlParams += searchValue.reduce<string>((r, genreName) => {
+              if (genreName && genres[genreName.toString()]) {
+                r += `${genres[genreName.toString()].id},`;
+              }
 
-            return r;
-          }, "");
+              return r;
+            }, "");
 
-          urlParams = urlParams.replace(/,$/, "") + "&";
+            urlParams = urlParams.replace(/,$/, "") + "&";
+          }
         }
       }
     }

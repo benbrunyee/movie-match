@@ -33,11 +33,17 @@ export default async (
   }
 };
 
+/**
+ * Removes connected partners for a specified list of users
+ * @param {admin.firebase.transaction} transaction Firestore transaction
+ * @param {string[]} uids Array of uids to clear connected partners for
+ * @return {admin.firebase.transaction} Firestore transaction
+ */
 async function transactionRemoveUsersPartners(
   transaction: admin.firestore.Transaction,
   uids: string[]
 ) {
-  for (let uid of uids) {
+  for (const uid of uids) {
     const userDoc = (
       await transaction.get(firestore.collection("users").doc(uid))
     ).data();

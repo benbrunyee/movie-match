@@ -1,17 +1,14 @@
 import axios from "axios";
 import { https, logger } from "firebase-functions";
 import { DiscoverMovieApi, DiscoverSearchOptions } from "../util/apiTypes";
-import {
-  MOVIE_API_KEY,
-  MOVIE_API_URL, stringify
-} from "../util/common";
+import { MOVIE_API_KEY, MOVIE_API_URL, stringify } from "../util/common";
 import { createUrlParams } from "./discoverMovies";
 
-export default async function (
+export default async (
   data: Omit<DiscoverSearchOptions, "page">,
   context: https.CallableContext
-) {
-  let urlParams = await createUrlParams(data);
+) => {
+  const urlParams = await createUrlParams(data);
 
   logger.debug(`URL Params for determing page count: "${urlParams}"`);
 
@@ -38,4 +35,4 @@ export default async function (
   logger.debug(`Total pages for search options: ${movies.total_pages}`);
 
   return movies.total_pages;
-}
+};
