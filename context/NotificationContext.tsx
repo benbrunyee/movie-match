@@ -38,8 +38,6 @@ const notificationReducer = (
     case "CLEAR":
       return undefined;
   }
-
-  return state;
 };
 
 const NotificationProvider: React.FC = ({ children }): JSX.Element => {

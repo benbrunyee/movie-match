@@ -5,9 +5,9 @@ import { Container, Text, useThemeColor } from "../components/Themed";
 import Styling from "../constants/Styling";
 import { SettingsTabScreenProps } from "../types";
 
-const SearchOptionsScreen: React.FC<
-  SettingsTabScreenProps<"SearchOptions">
-> = () => {
+const SearchOptionsScreen = (
+  props: SettingsTabScreenProps<"SearchOptions">
+): JSX.Element => {
   const borderBottomColor = useThemeColor({}, "borderColor");
 
   return (

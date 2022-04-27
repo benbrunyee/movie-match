@@ -35,35 +35,14 @@ const SCREENS: { [key in keyof Partial<SettingsParamList>]: ScreenInterface } =
     },
   };
 
-const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
+const SettingsScreen = ({
   navigation,
-}) => {
+}: SettingsTabScreenProps<"SettingsScreen">): JSX.Element => {
   const [userContext] = useUserContext();
   // Store the ID of the connection request if there is one
   const [connectionRequest, setConnectionRequest] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
-
-  const showPendingConReq = useCallback(async (id: string) => {
-    if (!brand) {
-      alert("Accepting connection request");
-      await acceptConReq(id);
-      return;
-    }
-
-    await new Promise<void>((resolve) => {
-      Alert.alert("Accept connection request?", undefined, [
-        {
-          text: "No",
-          onPress: () => resolve(),
-        },
-        {
-          text: "Yes",
-          onPress: () => acceptConReq(id).finally(resolve),
-        },
-      ]);
-    });
-  }, []);
 
   const acceptConReq = useCallback(async (id: string) => {
     try {
@@ -75,6 +54,30 @@ const SettingsScreen: React.FC<SettingsTabScreenProps<"SettingsScreen">> = ({
       alert("Failed to accept connection request");
     }
   }, []);
+
+  const showPendingConReq = useCallback(
+    async (id: string) => {
+      if (!brand) {
+        alert("Accepting connection request");
+        await acceptConReq(id);
+        return;
+      }
+
+      await new Promise<void>((resolve) => {
+        Alert.alert("Accept connection request?", undefined, [
+          {
+            text: "No",
+            onPress: () => resolve(),
+          },
+          {
+            text: "Yes",
+            onPress: () => acceptConReq(id).finally(resolve),
+          },
+        ]);
+      });
+    },
+    [acceptConReq]
+  );
 
   const reloadConReq = useCallback(async () => {
     if (!isLoading) {

@@ -1,8 +1,13 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "allowSyntheticDefaultImports": true
   },
-  "exclude": ["*.test.tsx", "*.test.ts", "*.test.jsx", "*.test.js"],
-  "allowSyntheticDefaultImports": true
+  "exclude": [
+    "*.test.tsx",
+    "*.test.ts",
+    "*.test.jsx",
+    "*.test.js"
+  ],
+  "extends": "expo/tsconfig.base"
 }

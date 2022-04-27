@@ -4,7 +4,7 @@ import {
   createBottomTabNavigator
 } from "@react-navigation/bottom-tabs";
 import { useTheme } from "@react-navigation/native";
-import React from "react";
+import React, { useCallback } from "react";
 import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Box, Text } from "../components/Themed";
@@ -16,7 +16,7 @@ import DiscoverScreen from "../screens/DiscoverScreen";
 import MatchesScreen from "../screens/MatchesScreen";
 import { RootTabParamList } from "../types";
 import { DEFAULT_ROOT_ROUTE } from "./defaultRoutes";
-import Settings from "./Settings";
+import SettingsNavigator from "./Settings";
 
 /**
  * A bottom tab navigator displays tab buttons on the bottom of the display to switch screens.
@@ -24,10 +24,15 @@ import Settings from "./Settings";
  */
 const BottomTab = createBottomTabNavigator<RootTabParamList>();
 
-// TODO: React has detected a change in the order of Hooks called by BottomTabNavigator
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
   const notificationDispatch = useNotificationDispatch();
+
+  const clearNotifications = useCallback(() => {
+    notificationDispatch({
+      type: "CLEAR",
+    });
+  }, [notificationDispatch]);
 
   return (
     <BottomTab.Navigator
@@ -37,13 +42,7 @@ function BottomTabNavigator() {
         tabBarShowLabel: false,
       }}
       screenListeners={{
-        blur: () => {
-          // Remove notifications if switching tab
-          console.log("Removing notifications");
-          notificationDispatch({
-            type: "CLEAR",
-          });
-        },
+        blur: clearNotifications,
       }}
     >
       <BottomTab.Screen
@@ -59,14 +58,14 @@ function BottomTabNavigator() {
         name="Matches"
         component={MatchesScreen}
         options={{
-          header: BottomTabHeader,
+          header: (props) => <BottomTabHeader {...props} />,
           headerTitle: "Matches",
           tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
         }}
       />
       <BottomTab.Screen
         name="Settings"
-        component={Settings}
+        component={SettingsNavigator}
         options={{
           headerShown: false,
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
@@ -76,9 +75,6 @@ function BottomTabNavigator() {
   );
 }
 
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
@@ -86,12 +82,12 @@ function TabBarIcon(props: {
   return <FontAwesome size={25} {...props} />;
 }
 
-export const BottomTabHeader: React.FC<BottomTabHeaderProps> = ({
+export const BottomTabHeader = ({
   layout,
   options: { headerTitle, headerRight = () => null, headerLeft = () => null },
-}) => {
+}: BottomTabHeaderProps): JSX.Element => {
   const { dark } = useTheme();
-  const { top } = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const headerRightElem = headerRight({});
   const headerLeftElem = headerLeft({});
 
@@ -100,7 +96,9 @@ export const BottomTabHeader: React.FC<BottomTabHeaderProps> = ({
       style={[
         styles.tab,
         {
-          paddingTop: top ? top + Styling.spacingSmall : Styling.spacingMedium,
+          paddingTop: insets.top
+            ? insets.top + Styling.spacingSmall
+            : Styling.spacingMedium,
           shadowColor: dark ? "#FFF" : "#000",
           width: layout.width,
         },

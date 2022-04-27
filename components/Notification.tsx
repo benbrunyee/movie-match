@@ -1,3 +1,4 @@
+import { brand } from "expo-device";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -30,6 +31,14 @@ const NotificationItem = ({
     backgroundColor.darkColor = "#1EEC64";
   }
 
+  const notification = (
+    <Box {...backgroundColor} style={styles.notificationBox}>
+      {item({
+        dismiss: () => dispatch({ type: "CLEAR" }),
+      })}
+    </Box>
+  );
+
   return (
     <View
       style={{
@@ -41,13 +50,11 @@ const NotificationItem = ({
       }}
       {...(!cover && { pointerEvents: "box-none" })}
     >
-      <SafeAreaView>
-        <Box {...backgroundColor} style={styles.notificationBox}>
-          {item({
-            dismiss: () => dispatch({ type: "CLEAR" }),
-          })}
-        </Box>
-      </SafeAreaView>
+      {brand === "Apple" ? (
+        <SafeAreaView>{notification}</SafeAreaView>
+      ) : (
+        notification
+      )}
     </View>
   );
 };

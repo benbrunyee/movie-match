@@ -24,12 +24,12 @@ import useColorScheme from "../hooks/useColorScheme";
 import ConnectPartner from "../screens/ConnectPartnerScreen";
 import SearchOptionsScreen from "../screens/SearchOptions";
 import SettingsScreen from "../screens/SettingsScreen";
-import { SettingsParamList } from "../types";
+import { RootTabScreenProps, SettingsParamList } from "../types";
 import { DEFAULT_SETTINGS_ROUTE } from "./defaultRoutes";
 
-const Stack = createNativeStackNavigator<SettingsParamList>();
+const SettingsStack = createNativeStackNavigator<SettingsParamList>();
 
-const Settings: React.FC = () => {
+const SettingsNavigator = (props: RootTabScreenProps<"Settings">): JSX.Element => {
   const [, setUserContext] = useUserContext();
   const notificationDispatch = useNotificationDispatch();
 
@@ -52,23 +52,24 @@ const Settings: React.FC = () => {
     ]);
   }, [setUserContext]);
 
+  const clearNotifications = useCallback(() => {
+    notificationDispatch({
+      type: "CLEAR",
+    });
+  }, [notificationDispatch]);
+
   return (
-    <Stack.Navigator
+    <SettingsStack.Navigator
       initialRouteName={DEFAULT_SETTINGS_ROUTE}
       screenListeners={{
-        blur: () => {
-          // Remove notifications if switching tab
-          notificationDispatch({
-            type: "CLEAR",
-          });
-        },
+        blur: clearNotifications,
       }}
     >
-      <Stack.Screen
+      <SettingsStack.Screen
         name="SettingsScreen"
         component={SettingsScreen}
         options={{
-          header: SettingsInnerHeader,
+          header: (props) => <SettingsInnerHeader {...props} />,
           headerTitle: "Settings",
           headerRight: () => (
             <Pressable
@@ -82,20 +83,20 @@ const Settings: React.FC = () => {
           ),
         }}
       />
-      <Stack.Screen
+      <SettingsStack.Screen
         name="SearchOptions"
         component={SearchOptionsScreen}
         options={{ title: "Search Options", header: SettingsInnerHeader }}
       />
-      <Stack.Screen
+      <SettingsStack.Screen
         name="ConnectPartner"
         component={ConnectPartner}
         options={{
-          header: SettingsInnerHeader,
+          header: (props) => <SettingsInnerHeader {...props} />,
           headerTitle: "Connect",
         }}
       />
-    </Stack.Navigator>
+    </SettingsStack.Navigator>
   );
 };
 
@@ -112,13 +113,13 @@ function HeaderIcon({ size = 20, ...otherProps }: HeaderIconProps) {
   );
 }
 
-const SettingsInnerHeader: React.FC<NativeStackHeaderProps> = ({
-  options: { headerTitle, headerRight = () => {} },
+const SettingsInnerHeader = ({
+  options: { headerTitle, headerRight = (props) => null },
   navigation,
   route,
-}) => {
+}: NativeStackHeaderProps): JSX.Element => {
   const { dark } = useTheme();
-  const { top } = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const headerRightElem = headerRight({ canGoBack: false });
 
@@ -127,7 +128,9 @@ const SettingsInnerHeader: React.FC<NativeStackHeaderProps> = ({
       style={[
         styles.tab,
         {
-          paddingTop: top ? top + Styling.spacingSmall : Styling.spacingMedium,
+          paddingTop: insets.top
+            ? insets.top + Styling.spacingSmall
+            : Styling.spacingMedium,
           // TODO: Shadow not showing
           shadowColor: dark ? "#FFF" : "#000",
           width,
@@ -183,4 +186,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Settings;
+export default SettingsNavigator;

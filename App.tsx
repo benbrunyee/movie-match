@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
-import { View } from "react-native";
+import { LogBox, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NotificationDisplay } from "./components/Notification";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -10,6 +10,8 @@ import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
 import Navigation from "./navigation";
 import configureUser from "./utils/configureUser";
+
+LogBox.ignoreLogs(["AsyncStorage has been extracted from react-native core"]);
 
 const App = () => {
   const [userLoading, setUserLoading] = useState(true);

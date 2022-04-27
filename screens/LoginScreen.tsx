@@ -27,19 +27,17 @@ import {
   TextProps
 } from "../components/Themed";
 import Styling from "../constants/Styling";
-import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
-import configureUser from "../utils/configureUser";
 
 export type LoginType = "SIGNIN" | "SIGNUP";
 
 const textLightColor = "#6C6C6C";
 const textDarkColor = "#E1E1E1";
 
-const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
+const LoginScreen = ({
   navigation,
   route,
-}) => {
+}: RootStackScreenProps<"Login">): JSX.Element => {
   const [type, setType] = useState<LoginType>("SIGNIN");
   const [form, setForm] = useState({
     email: "",
@@ -47,7 +45,6 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
     repeatPassword: "",
   });
   const [error, setError] = useState("");
-  const [, setUserContext] = useUserContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { dark } = useTheme();
   const backgroundImage = dark ? DarkBackground : LightBackground;
@@ -77,9 +74,6 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
         console.error(`Login type not configured: ${innerType}`);
         throw new Error("Failed to proceed");
       }
-
-      const userData = await configureUser();
-      setUserContext(userData);
     },
     [type, form]
   );

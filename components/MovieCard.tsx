@@ -24,14 +24,14 @@ export interface MovieCardProps extends ContainerProps {
   onRefreshPress?: () => void;
 }
 
-const MovieCard: React.FC<MovieCardProps> = ({
+const MovieCard = ({
   movie,
   style,
   onCrossPress = () => {},
   onCheckPress = () => {},
   onRefreshPress = () => {},
   ...otherProps
-}) => {
+}: MovieCardProps): JSX.Element => {
   return (
     <Box
       {...otherProps}

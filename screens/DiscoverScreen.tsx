@@ -153,7 +153,7 @@ export default function DiscoverScreen({
                 {...props}
                 onPress={() =>
                   navigation.navigate("Settings", {
-                    screen: "ConnectPartner",
+                    screen: "SettingsScreen",
                   })
                 }
               />
@@ -352,7 +352,7 @@ export default function DiscoverScreen({
         onSwipedAll={() => {
           reloadMovies();
         }}
-        containerStyle={styles.cardContainer}
+        containerStyle={{ ...styles.cardContainer }}
         verticalSwipe={false}
         cardVerticalMargin={0}
         cardHorizontalMargin={0}

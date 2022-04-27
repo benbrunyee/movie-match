@@ -1,4 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
+import { brand } from "expo-device";
 import debounce from "lodash.debounce";
 import React, { Reducer, useCallback, useReducer, useState } from "react";
 import { ScrollView, StyleSheet, View, ViewProps } from "react-native";
@@ -115,6 +116,53 @@ const MultiSelectModal = <T extends SelectObject>({
   // there is a break in user input
   const onSearchChange = useCallback(debounce(searchChangeHandler, 300), []);
 
+  const content = (
+    <Container onTouchEnd={(e) => e.stopPropagation()} style={styles.container}>
+      <ModalHeader
+        value={searchValue}
+        onChangeText={(val) => {
+          setSearchValue(val);
+          onSearchChange(val);
+        }}
+      />
+      <View style={styles.container}>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {filteredList.map((item) => {
+            return (
+              <SelectItem
+                key={item.value}
+                onPress={() =>
+                  dispatchSelectedEntries({
+                    item,
+                    type: "TOGGLE",
+                  })
+                }
+                selected={Boolean(
+                  selectedEntries.find(
+                    (selectedItem) => selectedItem.value === item.value
+                  )
+                )}
+              >
+                <Text variant="caption">{item.text}</Text>
+              </SelectItem>
+            );
+          })}
+        </ScrollView>
+      </View>
+      <View style={[styles.submitContainer, { borderTopColor }]}>
+        <Button
+          onPress={() => {
+            onSave(selectedEntries);
+            otherProps.onRequestClose && otherProps.onRequestClose();
+          }}
+          style={{ alignItems: "center" }}
+        >
+          <Text style={{ textAlign: "center" }}>Update</Text>
+        </Button>
+      </View>
+    </Container>
+  );
+
   return (
     <Modal {...otherProps} transparent={true}>
       <View
@@ -123,55 +171,13 @@ const MultiSelectModal = <T extends SelectObject>({
           otherProps.onRequestClose && otherProps.onRequestClose()
         }
       >
-        <SafeAreaView style={[styles.container, styles.outerPadding]}>
-          <Container
-            onTouchEnd={(e) => e.stopPropagation()}
-            style={styles.container}
-          >
-            <ModalHeader
-              value={searchValue}
-              onChangeText={(val) => {
-                setSearchValue(val);
-                onSearchChange(val);
-              }}
-            />
-            <View style={styles.container}>
-              <ScrollView showsVerticalScrollIndicator={false}>
-                {filteredList.map((item) => {
-                  return (
-                    <SelectItem
-                      key={item.value}
-                      onPress={() =>
-                        dispatchSelectedEntries({
-                          item,
-                          type: "TOGGLE",
-                        })
-                      }
-                      selected={Boolean(
-                        selectedEntries.find(
-                          (selectedItem) => selectedItem.value === item.value
-                        )
-                      )}
-                    >
-                      <Text variant="caption">{item.text}</Text>
-                    </SelectItem>
-                  );
-                })}
-              </ScrollView>
-            </View>
-            <View style={[styles.submitContainer, { borderTopColor }]}>
-              <Button
-                onPress={() => {
-                  onSave(selectedEntries);
-                  otherProps.onRequestClose && otherProps.onRequestClose();
-                }}
-                style={{ alignItems: "center" }}
-              >
-                <Text style={{ textAlign: "center" }}>Update</Text>
-              </Button>
-            </View>
-          </Container>
-        </SafeAreaView>
+        {brand === "Apple" ? (
+          <SafeAreaView style={[styles.container, styles.outerPadding]}>
+            {content}
+          </SafeAreaView>
+        ) : (
+          content
+        )}
       </View>
     </Modal>
   );

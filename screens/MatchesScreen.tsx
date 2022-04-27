@@ -20,9 +20,9 @@ import { MovieBase } from "../functions/src/util/apiTypes";
 import { RootTabScreenProps } from "../types";
 import { IMAGE_PREFIX } from "../utils/movieApi";
 
-const MatchesScreen: React.FC<RootTabScreenProps<"Matches">> = ({
+const MatchesScreen = ({
   navigation,
-}) => {
+}: RootTabScreenProps<"Matches">): JSX.Element => {
   const [matches, setMatches] = useState<MovieBase[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);

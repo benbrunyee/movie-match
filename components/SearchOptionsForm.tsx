@@ -87,8 +87,6 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
             region: currentOptions.region,
             releasedAfterYear: currentOptions.releasedAfterYear,
           });
-
-          console.log(currentOptions.genres);
         }
       } catch (e) {
         console.error(e);
