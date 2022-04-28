@@ -4,6 +4,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  orderBy,
   query,
   where
 } from "firebase/firestore/lite";
@@ -39,6 +40,7 @@ const MatchesScreen = ({
             collection(db, "movieReactions"),
             where("owner", "==", userContext.connectedPartner),
             where("reaction", "==", "LIKE"),
+            orderBy("createdAt", "desc"),
             // TODO: Lazy load more if scrolled
             limit(100)
           )

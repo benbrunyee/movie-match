@@ -28,7 +28,8 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.connectedUser == resource.data.owner
       allow update: if
         request.auth.uid == resource.data.owner &&
-        request.resource.data.owner == resource.data.owner
+        request.resource.data.owner == resource.data.owner &&
+        request.resource.data.createdAt == resource.data.createdAt
       allow delete: if
         request.auth.uid == resource.data.owner
     }

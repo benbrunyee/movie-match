@@ -3,6 +3,8 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
+  orderBy,
   query,
   where
 } from "firebase/firestore/lite";
@@ -31,7 +33,10 @@ const LikedMoviesScreen = ({
           query(
             collection(db, "movieReactions"),
             where("owner", "==", userContext.uid),
-            where("reaction", "==", "LIKE")
+            where("reaction", "==", "LIKE"),
+            orderBy("createdAt", "desc"),
+            // TODO: Pagination
+            limit(100)
           )
         )
       ).docs;

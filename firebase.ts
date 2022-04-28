@@ -26,10 +26,7 @@ const origin =
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-console.log(process.env);
-
 export const functions = getFunctions(app);
-// TODO: Conditionally use emulators
 DEV && connectFunctionsEmulator(functions, origin, 5001);
 
 export const db = getFirestore(app);

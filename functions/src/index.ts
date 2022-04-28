@@ -2,6 +2,8 @@ import * as admin from "firebase-admin";
 import { firestore as db, https } from "firebase-functions";
 import funcDiscoverMovies from "./callable/discoverMovies";
 import funcGetPageCountForOptions from "./callable/getPageCountForOptions";
+import funcOnCreateMovieReaction from "./triggers/onCreateMovieReaction";
+import funcOnCreateUser from "./triggers/onCreateUser";
 import funcOnDeleteConnectionRequests from "./triggers/onDeleteConnectionRequest";
 import funcOnUpdateConnectionRequests from "./triggers/onUpdateConnectionRequests";
 import { callWrap } from "./util/common";
@@ -18,10 +20,18 @@ export const getPageCountForOptions = https.onCall(
 );
 
 // TODO: Group into files
-export const onConnectionAccept = db
+export const onUpdateConnectionRequest = db
   .document("connectionRequests/{id}")
   .onUpdate(funcOnUpdateConnectionRequests);
 
-export const onConnectionDelete = db
+export const onDeleteConnectionRequest = db
   .document("connectionRequests/{id}")
   .onDelete(funcOnDeleteConnectionRequests);
+
+export const onCreateMovieReaction = db
+  .document("movieReactions/{id}")
+  .onCreate(funcOnCreateMovieReaction);
+
+export const onCreateUser = db
+  .document("users/{id}")
+  .onCreate(funcOnCreateUser);
