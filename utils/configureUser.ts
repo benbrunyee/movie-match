@@ -1,53 +1,47 @@
-import { API, Auth, graphqlOperation } from "aws-amplify";
-import { UserContextObject } from "../context/UserContext";
 import {
-  CreateUserInput,
-  CreateUserMutation,
-  CreateUserMutationVariables,
-  ListUsersQuery,
-} from "../src/API";
-import { createUser } from "../src/graphql/mutations";
-import { listUsers } from "../src/graphql/queries";
-import { callGraphQL } from "./amplify";
+  doc,
+  DocumentData, getDoc, setDoc
+} from "firebase/firestore";
+import { UserContextObject } from "../context/UserContext";
+import { auth, db } from "../firebase";
 
 export default async function configureUser(): Promise<UserContextObject> {
-  try {
-    const authStatus = await Auth.currentAuthenticatedUser();
+  let userDbData: DocumentData | undefined = undefined;
 
-    console.debug(authStatus);
+  const { currentUser } = auth;
 
-    // Check the database object
-    const dbItems = await callGraphQL<ListUsersQuery>(listUsers);
-
-    if (dbItems.data?.listUsers?.items.length || 0 <= 0) {
-      // Create the database object since this is first login
-      await createDbOj({
-        email: authStatus.attributes.email,
-        sub: authStatus.attributes.sub,
-      });
-    }
-
-    return {
-      signedIn: true,
-      sub: authStatus.attributes.sub,
-      email: authStatus.attributes.email,
-    };
-  } catch (e) {
-    console.warn(e);
-
-    return {
-      email: "",
-      sub: "",
-      signedIn: false,
-    };
+  if (!currentUser) {
+    throw new Error("User not logged in, cannot configure user.");
   }
-}
 
-async function createDbOj(options: CreateUserInput) {
-  await callGraphQL<CreateUserMutation, CreateUserMutationVariables>(
-    createUser,
-    {
-      input: options,
-    }
-  );
+  console.debug(currentUser);
+
+  // Check the database object
+  const userRef = doc(db, "users", currentUser.uid);
+  const userDoc = await getDoc(userRef);
+
+  if (!userDoc.exists()) {
+    const newUserDoc = {
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+    };
+
+    await setDoc(doc(db, "users", currentUser.uid), newUserDoc);
+
+    userDbData = newUserDoc;
+  } else {
+    userDbData = userDoc.data();
+  }
+
+  const userContext = {
+    signedIn: true,
+    uid: currentUser.uid,
+    email: currentUser.email || "",
+    connectedPartner: userDbData.connectedUser || "",
+    userDbObj: userDbData,
+  };
+
+  console.log(`User context: ${JSON.stringify(userContext, null, 2)}`);
+
+  return userContext;
 }

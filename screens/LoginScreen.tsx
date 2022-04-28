@@ -1,42 +1,54 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Auth } from "aws-amplify";
-import React, { useCallback, useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { useTheme } from "@react-navigation/native";
+import { brand } from "expo-device";
 import {
-  Button,
-  Container,
-  Tab,
-  Text,
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword
+} from "firebase/auth";
+import React, { useCallback, useState } from "react";
+import {
+  Dimensions,
+  ImageBackground,
+  Pressable,
+  PressableProps,
+  StyleSheet,
+  Switch,
+  View
+} from "react-native";
+import DarkBackground from "../assets/images/login/background-dark.png";
+import LightBackground from "../assets/images/login/background-light.png";
+import LinearBar from "../components/LinearBar";
+import Seperator from "../components/Seperator";
+import SocialButton from "../components/SocialButton";
+import {
+  Logo,
+  Text as DefaultText,
   TextInput,
-  Box,
+  TextInputProps,
+  TextProps
 } from "../components/Themed";
 import Styling from "../constants/Styling";
-import { useUserContext } from "../context/UserContext";
 import { RootStackScreenProps } from "../types";
 
 export type LoginType = "SIGNIN" | "SIGNUP";
 
-const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
+const textLightColor = "#6C6C6C";
+const textDarkColor = "#E1E1E1";
+
+const LoginScreen = ({
   navigation,
   route,
-}) => {
+}: RootStackScreenProps<"Login">): JSX.Element => {
   const [type, setType] = useState<LoginType>("SIGNIN");
   const [form, setForm] = useState({
     email: "",
     password: "",
-    repeatPassword: "",
   });
   const [error, setError] = useState("");
-  const [, setUserContext] = useUserContext();
-
-  const { fromVerification } = route.params || {};
-
-  useEffect(() => {
-    if (fromVerification) {
-      // Sign the user in automatically
-      handleSubmit("SIGNIN");
-    }
-  }, [fromVerification]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { dark } = useTheme();
+  const backgroundImage = dark ? DarkBackground : LightBackground;
+  const windowWidth = Dimensions.get("window").width;
 
   const handleSubmit = useCallback(
     async (providedType?: typeof type) => {
@@ -44,166 +56,333 @@ const LoginScreen: React.FC<RootStackScreenProps<"Login">> = ({
 
       if (innerType === "SIGNIN") {
         // Sign the user in
-        try {
-          await signIn(form.email, form.password);
-          setUserContext((cur) => ({
-            ...cur,
-            signedIn: true,
-          }));
-        } catch (e) {
-          console.error(e);
-          setError("Failed to log in");
-          return;
-        }
+        await signInWithEmailAndPassword(getAuth(), form.email, form.password);
       } else if (innerType === "SIGNUP") {
-        if (form.password !== form.repeatPassword) {
-          console.warn("Passwords do not match");
-          setError("Passwords do not match");
-          return;
-        }
-
         // Sign up the user
-        try {
-          await signUp(form.email, form.password);
-
-          // Store the email in storage
-          await AsyncStorage.setItem("@signUpUsername", form.email);
-        } catch (e) {
-          console.error(e);
-          setError("Failed to sign up");
-          return;
-        }
-
-        navigation.navigate("Verification");
+        await createUserWithEmailAndPassword(
+          getAuth(),
+          form.email,
+          form.password
+        );
       } else {
         console.error(`Login type not configured: ${innerType}`);
-        return;
+        throw new Error("Failed to proceed");
       }
     },
     [type, form]
   );
 
+  const handleSubmitWrapper = useCallback(
+    (providedType?: LoginType | undefined) => {
+      if (!(form.email && form.password)) {
+        setError("Please fill all fields");
+        return;
+      }
+
+      setIsSubmitting(true);
+      handleSubmit(providedType).catch((e) => {
+        console.error(e);
+
+        if (e.name === "FirebaseError") {
+          switch (e.code) {
+            case "auth/user-not-found":
+              setError("User doesn't exist");
+              break;
+            case "auth/wrong-password":
+              setError("Incorrect email and/or password");
+              break;
+            case "auth/email-already-in-use":
+              setError("Email already in use");
+              break;
+            default:
+              setError("Failed to proceed");
+          }
+        } else {
+          setError("Failed to proceed");
+        }
+
+        setIsSubmitting(false);
+      });
+    },
+    [handleSubmit]
+  );
+
   return (
-    <Box style={styles.pageContainer}>
-      <Container style={styles.container}>
-        <View>
-          <View style={styles.switchTabContainer}>
-            <Tab
-              selected={type === "SIGNIN"}
-              onPress={() => setType("SIGNIN")}
-              style={{
-                paddingVertical: 10,
-                paddingHorizontal: 20,
-                borderTopLeftRadius: 5,
-                borderBottomLeftRadius: 5,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+    <View style={styles.pageContainer}>
+      <ImageBackground
+        source={backgroundImage}
+        resizeMode="cover"
+        style={styles.pageContainer}
+      >
+        {
+          // Logo
+        }
+        <View style={styles.logo}>
+          {brand ? <Logo height={25} width="auto" /> : null}
+        </View>
+        <View style={styles.content}>
+          {
+            // Top Bar Text
+          }
+          <View style={styles.contentSection}>
+            <Text
+              style={styles.topText}
+              lightColor={textLightColor}
+              darkColor={textDarkColor}
+              variant="subtitle"
             >
-              <Text>Sign In</Text>
-            </Tab>
-            <Tab
-              selected={type === "SIGNUP"}
-              onPress={() => setType("SIGNUP")}
-              style={{
-                paddingVertical: 10,
-                paddingHorizontal: 20,
-                borderTopRightRadius: 5,
-                borderBottomRightRadius: 5,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Text>Sign Up</Text>
-            </Tab>
+              Let's get you started
+            </Text>
+            <Seperator style={{ width: 250 }} />
           </View>
-          <View>
-            <TextInput
-              value={form.email}
-              autoCompleteType="email"
-              placeholder="Email"
-              autoCorrect={false}
-              onChangeText={(text) =>
-                setForm((cur) => ({ ...cur, email: text }))
-              }
-            />
-            <TextInput
-              value={form.password}
-              autoCompleteType="password"
-              placeholder="Password"
-              autoCorrect={false}
-              textContentType="password"
-              secureTextEntry={true}
-              onChangeText={(text) =>
-                setForm((cur) => ({ ...cur, password: text }))
-              }
-            />
-            {type === "SIGNUP" ? (
-              <TextInput
-                value={form.repeatPassword}
-                placeholder="Repeat password"
+          {
+            // Switch
+          }
+          <View style={styles.contentSection}>
+            <View style={styles.switchContainer}>
+              <Text style={styles.marginRight} variant="smallCaption">
+                Sign In
+              </Text>
+              <View style={styles.marginRight}>
+                <Switch
+                  trackColor={{ false: "#D0D0D0", true: "#D0D0D0" }}
+                  ios_backgroundColor="#D0D0D0"
+                  value={!Boolean(type === "SIGNIN")}
+                  onValueChange={(val) => {
+                    setType(val ? "SIGNUP" : "SIGNIN");
+                  }}
+                />
+              </View>
+              <Text variant="smallCaption">Sign Up</Text>
+            </View>
+          </View>
+          {
+            // Input fields
+          }
+          <View style={styles.contentSection}>
+            <View style={styles.inputFieldContainer}>
+              <Text variant="smallCaption" style={styles.inputHeader}>
+                Email
+              </Text>
+              <StyledTextInput
+                value={form.email}
+                autoCorrect={false}
+                autoCompleteType="email"
+                editable={!isSubmitting}
+                {...(isSubmitting && { style: styles.submittingInput })}
+                onChangeText={(text) =>
+                  setForm((cur) => ({ ...cur, email: text }))
+                }
+              />
+            </View>
+            <View style={styles.inputFieldContainer}>
+              <Text variant="smallCaption" style={styles.inputHeader}>
+                Password
+              </Text>
+              <StyledTextInput
+                value={form.password}
+                autoCompleteType="password"
                 autoCorrect={false}
                 textContentType="password"
                 secureTextEntry={true}
+                editable={!isSubmitting}
+                {...(isSubmitting && { style: styles.submittingInput })}
                 onChangeText={(text) =>
-                  setForm((cur) => ({ ...cur, repeatPassword: text }))
+                  setForm((cur) => ({ ...cur, password: text }))
                 }
               />
-            ) : null}
-            {error ? <Text style={{ color: "red" }}>{error}</Text> : null}
-            <View style={styles.submitBtnContainer}>
-              <Button style={styles.submitBtn} onPress={() => handleSubmit()}>
-                Submit
-              </Button>
             </View>
           </View>
+          {
+            // Or seperator
+          }
+          <View style={styles.contentSection}>
+            <View style={styles.orSeparator}>
+              <Seperator style={[{ width: 50 }, styles.marginRight]} />
+              <DefaultText
+                lightColor={textLightColor}
+                darkColor={textDarkColor}
+                style={styles.marginRight}
+                variant="smallCaption"
+              >
+                or
+              </DefaultText>
+              <Seperator style={{ width: 50 }} />
+            </View>
+          </View>
+          {
+            // Social buttons
+          }
+          <View style={styles.contentSection}>
+            <SocialButton type="APPLE" style={styles.socialButton} />
+            <SocialButton type="GOOGLE" style={styles.socialButton} />
+          </View>
         </View>
-      </Container>
-    </Box>
+        {
+          // Error message
+        }
+        <View style={styles.errorMessage}>
+          {error ? (
+            <Text
+              variant="smallCaption"
+              lightColor="#FF5F5F"
+              darkColor="#FF5F5F"
+            >
+              {error}
+            </Text>
+          ) : null}
+        </View>
+        {
+          // Submit button
+        }
+        <LargeButton
+          onPress={() => handleSubmitWrapper()}
+          disabled={isSubmitting}
+        >
+          <LinearBar
+            height={2}
+            width={windowWidth}
+            startColor="#00FF66"
+            endColor="#FF0000"
+          />
+          <Text
+            variant="title"
+            lightColor="#fff"
+            darkColor="#111"
+            style={styles.submitButton}
+          >
+            {isSubmitting
+              ? "Loading..."
+              : type === "SIGNIN"
+              ? "Sign In"
+              : "Sign Up"}
+          </Text>
+        </LargeButton>
+      </ImageBackground>
+    </View>
   );
 };
 
-async function signIn(email: string, password: string) {
-  await Auth.signIn({
-    username: email,
-    password: password,
-  });
+function LargeButton({ style, ...otherProps }: PressableProps) {
+  const { dark } = useTheme();
+
+  return (
+    <Pressable
+      {...otherProps}
+      style={({ pressed }) => [
+        styles.submit,
+        {
+          backgroundColor: dark
+            ? pressed || otherProps.disabled
+              ? "#EEE"
+              : "#FFF"
+            : pressed || otherProps.disabled
+            ? "#222"
+            : "#000",
+        },
+        typeof style === "function" ? style({ pressed }) : style,
+      ]}
+    />
+  );
 }
 
-async function signUp(email: string, password: string) {
-  await Auth.signUp({
-    username: email,
-    password: password,
-  });
+function StyledTextInput({ style, ...otherProps }: TextInputProps) {
+  const { dark } = useTheme();
+
+  return (
+    <TextInput
+      {...otherProps}
+      style={[
+        styles.inputField,
+        {
+          backgroundColor: dark ? "#171717" : "#FFFFFF",
+          ...(dark && { borderWidth: 1, borderColor: "#E1E1E1" }),
+        },
+        style,
+      ]}
+    />
+  );
+}
+
+function Text({ lightColor, darkColor, style, ...otherProps }: TextProps) {
+  return (
+    <DefaultText
+      {...otherProps}
+      lightColor={lightColor || textLightColor}
+      darkColor={darkColor || textDarkColor}
+      style={[styles.text, style]}
+    />
+  );
 }
 
 const styles = StyleSheet.create({
   pageContainer: {
-    display: "flex",
-    height: "100%",
-    width: "100%",
+    flex: 1,
+  },
+  logo: {
+    marginVertical: Styling.spacingLarge * 2,
+  },
+  content: {
+    // flex: 1,
+  },
+  contentSection: {
+    marginBottom: Styling.spacingLarge,
+    alignItems: "center",
+  },
+  topText: {
+    marginBottom: Styling.spacingMedium,
+    fontFamily: "montserrat-bold",
+    textTransform: "uppercase",
+    letterSpacing: 2,
+    textAlign: "center",
+  },
+  switchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  marginRight: {
+    marginRight: Styling.spacingSmall,
+  },
+  submit: {
+    alignItems: "center",
+    paddingBottom: 25,
+  },
+  submitButton: {
+    marginVertical: Styling.spacingMedium,
+  },
+  gradientBar: {
+    height: 2,
+  },
+  text: {
+    textTransform: "uppercase",
+  },
+  orSeparator: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
   },
-  container: {
-    padding: Styling.spacingLarge,
-    borderRadius: Styling.borderRadius,
+  inputFieldContainer: {
+    alignItems: "center",
+    marginBottom: Styling.spacingSmall,
   },
-  switchTabContainer: {
-    display: "flex",
-    flexDirection: "row",
-    borderRadius: 5,
-    marginBottom: 20,
-    marginHorizontal: "auto",
+  inputHeader: {
+    marginBottom: Styling.spacingSmall,
   },
-  submitBtnContainer: {
-    marginHorizontal: "auto",
+  inputField: {
+    width: 250,
+    padding: 10,
   },
-  submitBtn: {
-    marginTop: Styling.spacingMedium,
+  submittingInput: {
+    color: "#DDD",
+  },
+  socialButton: {
+    marginBottom: Styling.spacingSmall,
+  },
+  errorMessage: {
+    flex: 1,
+    justifyContent: "flex-end",
+    alignItems: "center",
+    padding: Styling.spacingMedium,
   },
 });
-
 export default LoginScreen;

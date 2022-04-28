@@ -1,9 +1,11 @@
 import { createContext, useContext } from "react";
 
 export interface UserContextObject {
-  sub: string;
+  uid: string;
   email: string;
-  signedIn?: boolean;
+  signedIn: boolean;
+  connectedPartner: string;
+  userDbObj: object;
 }
 
 export const UserContext = createContext<
@@ -11,8 +13,10 @@ export const UserContext = createContext<
 >([
   {
     email: "",
-    sub: "",
-    signedIn: true,
+    uid: "",
+    signedIn: false,
+    connectedPartner: "",
+    userDbObj: {}
   },
   () => {},
 ]);

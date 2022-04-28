@@ -1,35 +1,51 @@
-/**
- * Learn more about deep linking with React Navigation
- * https://reactnavigation.org/docs/deep-linking
- * https://reactnavigation.org/docs/configuring-links
- */
-
-import { LinkingOptions } from '@react-navigation/native';
-import * as Linking from 'expo-linking';
-
-import { RootStackParamList } from '../types';
+import { LinkingOptions } from "@react-navigation/native";
+import { createURL } from "expo-linking";
+import { RootStackParamList } from "../types";
 
 const linking: LinkingOptions<RootStackParamList> = {
-  prefixes: [Linking.makeUrl('/')],
+  prefixes: [createURL("/")],
   config: {
     screens: {
-      Login: 'login',
-      Verification: "verification",
+      Login: "login",
       Root: {
         screens: {
-          TabOne: {
+          Discover: {
             screens: {
-              TabOneScreen: 'one',
+              DiscoverScreen: "discover",
+            },
+          },
+          Matches: {
+            screens: {
+              MatchesScreen: "matches",
             },
           },
           Settings: {
             screens: {
-              SettingsScreen: 'settings',
+              SettingsScreen: {
+                screens: {
+                  SettingsScreen: "settings",
+                },
+              },
+              ConnectPartner: {
+                screens: {
+                  ConnectPartner: "connect-partner",
+                },
+              },
+              SearchOptions: {
+                screens: {
+                  SearchOptions: "search-options",
+                },
+              },
+              LikedMovies: {
+                screens: {
+                  LikeMovies: "liked-movies"
+                }
+              }
             },
           },
         },
       },
-      NotFound: '*',
+      NotFound: "*",
     },
   },
 };
