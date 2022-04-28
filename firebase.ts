@@ -7,6 +7,8 @@ import {
 } from "firebase/firestore/lite";
 import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
+const DEV = process.env.NODE_ENV === "development";
+
 // Your web app's Firebase configuration
 const firebaseConfig = {
   // TODO: Put into .extra file or env equivalent
@@ -24,11 +26,14 @@ const origin =
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+console.log(process.env);
+
 export const functions = getFunctions(app);
-connectFunctionsEmulator(functions, origin, 5001);
+// TODO: Conditionally use emulators
+DEV && connectFunctionsEmulator(functions, origin, 5001);
 
 export const db = getFirestore(app);
-connectFirestoreEmulator(db, origin, 8080);
+DEV && connectFirestoreEmulator(db, origin, 8080);
 
 export const auth = getAuth(app);
-connectAuthEmulator(auth, `http://${origin}:9099`);
+DEV && connectAuthEmulator(auth, `http://${origin}:9099`);

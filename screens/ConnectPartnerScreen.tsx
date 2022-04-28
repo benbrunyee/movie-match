@@ -21,9 +21,7 @@ import { SettingsTabScreenProps } from "../types";
 
 const TABS = ["SCAN", "MY CODE"] as const;
 
-const ConnectPartnerModal: React.FC<
-  SettingsTabScreenProps<"ConnectPartner">
-> = () => {
+const ConnectPartnerModal = (props: SettingsTabScreenProps<"ConnectPartner">): JSX.Element => {
   const [scanned, setScanned] = useState(false);
   const [selectedTab, setSelectedTab] = useState<typeof TABS[number]>("SCAN");
 

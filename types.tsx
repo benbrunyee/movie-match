@@ -35,6 +35,7 @@ export type SettingsParamList = {
   SettingsScreen: undefined;
   ConnectPartner: undefined;
   SearchOptions: undefined;
+  LikedMovies: undefined;
 };
 
 export type RootTabScreenProps<Screen extends keyof RootTabParamList> =

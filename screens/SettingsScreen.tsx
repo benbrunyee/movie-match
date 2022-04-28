@@ -34,6 +34,10 @@ const SCREENS: { [key in keyof Partial<SettingsParamList>]: ScreenInterface } =
       text: "Search options",
       iconName: "search",
     },
+    LikedMovies: {
+      text: "Liked movies",
+      iconName: "thumbs-up"
+    }
   };
 
 const SettingsScreen = ({

@@ -21,7 +21,8 @@ import { useNotificationDispatch } from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
 import { auth } from "../firebase";
 import useColorScheme from "../hooks/useColorScheme";
-import ConnectPartner from "../screens/ConnectPartnerScreen";
+import ConnectPartnerScreen from "../screens/ConnectPartnerScreen";
+import LikedMoviesScreen from "../screens/LikedMoviesScreen";
 import SearchOptionsScreen from "../screens/SearchOptions";
 import SettingsScreen from "../screens/SettingsScreen";
 import { RootTabScreenProps, SettingsParamList } from "../types";
@@ -29,7 +30,9 @@ import { DEFAULT_SETTINGS_ROUTE } from "./defaultRoutes";
 
 const SettingsStack = createNativeStackNavigator<SettingsParamList>();
 
-const SettingsNavigator = (props: RootTabScreenProps<"Settings">): JSX.Element => {
+const SettingsNavigator = (
+  props: RootTabScreenProps<"Settings">
+): JSX.Element => {
   const [, setUserContext] = useUserContext();
   const notificationDispatch = useNotificationDispatch();
 
@@ -89,8 +92,16 @@ const SettingsNavigator = (props: RootTabScreenProps<"Settings">): JSX.Element =
         options={{ title: "Search Options", header: SettingsInnerHeader }}
       />
       <SettingsStack.Screen
+        name="LikedMovies"
+        component={LikedMoviesScreen}
+        options={{
+          header: (props) => <SettingsInnerHeader {...props} />,
+          headerTitle: "Liked Movies",
+        }}
+      />
+      <SettingsStack.Screen
         name="ConnectPartner"
-        component={ConnectPartner}
+        component={ConnectPartnerScreen}
         options={{
           header: (props) => <SettingsInnerHeader {...props} />,
           headerTitle: "Connect",
