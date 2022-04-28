@@ -39,7 +39,10 @@ service cloud.firestore {
           request.resource.data.keys().hasAll(["sender", "receiver", "status"]) &&
           exists(/databases/$(database)/documents/users/$(request.resource.data.receiver)) &&
           exists(/databases/$(database)/documents/users/$(request.resource.data.sender)) &&
-          get(/databases/$(database)/documents/users/$(request.resource.data.sender)).data.connectedUser != request.resource.data.receiver &&
+          (
+            !get(/databases/$(database)/documents/users/$(request.resource.data.sender)).data.keys().hasAny(["connectedUser"]) ||
+            get(/databases/$(database)/documents/users/$(request.resource.data.sender)).data.connectedUser != request.resource.data.receiver
+          ) &&
           request.auth.uid == request.resource.data.sender &&
           request.resource.data.status == "PENDING" &&
           request.auth.uid != request.resource.data.receiver

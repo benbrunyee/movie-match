@@ -11,7 +11,6 @@ const DEV = process.env.NODE_ENV === "development";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  // TODO: Put into .extra file or env equivalent
   apiKey: "AIzaSyBpgBc0NSABm0qj0ud4UBTERyHH-CYpuQQ",
   authDomain: "movie-match-fdfc2.firebaseapp.com",
   projectId: "movie-match-fdfc2",

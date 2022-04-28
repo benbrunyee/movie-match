@@ -7,7 +7,6 @@ const linking: LinkingOptions<RootStackParamList> = {
   config: {
     screens: {
       Login: "login",
-      Verification: "verification",
       Root: {
         screens: {
           Discover: {
@@ -37,6 +36,11 @@ const linking: LinkingOptions<RootStackParamList> = {
                   SearchOptions: "search-options",
                 },
               },
+              LikedMovies: {
+                screens: {
+                  LikeMovies: "liked-movies"
+                }
+              }
             },
           },
         },

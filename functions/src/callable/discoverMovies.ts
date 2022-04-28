@@ -59,8 +59,8 @@ export default async (
 ) => {
   const input = data;
 
-  // TODO: Don't show movies that have not yet been released
-  // TODO: Most movies being shown are not popular and some are YouTube videos
+  // ! TODO: Don't show movies that have not yet been released
+  // ! TODO: Most movies being shown are not popular and some are YouTube videos
   const urlParams = await createUrlParams(input);
 
   logger.debug(`URL Params for movie discovery: "${urlParams}"`);
@@ -133,7 +133,7 @@ async function getNewMovies(
     }
 
     if (typeof maxPages !== "undefined" && triedPages.length === maxPages) {
-      // TODO: Return movies out of their selection
+      // ! TODO: Return movies out of their selection
       throw new Error(
         "Tried all available pages. Cannot find undiscovered movies"
       );

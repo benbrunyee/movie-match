@@ -11,8 +11,6 @@ import { Box, Text } from "./Themed";
 const MoviePreview = (item: MovieBase): JSX.Element => {
   const { dark } = useTheme();
 
-  console.log(item);
-
   return (
     <Box
       style={[

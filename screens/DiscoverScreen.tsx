@@ -171,7 +171,6 @@ export default function DiscoverScreen({
       // Set the partner movies
       setMovies(partnerMovies);
 
-      // TODO: Remove casting everywhere
       const searchOptions = userDoc.data()
         .searchOptions as DiscoverSearchOptions;
 
@@ -357,9 +356,6 @@ export default function DiscoverScreen({
         stackSize={3}
         showSecondCard={true}
       />
-      {
-        // TODO: Add buttons here instead of on the card
-      }
     </Box>
   );
 }

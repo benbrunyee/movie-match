@@ -98,7 +98,7 @@ export function TextInput(props: TextInputProps) {
   return (
     <DefaultTextInput
       placeholderTextColor={placeholderTextColor}
-      style={[{ color, fontSize }, style]}
+      style={[{ color, fontSize, borderRadius: Styling.borderRadius }, style]}
       {...otherProps}
     />
   );

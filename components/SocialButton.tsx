@@ -65,7 +65,7 @@ function AppleButton({ style, ...otherProps }: View["props"]) {
 
 const styles = StyleSheet.create({
   socialButton: {
-    borderRadius: 100,
+    borderRadius: Styling.borderRadius,
     flexDirection: "row",
     height: 40,
     alignItems: "center",

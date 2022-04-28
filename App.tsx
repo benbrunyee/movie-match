@@ -55,7 +55,6 @@ const App = () => {
 
     if (userContext.uid) {
       userDocSub = onSnapshot(doc(db, "users", userContext.uid), (snap) => {
-        console.log("New data: ", snap.data());
         const newObj = snap.data();
 
         if (newObj) {

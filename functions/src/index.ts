@@ -19,7 +19,6 @@ export const getPageCountForOptions = https.onCall(
   callWrap(funcGetPageCountForOptions, { authRoute: false })
 );
 
-// TODO: Group into files
 export const onUpdateConnectionRequest = db
   .document("connectionRequests/{id}")
   .onUpdate(funcOnUpdateConnectionRequests);

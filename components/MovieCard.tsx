@@ -89,6 +89,7 @@ const MovieCard = ({
         <View style={styles.fill}>
           {
             // TODO: This is currently not scrollable
+            // ! TODO: Implement view to see movie in detail
           }
           <ScrollView
             style={styles.fill}

@@ -1,12 +1,6 @@
 import { useTheme } from "@react-navigation/native";
 import { BarCodeScannedCallback, BarCodeScanner } from "expo-barcode-scanner";
-import {
-  addDoc,
-  collection,
-  getDocs,
-  query,
-  where
-} from "firebase/firestore";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import React, { useCallback, useState } from "react";
 import {
   Keyboard,
@@ -247,8 +241,6 @@ const ConnectPartnerModal = (
                     styles.emailInput,
                     {
                       backgroundColor: dark ? "#000" : "#FFF",
-                      padding: Styling.spacingSmall,
-                      margin: 0,
                     },
                   ]}
                   placeholder="Or enter user's email"
@@ -350,6 +342,8 @@ const styles = StyleSheet.create({
   },
   emailInput: {
     borderRadius: Styling.borderRadius,
+    padding: Styling.spacingSmall,
+    margin: 0,
   },
   inputContainer: {
     marginTop: Styling.spacingSmall,

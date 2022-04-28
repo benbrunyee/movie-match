@@ -74,10 +74,33 @@ const LoginScreen = ({
 
   const handleSubmitWrapper = useCallback(
     (providedType?: LoginType | undefined) => {
+      if (!(form.email && form.password)) {
+        setError("Please fill all fields");
+        return;
+      }
+
       setIsSubmitting(true);
       handleSubmit(providedType).catch((e) => {
         console.error(e);
-        setError(e.message || "Failed to proceed");
+
+        if (e.name === "FirebaseError") {
+          switch (e.code) {
+            case "auth/user-not-found":
+              setError("User doesn't exist");
+              break;
+            case "auth/wrong-password":
+              setError("Incorrect email and/or password");
+              break;
+            case "auth/email-already-in-use":
+              setError("Email already in use");
+              break;
+            default:
+              setError("Failed to proceed");
+          }
+        } else {
+          setError("Failed to proceed");
+        }
+
         setIsSubmitting(false);
       });
     },
@@ -138,7 +161,9 @@ const LoginScreen = ({
           }
           <View style={styles.contentSection}>
             <View style={styles.inputFieldContainer}>
-              <Text variant="smallCaption">Email</Text>
+              <Text variant="smallCaption" style={styles.inputHeader}>
+                Email
+              </Text>
               <StyledTextInput
                 value={form.email}
                 autoCorrect={false}
@@ -151,7 +176,9 @@ const LoginScreen = ({
               />
             </View>
             <View style={styles.inputFieldContainer}>
-              <Text variant="smallCaption">Password</Text>
+              <Text variant="smallCaption" style={styles.inputHeader}>
+                Password
+              </Text>
               <StyledTextInput
                 value={form.password}
                 autoCompleteType="password"
@@ -194,8 +221,8 @@ const LoginScreen = ({
         {
           // Error message
         }
-        {error ? (
-          <View style={styles.errorMessage}>
+        <View style={styles.errorMessage}>
+          {error ? (
             <Text
               variant="smallCaption"
               lightColor="#FF5F5F"
@@ -203,8 +230,8 @@ const LoginScreen = ({
             >
               {error}
             </Text>
-          </View>
-        ) : null}
+          ) : null}
+        </View>
         {
           // Submit button
         }
@@ -296,7 +323,7 @@ const styles = StyleSheet.create({
     marginVertical: Styling.spacingLarge * 2,
   },
   content: {
-    flex: 1,
+    // flex: 1,
   },
   contentSection: {
     marginBottom: Styling.spacingLarge,
@@ -336,11 +363,13 @@ const styles = StyleSheet.create({
   },
   inputFieldContainer: {
     alignItems: "center",
-    marginBottom: Styling.spacingSmall
+    marginBottom: Styling.spacingSmall,
+  },
+  inputHeader: {
+    marginBottom: Styling.spacingSmall,
   },
   inputField: {
     width: 250,
-    borderRadius: 100,
     padding: 10,
   },
   submittingInput: {
