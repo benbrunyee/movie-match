@@ -1,45 +1,89 @@
+import { useTheme } from "@react-navigation/native";
 import { BarCodeScannedCallback, BarCodeScanner } from "expo-barcode-scanner";
 import {
   addDoc,
   collection,
   getDocs,
-  getFirestore,
   query,
   where
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import React, { useCallback, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import {
+  Keyboard,
+  StyleSheet,
+  TouchableWithoutFeedback,
+  View
+} from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import QRBorder from "../assets/images/qr-border.svg";
+import { ErrorText, SuccessText } from "../components/Notification";
 import ProfileHeader from "../components/ProfileHeader";
 import QRScanner from "../components/QRScanner";
 import SwitchTab from "../components/SwitchTab";
-import { Box } from "../components/Themed";
+import { Box, Button, Text, TextInput } from "../components/Themed";
 import Styling from "../constants/Styling";
+import { useNotificationDispatch } from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
+import { db } from "../firebase";
 import { SettingsTabScreenProps } from "../types";
 
 const TABS = ["SCAN", "MY CODE"] as const;
 
-const ConnectPartnerModal = (props: SettingsTabScreenProps<"ConnectPartner">): JSX.Element => {
+const ConnectPartnerModal = (
+  props: SettingsTabScreenProps<"ConnectPartner">
+): JSX.Element => {
   const [scanned, setScanned] = useState(false);
+  const [sentRequest, setSentRequest] = useState(false);
   const [selectedTab, setSelectedTab] = useState<typeof TABS[number]>("SCAN");
+  const [inputEmail, setInputEmail] = useState("");
+  const notificationDispatch = useNotificationDispatch();
+  const { dark } = useTheme();
 
   const [userContext] = useUserContext();
 
   const createConnectRequest = useCallback(
     async (senderId: string, receiverId: string) => {
-      const db = getFirestore();
+      if (senderId === receiverId) {
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            item: ({ dismiss }) => (
+              <ErrorText onPress={dismiss}>Cannot request yourself</ErrorText>
+            ),
+            type: "ERROR",
+            position: "TOP",
+          },
+        });
+        throw new SelfRequestError();
+      }
 
       // Check if there is an existing entry
-      const q = query(
+      const q1 = query(
         collection(db, "connectionRequests"),
         where("receiver", "==", receiverId),
         where("sender", "==", senderId)
       );
-      const existingEntries = (await getDocs(q)).docs;
+      const q2 = query(
+        collection(db, "connectionRequests"),
+        where("receiver", "==", senderId),
+        where("sender", "==", receiverId)
+      );
+      const existingEntries = [
+        ...(await getDocs(q1)).docs,
+        ...(await getDocs(q2)).docs,
+      ];
 
       if (existingEntries.length > 0) {
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            item: ({ dismiss }) => (
+              <ErrorText onPress={dismiss}>Request already exists</ErrorText>
+            ),
+            type: "ERROR",
+            position: "TOP",
+          },
+        });
         throw new DuplicateConnectionError();
       }
 
@@ -49,8 +93,71 @@ const ConnectPartnerModal = (props: SettingsTabScreenProps<"ConnectPartner">): J
         receiver: receiverId,
         status: "PENDING",
       });
+
+      setSentRequest(true);
     },
-    []
+    [notificationDispatch]
+  );
+
+  const emailRequest = useCallback(
+    async (email: string) => {
+      const userDocs = await getDocs(
+        query(collection(db, "users"), where("email", "==", email))
+      );
+
+      if (userDocs.docs.length === 0) {
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            item: ({ dismiss }) => (
+              <ErrorText onPress={dismiss}>Failed to find user</ErrorText>
+            ),
+            type: "ERROR",
+            position: "TOP",
+          },
+        });
+      }
+
+      if (userDocs.docs.length > 0) {
+        const targetUser = userDocs.docs[0].data().uid;
+
+        try {
+          await createConnectRequest(userContext.uid, targetUser);
+          notificationDispatch({
+            type: "ADD",
+            item: {
+              item: ({ dismiss }) => (
+                <SuccessText onPress={dismiss}>Request sent!</SuccessText>
+              ),
+              type: "SUCCESS",
+              position: "TOP",
+            },
+          });
+        } catch (e) {
+          console.error(e);
+
+          if (
+            (e as any).name !== "SelfRequestError" &&
+            (e as any).name !== "DuplicateConnectionError"
+          ) {
+            notificationDispatch({
+              type: "ADD",
+              item: {
+                item: ({ dismiss }) => (
+                  <ErrorText onPress={dismiss}>
+                    Failed to request user
+                  </ErrorText>
+                ),
+                type: "ERROR",
+                position: "TOP",
+              },
+            });
+            return;
+          }
+        }
+      }
+    },
+    [notificationDispatch, createConnectRequest, userContext.uid]
   );
 
   const handleScan = useCallback<BarCodeScannedCallback>(
@@ -58,27 +165,50 @@ const ConnectPartnerModal = (props: SettingsTabScreenProps<"ConnectPartner">): J
       setScanned(true);
 
       if (type !== "org.iso.QRCode" || !data) {
-        alert("Invalid QR Code.");
-        return;
-      }
-
-      if (data === userContext.uid) {
-        alert("Cannot request yourself");
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            item: ({ dismiss }) => (
+              <ErrorText onPress={dismiss}>Invalid QR Code</ErrorText>
+            ),
+            type: "ERROR",
+            position: "TOP",
+          },
+        });
         return;
       }
 
       createConnectRequest(userContext.uid, data)
         .then(() => {
-          alert("Sent request");
+          notificationDispatch({
+            type: "ADD",
+            item: {
+              item: ({ dismiss }) => (
+                <SuccessText onPress={dismiss}>Request sent!</SuccessText>
+              ),
+              type: "SUCCESS",
+              position: "TOP",
+            },
+          });
         })
         .catch((err) => {
           console.error(err);
-
-          if (err.name === "DuplicateConnectionError") {
-            alert("Request already made");
-            return;
-          } else {
-            alert("Failed to request user");
+          if (
+            err.name !== "SelfRequestError" &&
+            err.name !== "DuplicateConnectionError"
+          ) {
+            notificationDispatch({
+              type: "ADD",
+              item: {
+                item: ({ dismiss }) => (
+                  <ErrorText onPress={dismiss}>
+                    Failed to request user
+                  </ErrorText>
+                ),
+                type: "ERROR",
+                position: "TOP",
+              },
+            });
             return;
           }
         });
@@ -87,36 +217,77 @@ const ConnectPartnerModal = (props: SettingsTabScreenProps<"ConnectPartner">): J
   );
 
   return (
-    <Box style={styles.container} darkColor="#101010" lightColor="#EEEEEE">
-      <View style={styles.switchContainer}>
-        <SwitchTab
-          tabs={TABS}
-          selectedTab={selectedTab}
-          onSwitch={(tab) => setSelectedTab(tab)}
-        />
-      </View>
-      <View style={styles.content}>
-        {selectedTab === "SCAN" ? (
-          <View style={styles.scannerContainer}>
-            <QRScanner
-              onBarCodeScanned={scanned ? undefined : handleScan}
-              barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
-            >
-              <Overlay />
-            </QRScanner>
-          </View>
-        ) : (
-          <View style={styles.qrContent}>
-            <View style={styles.profileContainer}>
-              <ProfileHeader />
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <Box style={styles.container} darkColor="#101010" lightColor="#EEEEEE">
+        <View style={styles.switchContainer}>
+          <SwitchTab
+            tabs={TABS}
+            selectedTab={selectedTab}
+            onSwitch={(tab) => setSelectedTab(tab)}
+          />
+        </View>
+        <View style={styles.content}>
+          {selectedTab === "SCAN" ? (
+            <>
+              <View style={styles.scannerContainer}>
+                <QRScanner
+                  onBarCodeScanned={
+                    scanned || sentRequest ? undefined : handleScan
+                  }
+                  barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
+                >
+                  <Overlay />
+                </QRScanner>
+              </View>
+              <View style={styles.inputContainer}>
+                <TextInput
+                  value={inputEmail}
+                  onChangeText={(text) => setInputEmail(text)}
+                  style={[
+                    styles.emailInput,
+                    {
+                      backgroundColor: dark ? "#000" : "#FFF",
+                      padding: Styling.spacingSmall,
+                      margin: 0,
+                    },
+                  ]}
+                  placeholder="Or enter user's email"
+                  onSubmitEditing={() =>
+                    !sentRequest && emailRequest(inputEmail)
+                  }
+                  autoCorrect={false}
+                />
+                <Button
+                  style={styles.sendButton}
+                  onPress={() => !sentRequest && emailRequest(inputEmail)}
+                  disabled={sentRequest}
+                >
+                  <Text
+                    lightColor={sentRequest ? "#1FC357" : "#FFF"}
+                    darkColor={sentRequest ? "#1FC357" : "#FFF"}
+                  >
+                    Send Request
+                  </Text>
+                </Button>
+              </View>
+            </>
+          ) : (
+            <View style={styles.qrContent}>
+              <View style={styles.profileContainer}>
+                <ProfileHeader />
+              </View>
+              <Box
+                style={styles.qrContainer}
+                lightColor="#FFF"
+                darkColor="#FFF"
+              >
+                <QRCode value={userContext.uid} size={250} />
+              </Box>
             </View>
-            <Box style={styles.qrContainer} lightColor="#FFF" darkColor="#FFF">
-              <QRCode value={userContext.uid} size={250} />
-            </Box>
-          </View>
-        )}
-      </View>
-    </Box>
+          )}
+        </View>
+      </Box>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -135,7 +306,17 @@ export class DuplicateConnectionError extends Error {
   }
 }
 
+export class SelfRequestError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "SelfRequestError";
+  }
+}
+
 const styles = StyleSheet.create({
+  flex: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     padding: Styling.spacingMedium,
@@ -166,6 +347,22 @@ const styles = StyleSheet.create({
   qrContainer: {
     borderRadius: Styling.borderRadius,
     padding: Styling.spacingMedium,
+  },
+  emailInput: {
+    borderRadius: Styling.borderRadius,
+  },
+  inputContainer: {
+    marginTop: Styling.spacingSmall,
+  },
+  sendButton: {
+    marginTop: Styling.spacingSmall,
+    alignItems: "center",
+    backgroundColor: "#1EEC64",
+  },
+  seperator: {
+    marginHorizontal: Styling.spacingLarge * 4,
+    marginVertical: Styling.spacingMedium,
+    justifyContent: "center",
   },
 });
 

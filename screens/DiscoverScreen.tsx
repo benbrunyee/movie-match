@@ -7,7 +7,7 @@ import {
   getDocs,
   query,
   where
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, PressableProps, StyleSheet } from "react-native";

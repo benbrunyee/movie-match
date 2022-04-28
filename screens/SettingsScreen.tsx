@@ -9,7 +9,7 @@ import {
   query,
   updateDoc,
   where
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import React, { useCallback, useEffect, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import ProfileHeader from "../components/ProfileHeader";

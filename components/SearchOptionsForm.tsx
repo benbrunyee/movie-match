@@ -1,5 +1,5 @@
 import { Picker } from "@react-native-picker/picker";
-import { doc, getDoc, setDoc } from "firebase/firestore/lite";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Formik } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
 import {

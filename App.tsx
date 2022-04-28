@@ -1,11 +1,12 @@
 import { StatusBar } from "expo-status-bar";
+import { doc, onSnapshot, Unsubscribe } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
-import { LogBox, View } from "react-native";
+import { KeyboardAvoidingView, LogBox, Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NotificationDisplay } from "./components/Notification";
 import { NotificationProvider } from "./context/NotificationContext";
 import { UserContext, UserContextObject } from "./context/UserContext";
-import { auth } from "./firebase";
+import { auth, db } from "./firebase";
 import useCachedResources from "./hooks/useCachedResources";
 import useColorScheme from "./hooks/useColorScheme";
 import Navigation from "./navigation";
@@ -50,6 +51,23 @@ const App = () => {
   }, []);
 
   useEffect(() => {
+    let userDocSub: Unsubscribe | undefined;
+
+    if (userContext.uid) {
+      userDocSub = onSnapshot(doc(db, "users", userContext.uid), (snap) => {
+        console.log("New data: ", snap.data());
+        const newObj = snap.data();
+
+        if (newObj) {
+          setUserContext((cur) => ({ ...cur, userDbObj: newObj }));
+        }
+      });
+    }
+
+    return () => userDocSub && userDocSub();
+  }, [userContext.uid]);
+
+  useEffect(() => {
     if (cachedLoadingComplete && !userLoading) {
       setIsLoading(false);
     }
@@ -63,7 +81,12 @@ const App = () => {
         <NotificationProvider>
           <NotificationDisplay />
           <SafeAreaProvider>
-            <Navigation colorScheme={colorScheme} />
+            <KeyboardAvoidingView
+              style={{ flex: 1 }}
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
+              <Navigation colorScheme={colorScheme} />
+            </KeyboardAvoidingView>
             <StatusBar />
           </SafeAreaProvider>
         </NotificationProvider>

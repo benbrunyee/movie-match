@@ -24,7 +24,7 @@ export default {
   dark: {
     text: "#fff",
     textDisabled: "#aaa",
-    placeholderText: "#ddd",
+    placeholderText: "#222222",
     background: "#101010",
     containerBackgroundDefault: "#666",
     menuItemDefault: "#101010",

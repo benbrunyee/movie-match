@@ -7,7 +7,7 @@ import {
   orderBy,
   query,
   where
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import React, { useCallback, useEffect, useState } from "react";
 import { FlatList, StyleSheet } from "react-native";
 import MoviePreview from "../components/MoviePreview";

@@ -1,12 +1,11 @@
 import { createContext, useContext } from "react";
-import { User } from "../src/API";
 
 export interface UserContextObject {
   uid: string;
   email: string;
   signedIn: boolean;
   connectedPartner: string;
-  userDbObj: Omit<User, "__typename"> | {}
+  userDbObj: object;
 }
 
 export const UserContext = createContext<

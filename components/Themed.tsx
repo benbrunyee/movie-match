@@ -92,16 +92,13 @@ export function Box(props: BoxProps) {
 export function TextInput(props: TextInputProps) {
   const { variant, style, lightColor, darkColor, ...otherProps } = props;
   const color = useThemeColor({ light: lightColor, dark: darkColor }, "text");
-  const placeholderTextColor = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    "placeholderText"
-  );
+  const placeholderTextColor = useThemeColor({}, "placeholderText");
   const fontSize = useFontSize(variant);
 
   return (
     <DefaultTextInput
       placeholderTextColor={placeholderTextColor}
-      style={[{ color, fontSize, margin: Styling.spacingSmall }, style]}
+      style={[{ color, fontSize }, style]}
       {...otherProps}
     />
   );

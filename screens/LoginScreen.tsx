@@ -43,7 +43,6 @@ const LoginScreen = ({
   const [form, setForm] = useState({
     email: "",
     password: "",
-    repeatPassword: "",
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,12 +58,6 @@ const LoginScreen = ({
         // Sign the user in
         await signInWithEmailAndPassword(getAuth(), form.email, form.password);
       } else if (innerType === "SIGNUP") {
-        if (form.password !== form.repeatPassword) {
-          console.warn("Passwords do not match");
-          setError("Passwords do not match");
-          return;
-        }
-
         // Sign up the user
         await createUserWithEmailAndPassword(
           getAuth(),
@@ -172,23 +165,6 @@ const LoginScreen = ({
                 }
               />
             </View>
-            {type === "SIGNUP" ? (
-              <View style={styles.inputFieldContainer}>
-                <Text variant="smallCaption">Repeat Password</Text>
-                <StyledTextInput
-                  value={form.repeatPassword}
-                  autoCompleteType="password"
-                  autoCorrect={false}
-                  textContentType="password"
-                  secureTextEntry={true}
-                  editable={!isSubmitting}
-                  {...(isSubmitting && { style: styles.submittingInput })}
-                  onChangeText={(text) =>
-                    setForm((cur) => ({ ...cur, repeatPassword: text }))
-                  }
-                />
-              </View>
-            ) : null}
           </View>
           {
             // Or seperator
@@ -360,6 +336,7 @@ const styles = StyleSheet.create({
   },
   inputFieldContainer: {
     alignItems: "center",
+    marginBottom: Styling.spacingSmall
   },
   inputField: {
     width: 250,

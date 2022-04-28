@@ -1,7 +1,7 @@
 import {
   doc,
   DocumentData, getDoc, setDoc
-} from "firebase/firestore/lite";
+} from "firebase/firestore";
 import { UserContextObject } from "../context/UserContext";
 import { auth, db } from "../firebase";
 
