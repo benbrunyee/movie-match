@@ -3,9 +3,7 @@ import { useTheme } from "@react-navigation/native";
 import { brand } from "expo-device";
 import {
   collection,
-  doc,
-  getDoc,
-  getDocs,
+  doc, getDocs,
   query,
   updateDoc,
   where
@@ -80,16 +78,6 @@ const SettingsScreen = ({
           },
         ]);
       });
-
-      const conReqDoc = (
-        await getDoc(doc(db, "connectionRequests", id))
-      ).data();
-
-      conReqDoc?.sender &&
-        setUserContext((cur) => ({
-          ...cur,
-          connectedPartner: conReqDoc.sender,
-        }));
     },
     [acceptConReq]
   );

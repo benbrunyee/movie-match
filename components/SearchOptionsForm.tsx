@@ -114,13 +114,13 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
     );
   }
 
+  // ! TODO: Style this
   return (
     <>
       <Formik
         initialValues={Object.assign({}, Object.freeze(initialValues))}
         onSubmit={(values) => {
           {
-            console.log(values);
             handleFormSubmit(values).finally(
               () => afterSubmit && afterSubmit(values)
             );

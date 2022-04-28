@@ -69,8 +69,6 @@ const MatchesScreen = ({
         return;
       }
 
-      console.log("Running")
-
       try {
         const userLikedInnerIds = (
           await getDocs(

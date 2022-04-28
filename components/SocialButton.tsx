@@ -21,6 +21,7 @@ const SocialButton = ({
   );
 };
 
+// ! TODO: Implement social oauth
 function GoogleButton({ style, ...otherProps }: View["props"]) {
   return (
     <View

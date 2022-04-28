@@ -336,6 +336,7 @@ async function getGenreIds() {
   ).data) as MovieGenreApi;
 }
 
+// ! TODO: Genres should be "or" not "and"
 /**
  * Creates URL params from search options provided
  * @param {DiscoverSearchOptions} searchOptions Search options to convert into URL params

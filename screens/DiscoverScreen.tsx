@@ -101,8 +101,6 @@ export default function DiscoverScreen({
         reaction: reaction,
       };
 
-      console.log(movieReaction);
-
       try {
         const q = query(
           collection(db, "movieReactions"),
@@ -336,7 +334,6 @@ export default function DiscoverScreen({
             }}
             onCrossPress={() => {
               console.debug("Cross pressed");
-              console.log(swiperRef);
               if (swiperRef) {
                 swiperRef.swipeLeft();
               }

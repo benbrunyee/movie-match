@@ -10,6 +10,7 @@ import {
 } from "../context/NotificationContext";
 import { Box, Text, TextProps } from "./Themed";
 
+// ! TODO: Notifications should clear after some time and never show on pages like Login
 const NotificationItem = ({
   item,
   position = "CENTER",
