@@ -96,7 +96,10 @@ const ConnectPartnerModal = (
   const emailRequest = useCallback(
     async (email: string) => {
       const userDocs = await getDocs(
-        query(collection(db, "users"), where("email", "==", email))
+        query(
+          collection(db, "users"),
+          where("email", "==", email.toLowerCase())
+        )
       );
 
       if (userDocs.docs.length === 0) {
