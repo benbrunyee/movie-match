@@ -1,74 +1,151 @@
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Deny by default
+    match /{document=**} {
+      allow read, write: if
+        false
+    }
+
+    // Global functions
+    function isAuth(request) {
+      return request.auth != null
+    }
+    function isUsersObject(request, uid) {
+      return request.auth.uid == uid
+    }
+    function hasUserObj(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid))
+    }
+
+    // Users
     match /users/{uid} {
       allow create: if
-        request.auth.uid == uid &&
-        !exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        !request.resource.data.keys().hasAny(["connectedUser"])
+        isAuth(request) &&
+        isUsersObject(request, uid) &&
+        !hasUserObj(request.auth.uid) &&
+        !request.resource.data.keys().hasAny(["connectedUser"]) &&
+        request.resource.data.keys().hasAll(["email", "uid"]) &&
+        request.auth.uid == request.resource.data.uid &&
+        request.auth.token.email == request.resource.data.email
       allow read: if
-        request.auth != null
+        isAuth(request)
       allow update: if
-        request.auth.uid == uid &&
+        isAuth(request) &&
+        isUsersObject(request, uid) &&
         !request.resource.data.keys().hasAny(["connectedUser"])
       allow delete: if
         false
     }
+
+    // Private user data
     match /users/{uid}/private/{privateDoc=**} {
       allow read, write: if
-        request.auth.uid == uid
+        isAuth(request) &&
+        isUsersObject(request, uid)
     }
+
+    // Movie reactions
     match /movieReactions/{id} {
+      function isOwner(request, resource) {
+        return request.auth.uid == resource.data.owner
+      }
       allow create: if
-        request.auth != null &&
-        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        request.resource.data.owner == request.auth.uid
+        isAuth(request) &&
+        hasUserObj(request.auth.uid) &&
+        isOwner(request, resource) &&
+        request.resource.data.keys().hasOnly(["movieId", "owner", "reaction"]) &&
+        (
+          request.resource.data.reaction == "LIKE" ||
+          request.resource.data.reaction == "DISLIKE"
+        )
       allow read: if
-        request.auth.uid == resource.data.owner ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.connectedUser == resource.data.owner
+        isAuth(request) &&
+        (
+          isOwner(request, resource) ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.connectedUser == resource.data.owner
+        )
       allow update: if
-        request.auth.uid == resource.data.owner &&
+        isAuth(request) &&
+        isOwner(request, resource) &&
         request.resource.data.owner == resource.data.owner &&
-        request.resource.data.createdAt == resource.data.createdAt
+        request.resource.data.createdAt == resource.data.createdAt &&
+        request.resource.data.keys().hasOnly(["movieId", "owner", "reaction"]) &&
+        (
+          request.resource.data.reaction == "LIKE" ||
+          request.resource.data.reaction == "DISLIKE"
+        )
       allow delete: if
-        request.auth.uid == resource.data.owner
+        isAuth(request) &&
+        isOwner(request, resource)
     }
+
+    // Connection requests
     match /connectionRequests/{uid} {
-        allow create: if
-          request.auth != null &&
-          request.resource.data.keys().hasAll(["sender", "receiver", "status"]) &&
-          exists(/databases/$(database)/documents/users/$(request.resource.data.receiver)) &&
-          exists(/databases/$(database)/documents/users/$(request.resource.data.sender)) &&
-          (
-            !get(/databases/$(database)/documents/users/$(request.resource.data.sender)).data.keys().hasAny(["connectedUser"]) ||
-            get(/databases/$(database)/documents/users/$(request.resource.data.sender)).data.connectedUser != request.resource.data.receiver
-          ) &&
-          request.auth.uid == request.resource.data.sender &&
-          request.resource.data.status == "PENDING" &&
-          request.auth.uid != request.resource.data.receiver
-        allow read: if
-          resource.data.receiver == request.auth.uid ||
-          resource.data.sender == request.auth.uid
-        allow update: if
-          resource.data.receiver == request.auth.uid &&
-          request.resource.data.status == "ACCEPTED" &&
-          request.resource.data.keys().hasOnly(["sender", "receiver", "status"]) &&
-          request.resource.data.receiver == resource.data.receiver &&
-          request.resource.data.sender == resource.data.sender
-        allow delete: if
-          resource.data.receiver == request.auth.uid ||
-          resource.data.sender == request.auth.uid
+
+      // Connection request specific functions
+      function isSender(request, resource) {
+        return request.auth.uid == resource.data.sender
+      }
+      function isReceiver(request, resource) {
+        return request.auth.uid == resource.data.receiver
+      }
+      function checkSender(request) {
+        let sender = get(/databases/$(database)/documents/users/$(request.resource.data.sender));
+        return sender != null && (!sender.data.keys().hasAny(["connectedUser"]) || sender.data.connectedUser != request.resource.data.receiver)
+      }
+      function checkFields(request) {
+        return request.resource.data.keys().hasOnly(["sender", "receiver", "status"])
+      }
+
+      allow create: if
+        isAuth(request) &&
+        checkFields(request) &&
+        request.resource.data.status == "PENDING" &&
+        !isReceiver(request, resource) &&
+        isSender(request, resource) &&
+        hasUserObj(request.resource.data.receiver) &&
+        hasUserObj(request.resource.data.sender) &&
+        checkSender(request)
+      allow read: if
+        isAuth(request) &&
+        (
+          isReceiver(request, resource) ||
+          isSender(request, resource)
+        )
+      allow update: if
+        isAuth(request) &&
+        isReceiver(request, resource) &&
+        checkFields(request) &&
+        request.resource.data.status == "ACCEPTED" &&
+        request.resource.data.receiver == resource.data.receiver &&
+        request.resource.data.sender == resource.data.sender
+      allow delete: if
+        isAuth(request) &&
+        (
+          isReceiver(request, resource) ||
+          isSender(request, resource)
+        )
     }
+
+    // Movies
     match /movies/{movie=**} {
       allow write: if
         false
       allow read: if
-        request.auth != null
+        isAuth(request)
     }
+
+    // Genres
+    // TODO: Implement or discard
     match /genres/{genre=**} {
       allow read, write: if
         false
     }
+
+    // Regions
+    // TODO: Implement or discard
     match /regions/{region=**} {
       allow read, write: if
         false
