@@ -1,5 +1,10 @@
 import * as admin from "firebase-admin";
-import { QueryDocumentSnapshot } from "firebase-admin/firestore";
+import {
+  DocumentData,
+  DocumentReference,
+  QueryDocumentSnapshot,
+  Transaction
+} from "firebase-admin/firestore";
 import { Change, EventContext, logger } from "firebase-functions";
 import { firestore } from "..";
 
@@ -35,27 +40,37 @@ export default async (
 
 /**
  * Removes connected partners for a specified list of users
- * @param {admin.firebase.transaction} transaction Firestore transaction
+ * @param {admin.firestore.Transaction} transaction Firestore transaction
  * @param {string[]} uids Array of uids to clear connected partners for
- * @return {admin.firebase.transaction} Firestore transaction
+ * @return {Promise<admin.firestore.Transaction>} Firestore transaction
  */
 async function transactionRemoveUsersPartners(
   transaction: admin.firestore.Transaction,
   uids: string[]
-) {
+): Promise<Transaction> {
+  const refsToBeUpdated: DocumentReference<DocumentData>[] = [];
+
+  // Run all the gets first and add to array if the connectedUser
+  // has a database object
   for (const uid of uids) {
     const userDoc = (
       await transaction.get(firestore.collection("users").doc(uid))
     ).data();
+
     const connectedUserDoc = userDoc?.connectedUser
       ? await transaction.get(
           firestore.collection("users").doc(userDoc.connectedUser)
         )
       : undefined;
-    connectedUserDoc?.exists &&
-      transaction.update(connectedUserDoc.ref, {
-        connectedUser: null,
-      });
+
+    connectedUserDoc?.exists && refsToBeUpdated.push(connectedUserDoc.ref);
+  }
+
+  // Set the connectedUser to null for the older partners
+  for (const ref of refsToBeUpdated) {
+    transaction.update(ref, {
+      connectedUser: null,
+    });
   }
 
   return transaction;

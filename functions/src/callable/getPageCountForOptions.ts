@@ -1,6 +1,6 @@
 import axios from "axios";
 import { https, logger } from "firebase-functions";
-import { DiscoverMovieApi, DiscoverSearchOptions } from "../util/apiTypes";
+import { DiscoverSearchOptions, TMDBApiOutput } from "../util/apiTypes";
 import { MOVIE_API_KEY, MOVIE_API_URL, stringify } from "../util/common";
 import { createUrlParams } from "./discoverMovies";
 
@@ -21,7 +21,7 @@ export default async (
   // Make the request
   const movies = (await (
     await axios.get(discoverUrl)
-  ).data) as DiscoverMovieApi;
+  ).data) as TMDBApiOutput;
 
   if (
     (typeof movies.success !== "undefined" && !movies.success) ||

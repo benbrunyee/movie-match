@@ -5,28 +5,12 @@ import {
   CreateMovieInput,
   DiscoverSearchOptions,
   Genre,
+  MovieApiOutput,
   MovieBase
 } from "../util/apiTypes";
 import { MOVIE_API_KEY, MOVIE_API_URL } from "../util/common";
 
-export interface MovieApiOutput {
-  id: number;
-  poster_path?: string;
-  adult: boolean;
-  overview: string;
-  release_date: string;
-  genre_ids: number[];
-  original_title: string;
-  original_language: string;
-  title: string;
-  backdrop_path?: string;
-  popularity: number;
-  vote_count: number;
-  video: boolean;
-  vote_average: number;
-}
-
-export interface DiscoverMovieApi {
+export interface MovieApi {
   page?: number;
   results?: MovieApiOutput[];
   total_results?: number;
@@ -76,7 +60,7 @@ export default async (
     ? getNewMovies(context.auth.uid, discoverUrl, input || {})
     : ((
         await axios.get(discoverUrl)
-      ).data as Promise<DiscoverMovieApi>));
+      ).data as Promise<MovieApi>));
 
   if (typeof movies.success !== "undefined" && !movies.success) {
     throw new Error(
@@ -107,15 +91,15 @@ function generateRandomNumber(min: number, max: number) {
  * @param {string} uid Unique ID of the user
  * @param {string} initialUrl A URL to query first
  * @param {DiscoverSearchOptions} searchOptions Search options as object for initialUrl
- * @return {Promise<DiscoverMovieApi>} Output from TMDB
+ * @return {Promise<MovieApi>} Output from TMDB
  */
 async function getNewMovies(
   uid: string,
   initialUrl: string,
   searchOptions: DiscoverSearchOptions
-): Promise<DiscoverMovieApi> {
+): Promise<MovieApi> {
   let validMovies = false;
-  let movies: DiscoverMovieApi | undefined;
+  let movies: MovieApi | undefined;
   let url = initialUrl;
   let attempt = 0;
   let maxPages: number | undefined = undefined;
@@ -164,7 +148,7 @@ async function getNewMovies(
 
     logger.debug(`Calling API, attempt number: ${attempt}`);
     logger.debug(`Calling URL: ${url}`);
-    movies = (await (await axios.get(url)).data) as DiscoverMovieApi;
+    movies = (await (await axios.get(url)).data) as MovieApi;
 
     logger.debug(`Output from Movie API: ${JSON.stringify(movies, null, 2)}`);
 
@@ -249,11 +233,11 @@ async function hasUserReacted(
 
 /**
  * Adds movies from TMDB to firestore
- * @param {DiscoverMovieApi} discoveredMovies Output from TMDB
+ * @param {MovieApi} discoveredMovies Output from TMDB
  * @return {Promise<MovieBase[]>} Firestore docs for the movies specified
  */
 async function addMoviesToDb(
-  discoveredMovies: DiscoverMovieApi
+  discoveredMovies: MovieApi
 ): Promise<MovieBase[]> {
   const genreFetch = await getGenreIds();
 

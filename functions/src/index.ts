@@ -1,11 +1,11 @@
 import * as admin from "firebase-admin";
 import { firestore as db, https } from "firebase-functions";
+import funcOnUpdateConnectionRequest from "../triggers/onUpdateConnectionRequest";
 import funcDiscoverMovies from "./callable/discoverMovies";
 import funcGetPageCountForOptions from "./callable/getPageCountForOptions";
 import funcOnCreateMovieReaction from "./triggers/onCreateMovieReaction";
 import funcOnCreateUser from "./triggers/onCreateUser";
-import funcOnDeleteConnectionRequests from "./triggers/onDeleteConnectionRequest";
-import funcOnUpdateConnectionRequests from "./triggers/onUpdateConnectionRequests";
+import funcOnDeleteConnectionRequest from "./triggers/onDeleteConnectionRequest";
 import { callWrap } from "./util/common";
 
 admin.initializeApp();
@@ -21,11 +21,11 @@ export const getPageCountForOptions = https.onCall(
 
 export const onUpdateConnectionRequest = db
   .document("connectionRequests/{id}")
-  .onUpdate(funcOnUpdateConnectionRequests);
+  .onUpdate(funcOnUpdateConnectionRequest);
 
 export const onDeleteConnectionRequest = db
   .document("connectionRequests/{id}")
-  .onDelete(funcOnDeleteConnectionRequests);
+  .onDelete(funcOnDeleteConnectionRequest);
 
 export const onCreateMovieReaction = db
   .document("movieReactions/{id}")

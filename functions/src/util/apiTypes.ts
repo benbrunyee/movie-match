@@ -64,7 +64,7 @@ export enum Genre {
   Western = "Western",
 }
 
-export interface DiscoverMovieApi {
+export interface TMDBApiOutput {
   page?: number;
   results?: MovieApiOutput[];
   total_results?: number;
