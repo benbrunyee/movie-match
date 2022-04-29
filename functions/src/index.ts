@@ -1,11 +1,11 @@
 import * as admin from "firebase-admin";
 import { firestore as db, https } from "firebase-functions";
-import funcOnUpdateConnectionRequest from "../triggers/onUpdateConnectionRequest";
 import funcDiscoverMovies from "./callable/discoverMovies";
 import funcGetPageCountForOptions from "./callable/getPageCountForOptions";
 import funcOnCreateMovieReaction from "./triggers/onCreateMovieReaction";
 import funcOnCreateUser from "./triggers/onCreateUser";
 import funcOnDeleteConnectionRequest from "./triggers/onDeleteConnectionRequest";
+import funcOnUpdateConnectionRequest from "./triggers/onUpdateConnectionRequest";
 import { callWrap } from "./util/common";
 
 admin.initializeApp();
