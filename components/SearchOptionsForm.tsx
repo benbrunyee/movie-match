@@ -19,6 +19,7 @@ import {
   Genre,
   Region
 } from "../functions/src/util/apiTypes";
+import CTAButton from "./CTAButton";
 import MultiSelectModal, { SelectObject } from "./MultiSelectModal";
 import { Box, BoxProps, Button, Text } from "./Themed";
 
@@ -220,22 +221,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
                 submitButtonText="Update"
               />
             </ScrollView>
-            {
-              // ! TODO: Theme important buttons
-            }
-            <Button
-              onPress={() => handleSubmit()}
-              lightColor="#1EEC64"
-              darkColor="#1EEC64"
-            >
-              <Text
-                style={styles.submitText}
-                lightColor="#FFF"
-                darkColor="#000"
-              >
-                Save
-              </Text>
-            </Button>
+            <CTAButton onPress={() => handleSubmit()} text="Save" />
           </>
         )}
       </Formik>
