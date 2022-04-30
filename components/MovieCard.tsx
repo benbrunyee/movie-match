@@ -28,9 +28,9 @@ export interface MovieCardProps extends ContainerProps {
 const MovieCard = ({
   movie,
   style,
-  onCrossPress = () => {},
-  onCheckPress = () => {},
-  onRefreshPress = () => {},
+  onCrossPress,
+  onCheckPress,
+  onRefreshPress,
   ...otherProps
 }: MovieCardProps): JSX.Element => {
   return (
@@ -91,36 +91,40 @@ const MovieCard = ({
             // TODO: This is currently not scrollable
             // ! TODO: Implement view to see movie in detail
           }
-          <ScrollView
-            style={styles.fill}
-            showsVerticalScrollIndicator
-            onTouchStart={(e) => e.stopPropagation()}
-          >
+          <ScrollView style={styles.fill}>
             <Text variant="smallCaption" style={styles.description}>
               {movie.description}
             </Text>
           </ScrollView>
         </View>
-        <View style={[styles.actionButtons]}>
-          <ActionButton
-            name="times"
-            style={styles.rightButtonMargin}
-            color="#F62323"
-            onPress={() => onCrossPress()}
-          />
-          <ActionButton
-            name="refresh"
-            style={styles.rightButtonMargin}
-            color="#CCC"
-            size="small"
-            onPress={() => onRefreshPress()}
-          />
-          <ActionButton
-            name="check"
-            color="#1EEC64"
-            onPress={() => onCheckPress()}
-          />
-        </View>
+        {onCrossPress || onRefreshPress || onCheckPress ? (
+          <View style={[styles.actionButtons]}>
+            {onCrossPress ? (
+              <ActionButton
+                name="times"
+                style={styles.rightButtonMargin}
+                color="#F62323"
+                onPress={() => onCrossPress()}
+              />
+            ) : null}
+            {onRefreshPress ? (
+              <ActionButton
+                name="refresh"
+                style={styles.rightButtonMargin}
+                color="#CCC"
+                size="small"
+                onPress={() => onRefreshPress()}
+              />
+            ) : null}
+            {onCheckPress ? (
+              <ActionButton
+                name="check"
+                color="#1EEC64"
+                onPress={() => onCheckPress()}
+              />
+            ) : null}
+          </View>
+        ) : null}
       </View>
     </Box>
   );

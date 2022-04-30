@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useUserContext } from "../context/UserContext";
 import LoginScreen from "../screens/LoginScreen";
+import MovieDetailsModal from "../screens/MovieDetailsModal";
 import NotFoundScreen from "../screens/NotFoundScreen";
 import { RootStackParamList } from "../types";
 import BottomTabNavigator from "./BottomNavigator";
@@ -24,6 +25,12 @@ function RootNavigator() {
             component={NotFoundScreen}
             options={{ title: "Oops!" }}
           />
+          <Stack.Group screenOptions={{ presentation: "modal" }}>
+            <Stack.Screen
+              name="MovieDetailsModal"
+              component={MovieDetailsModal}
+            />
+          </Stack.Group>
         </>
       ) : (
         <Stack.Screen name="Login" component={LoginScreen} />

@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import {
   collection,
   doc,
@@ -12,7 +13,7 @@ import {
   where
 } from "firebase/firestore";
 import { useCallback, useEffect, useReducer, useState } from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { FlatList, Pressable, StyleSheet } from "react-native";
 import MoviePreview from "../components/MoviePreview";
 import { Box, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
@@ -65,6 +66,7 @@ const LikedMoviesScreen = ({
   const [lastLoaded, setLastLoaded] = useState<
     QueryDocumentSnapshot<DocumentData> | undefined
   >();
+  const [viewMovieId, setViewMovieId] = useState("");
 
   const queryFromIndex = useCallback(() => {
     const loadLimit = 2;
@@ -123,13 +125,24 @@ const LikedMoviesScreen = ({
     [userContext.uid, queryFromIndex]
   );
 
-  useEffect(() => {
-    const unsub = navigation.addListener("focus", () => {
+  useFocusEffect(
+    useCallback(() => {
       loadLikesMovies("PREPEND");
-    });
+      setViewMovieId("");
+    }, [])
+  );
 
-    return unsub;
-  }, []);
+  useEffect(() => {
+    if (viewMovieId) {
+      const parentNav = navigation.getParent();
+
+      if (parentNav) {
+        parentNav.navigate("MovieDetailsModal", {
+          movieId: viewMovieId,
+        });
+      }
+    }
+  }, [viewMovieId]);
 
   if (isLoading) {
     return (
@@ -152,7 +165,15 @@ const LikedMoviesScreen = ({
       {movies.length > 0 ? (
         <FlatList
           keyExtractor={(movie) => movie.id}
-          renderItem={({ item: movie }) => <MoviePreview {...movie} />}
+          renderItem={({ item: movie }) => (
+            <Pressable
+              onPress={() => {
+                setViewMovieId(movie.id);
+              }}
+            >
+              <MoviePreview {...movie} />
+            </Pressable>
+          )}
           data={movies}
           onEndReached={() => {
             loadLikesMovies();

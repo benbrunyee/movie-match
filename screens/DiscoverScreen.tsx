@@ -187,50 +187,6 @@ export default function DiscoverScreen({
       });
 
       setMovies((cur) => [...cur, ...discoveredMovies]);
-      // setMovies((cur) => [
-      //   {
-      //     id: "304ab148-37eb-43ab-a3f2-d857350b72df",
-      //     identifier: 347755,
-      //     createdAt: "2022-04-20T19:55:19.396Z",
-      //     name: "Wind Walkers Wind Walkers Wind Walkers Wind Walkers",
-      //     coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
-      //     rating: 6.8,
-      //     ratingCount: 14,
-      //     description: `A group of friends and family descend into the Everglades swamplands for their annual hunting trip only to discover that they are the ones being hunted. A malevolent entity is tracking them and they begin to realise one of their party may be possessed by something brought home from a tour of duty in the Middle East - a demon of war so horrible and deadly they are unaware of its devilish presence. Or are they facing something even more unspeakable, a legendary Native American curse about to unleash its dreadful legacy of thirsting for colonial revenge by claiming more souls?`,
-      //     genres: [
-      //       Genre.Action,
-      //       Genre.Adventure,
-      //       Genre.Animation,
-      //       Genre.Comedy,
-      //       Genre.Crime,
-      //       Genre.Documentary,
-      //       Genre.Drama,
-      //       Genre.Family,
-      //       Genre.Fantasy,
-      //     ],
-      //     trailerUri: null,
-      //     releaseYear: 2015,
-      //     updatedAt: "2022-04-20T19:55:19.396Z",
-      //     owner: null,
-      //     __typename: "Movie",
-      //   },
-      //   {
-      //     id: "304ab148-37eb-43ab-a3f2-d857350b72dff",
-      //     identifier: 347755,
-      //     createdAt: "2022-04-20T19:55:19.396Z",
-      //     name: "Wind Walkers",
-      //     coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
-      //     rating: 6.8,
-      //     ratingCount: 14,
-      //     description: `A group of friends and family descend into the Everglades swamplands.`,
-      //     genres: [Genre.Action, Genre.Adventure, Genre.Animation],
-      //     trailerUri: null,
-      //     releaseYear: 2015,
-      //     updatedAt: "2022-04-20T19:55:19.396Z",
-      //     owner: null,
-      //     __typename: "Movie",
-      //   },
-      // ]);
     } catch (e) {
       console.error(e);
       setError("Failed to load movies");

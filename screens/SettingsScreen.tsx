@@ -1,14 +1,15 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useTheme } from "@react-navigation/native";
+import { useFocusEffect, useTheme } from "@react-navigation/native";
 import { brand } from "expo-device";
 import {
   collection,
-  doc, getDocs,
+  doc,
+  getDocs,
   query,
   updateDoc,
   where
 } from "firebase/firestore";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { Alert, StyleSheet, View } from "react-native";
 import ProfileHeader from "../components/ProfileHeader";
 import { Box, MenuItem, MenuItemProps, Text } from "../components/Themed";
@@ -34,8 +35,8 @@ const SCREENS: { [key in keyof Partial<SettingsParamList>]: ScreenInterface } =
     },
     LikedMovies: {
       text: "Liked movies",
-      iconName: "thumbs-up"
-    }
+      iconName: "thumbs-up",
+    },
   };
 
 const SettingsScreen = ({
@@ -104,11 +105,12 @@ const SettingsScreen = ({
     setIsLoading(false);
   }, []);
 
-  useEffect(() => {
-    // Run on focus
-    const unsubscribe = navigation.addListener("focus", reloadConReq);
-    return unsubscribe;
-  }, [navigation]);
+  // Run on focus
+  useFocusEffect(
+    useCallback(() => {
+      reloadConReq();
+    }, [reloadConReq])
+  );
 
   if (isLoading) {
     return (

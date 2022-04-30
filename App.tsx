@@ -58,7 +58,11 @@ const App = () => {
         const newObj = snap.data();
 
         if (newObj) {
-          setUserContext((cur) => ({ ...cur, userDbObj: newObj }));
+          setUserContext((cur) => ({
+            ...cur,
+            userDbObj: newObj,
+            connectedPartner: newObj.connectedPartner || cur.connectedPartner,
+          }));
         }
       });
     }

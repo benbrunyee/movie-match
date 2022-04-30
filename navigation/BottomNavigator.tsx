@@ -40,6 +40,7 @@ function BottomTabNavigator() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme].tint,
         tabBarShowLabel: false,
+        header: (props) => <BottomTabHeader {...props} />,
       }}
       screenListeners={{
         blur: clearNotifications,
@@ -58,7 +59,6 @@ function BottomTabNavigator() {
         name="Matches"
         component={MatchesScreen}
         options={{
-          header: (props) => <BottomTabHeader {...props} />,
           headerTitle: "Matches",
           tabBarIcon: ({ color }) => <TabBarIcon name="heart" color={color} />,
         }}

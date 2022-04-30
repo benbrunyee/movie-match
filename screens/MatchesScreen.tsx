@@ -1,3 +1,4 @@
+import { useFocusEffect } from "@react-navigation/native";
 import {
   collection,
   doc,
@@ -8,7 +9,7 @@ import {
   where
 } from "firebase/firestore";
 import React, { useCallback, useEffect, useReducer, useState } from "react";
-import { FlatList, StyleSheet } from "react-native";
+import { FlatList, Pressable, StyleSheet } from "react-native";
 import MoviePreview from "../components/MoviePreview";
 import { Box, Text } from "../components/Themed";
 import Styling from "../constants/Styling";
@@ -57,9 +58,7 @@ const MatchesScreen = ({
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [userContext] = useUserContext();
-  // We only get 100 movies at a time because there should be
-  // matches in the first 100. If not then it will be called again and
-  // it will continue to call until off matches are off the screen
+  const [viewMovieId, setViewMovieId] = useState("");
 
   // ! TODO: Pagination here
   const loadMatches = useCallback(
@@ -108,50 +107,6 @@ const MatchesScreen = ({
             type: actionType || "APPEND",
           });
         }
-        // setMatches([
-        //   {
-        //     id: "304ab148-37eb-43ab-a3f2-d857350b72df",
-        //     identifier: 347755,
-        //     createdAt: "2022-04-20T19:55:19.396Z",
-        //     name: "Wind Walkers Wind Walkers Wind Walkers Wind Walkers",
-        //     coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
-        //     rating: 6.8,
-        //     ratingCount: 14,
-        //     description: `A group of friends and family descend into the Everglades swamplands for their annual hunting trip only to discover that they are the ones being hunted. A malevolent entity is tracking them and they begin to realise one of their party may be possessed by something brought home from a tour of duty in the Middle East - a demon of war so horrible and deadly they are unaware of its devilish presence. Or are they facing something even more unspeakable, a legendary Native American curse about to unleash its dreadful legacy of thirsting for colonial revenge by claiming more souls?`,
-        //     genres: [
-        //       Genre.Action,
-        //       Genre.Adventure,
-        //       Genre.Animation,
-        //       Genre.Comedy,
-        //       Genre.Crime,
-        //       Genre.Documentary,
-        //       Genre.Drama,
-        //       Genre.Family,
-        //       Genre.Fantasy,
-        //     ],
-        //     trailerUri: null,
-        //     releaseYear: 2015,
-        //     updatedAt: "2022-04-20T19:55:19.396Z",
-        //     owner: null,
-        //     __typename: "Movie",
-        //   },
-        //   {
-        //     id: "304ab148-37eb-43ab-a3f2-d857350b72dff",
-        //     identifier: 347755,
-        //     createdAt: "2022-04-20T19:55:19.396Z",
-        //     name: "Wind Walkers",
-        //     coverUri: "/hDqOR0axvOQGFPt57pwj1Yh7NvW.jpg",
-        //     rating: 6.8,
-        //     ratingCount: 14,
-        //     description: `A group of friends and family descend into the Everglades swamplands.`,
-        //     genres: [Genre.Action, Genre.Adventure, Genre.Animation],
-        //     trailerUri: null,
-        //     releaseYear: 2015,
-        //     updatedAt: "2022-04-20T19:55:19.396Z",
-        //     owner: null,
-        //     __typename: "Movie",
-        //   },
-        // ]);
       } catch (e) {
         console.error(e);
         setError("Failed to load movies");
@@ -162,14 +117,22 @@ const MatchesScreen = ({
   );
 
   // Load the matched movies
-  useEffect(() => {
-    let unsubscribe = navigation.addListener("focus", () => {
-      setIsLoading(true);
+  useFocusEffect(
+    useCallback(() => {
+      setViewMovieId("");
+      // Don't flash loading if there are matches present
+      !matches.length && setIsLoading(true);
       loadMatches("PREPEND").finally(() => setIsLoading(false));
-    });
+    }, [])
+  );
 
-    return unsubscribe;
-  }, []);
+  useEffect(() => {
+    if (viewMovieId) {
+      navigation.navigate("MovieDetailsModal", {
+        movieId: viewMovieId,
+      });
+    }
+  }, [viewMovieId]);
 
   if (isLoading) {
     return (
@@ -192,7 +155,15 @@ const MatchesScreen = ({
       <FlatList
         data={matches}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <MoviePreview {...item} />}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() => {
+              setViewMovieId(item.id);
+            }}
+          >
+            <MoviePreview {...item} />
+          </Pressable>
+        )}
         onEndReached={() => loadMatches()}
       />
     </Box>

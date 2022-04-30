@@ -60,7 +60,12 @@ const MoviePreview = (item: MovieBase): JSX.Element => {
           )}
         </View>
         <View style={styles.fill}>
-          <Text variant="smallCaption" style={styles.description}>
+          <Text
+            variant="smallCaption"
+            style={styles.description}
+            numberOfLines={2}
+            ellipsizeMode="tail"
+          >
             {item.description}
           </Text>
         </View>
