@@ -51,7 +51,6 @@ export type BoxProps = ThemeProps & DefaultView["props"];
 export type TextInputProps = ThemeProps & FontProps & DefaultTextInput["props"];
 export type ButtonProps = ThemeProps & PressableProps;
 export type TabProps = ThemeProps & { selected?: boolean } & PressableProps;
-export type ContainerProps = ThemeProps & DefaultView["props"];
 export type MenuItemProps = ThemeProps & PressableProps;
 export type SwiperProps<T> = DefaultSwiper<T>["props"] & {
   passRef: React.Ref<DefaultSwiper<T>>;
@@ -152,21 +151,6 @@ export function Tab(props: TabProps) {
         },
         typeof style === "function" ? style({ pressed }) : style,
       ]}
-      {...otherProps}
-    />
-  );
-}
-
-export function Container(props: ContainerProps) {
-  const { style, lightColor, darkColor, ...otherProps } = props;
-  const backgroundColor = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    "containerBackgroundDefault"
-  );
-
-  return (
-    <DefaultView
-      style={[{ backgroundColor, borderRadius: Styling.borderRadius }, style]}
       {...otherProps}
     />
   );

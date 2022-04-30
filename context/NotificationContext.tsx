@@ -19,6 +19,7 @@ export interface NotificationItemOptions {
   type?: NotificationType;
   position?: NotificationPosition;
   cover?: boolean;
+  autoHideMs?: number;
 }
 
 const NotificationStateContext = createContext<

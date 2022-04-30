@@ -1,4 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
+import { useTheme } from "@react-navigation/native";
 import { brand } from "expo-device";
 import debounce from "lodash.debounce";
 import React, { Reducer, useCallback, useReducer, useState } from "react";
@@ -6,8 +7,8 @@ import { ScrollView, StyleSheet, View, ViewProps } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Styling from "../constants/Styling";
 import {
+  Box,
   Button,
-  Container,
   MenuItem,
   MenuItemProps,
   Modal,
@@ -33,6 +34,7 @@ export interface MultiSelectModalProps<T extends SelectObject>
   onSelect?: (value: T, selection: T[]) => void;
   onDeselect?: (value: T, selection: T[]) => void;
   onSave?: (selection: T[]) => void;
+  submitButtonText: string;
 }
 
 const MultiSelectModal = <T extends SelectObject>({
@@ -42,6 +44,7 @@ const MultiSelectModal = <T extends SelectObject>({
   onSelect = () => {},
   onDeselect = () => {},
   onSave = () => {},
+  submitButtonText,
   ...otherProps
 }: MultiSelectModalProps<T>): JSX.Element => {
   const borderTopColor = useThemeColor({}, "borderColor");
@@ -117,7 +120,7 @@ const MultiSelectModal = <T extends SelectObject>({
   const onSearchChange = useCallback(debounce(searchChangeHandler, 300), []);
 
   const content = (
-    <Container onTouchEnd={(e) => e.stopPropagation()} style={styles.container}>
+    <Box onTouchEnd={(e) => e.stopPropagation()} style={styles.container} lightColor="#FFF">
       <ModalHeader
         value={searchValue}
         onChangeText={(val) => {
@@ -156,11 +159,23 @@ const MultiSelectModal = <T extends SelectObject>({
             otherProps.onRequestClose && otherProps.onRequestClose();
           }}
           style={{ alignItems: "center" }}
+          lightColor="#1EEC64"
+          darkColor="#1EEC64"
         >
-          <Text style={{ textAlign: "center" }}>Update</Text>
+          <Text
+            style={{
+              textAlign: "center",
+              textTransform: "uppercase",
+              fontFamily: "montserrat-bold",
+            }}
+            lightColor="#FFF"
+            darkColor="#000"
+          >
+            {submitButtonText}
+          </Text>
         </Button>
       </View>
-    </Container>
+    </Box>
   );
 
   return (
@@ -193,6 +208,8 @@ const SelectItem = ({
   children,
   ...otherProps
 }: SelectItem) => {
+  const { dark } = useTheme();
+
   return (
     <MenuItem
       {...otherProps}
@@ -202,7 +219,9 @@ const SelectItem = ({
       ]}
     >
       {children}
-      {selected ? <FontAwesome name="check" size={10} /> : null}
+      {selected ? (
+        <FontAwesome name="check" size={10} color={dark ? "#FFF" : "#000"} />
+      ) : null}
     </MenuItem>
   );
 };
@@ -219,13 +238,13 @@ const ModalHeader = ({
   const borderBottomColor = useThemeColor({}, "borderColor");
 
   return (
-    <View {...otherProps} style={[styles.header, { borderBottomColor }, style]}>
+    <Box {...otherProps} style={[styles.header, { borderBottomColor }, style]} lightColor="#FFF">
       <TextInput
         placeholder="Search..."
         value={value}
         onChangeText={onChangeText}
       />
-    </View>
+    </Box>
   );
 };
 

@@ -1,7 +1,8 @@
 import { brand } from "expo-device";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { animated, Spring } from "react-spring";
 import Styling from "../constants/Styling";
 import {
   NotificationItemOptions,
@@ -10,12 +11,9 @@ import {
 } from "../context/NotificationContext";
 import { Box, Text, TextProps } from "./Themed";
 
-// ! TODO: Notifications should clear after some time and never show on pages like Login
 const NotificationItem = ({
   item,
-  position = "CENTER",
   type = "STANDARD",
-  cover = false,
 }: NotificationItemOptions): JSX.Element => {
   const dispatch = useNotificationDispatch();
 
@@ -40,23 +38,10 @@ const NotificationItem = ({
     </Box>
   );
 
-  return (
-    <View
-      style={{
-        ...styles.container,
-        ...(position === "BOTTOM" && styles.bottomContainer),
-        ...(position === "CENTER" && styles.centerContainer),
-        ...(position === "TOP" && styles.topContainer),
-        ...(cover && styles.background),
-      }}
-      {...(!cover && { pointerEvents: "box-none" })}
-    >
-      {brand === "Apple" ? (
-        <SafeAreaView>{notification}</SafeAreaView>
-      ) : (
-        notification
-      )}
-    </View>
+  return brand === "Apple" ? (
+    <SafeAreaView>{notification}</SafeAreaView>
+  ) : (
+    notification
   );
 };
 
@@ -88,10 +73,98 @@ export const FadedSuccessText = (props: TextProps): JSX.Element => {
   );
 };
 
-export const NotificationDisplay = () => {
-  const notification = useNotificationState();
+const AnimatedView = animated(View);
 
-  return notification ? <NotificationItem {...notification} /> : null;
+export const NotificationDisplay = () => {
+  const animationDuration = 100;
+  const notification = useNotificationState();
+  const [notificationCopy, setNotificationCopy] = useState<
+    NotificationItemOptions | undefined
+  >();
+  const notificationDispatch = useNotificationDispatch();
+  const [animate, setAnimate] = useState(false);
+  const isAnimating = useRef(false);
+
+  if (typeof notification?.autoHideMs !== "undefined") {
+    // Set a timeout to clear the notification
+    setTimeout(() => {
+      notificationDispatch({
+        type: "CLEAR",
+      });
+    }, notification.autoHideMs);
+  }
+
+  useEffect(() => {
+    // If there was a notification that we have now cleared
+    if (!notification && notificationCopy) {
+      // Set item to animate out
+      setAnimate(true);
+      isAnimating.current = true;
+      // Clear the notification from the ref after the animation time
+      setTimeout(() => {
+        setNotificationCopy(undefined);
+        setAnimate(false);
+        isAnimating.current = false;
+      }, animationDuration);
+    }
+
+    if (notification) {
+      // If we are animating then
+      // ? TODO: Is this reliable as a queuing system?
+      if (isAnimating.current) {
+        setTimeout(() => {
+          // If we are currently in the middle of an animation
+          // then we wait the animation duration before setting the state
+          setNotificationCopy(notification);
+        }, animationDuration);
+      } else {
+        // We can set the state immediately
+        setNotificationCopy(notification);
+      }
+    }
+  }, [notification]);
+
+  return notificationCopy ? (
+    <View
+      style={{
+        ...styles.container,
+        ...(notificationCopy.position === "BOTTOM" && styles.bottomContainer),
+        ...(notificationCopy.position === "CENTER" && styles.centerContainer),
+        ...(notificationCopy.position === "TOP" && styles.topContainer),
+        ...(notificationCopy.cover && styles.background),
+      }}
+      {...(!notificationCopy.cover && { pointerEvents: "box-none" })}
+    >
+      <Spring
+        from={{
+          // Only the TOP and BOTTOM notifications are animated
+          ...(notificationCopy.position === "BOTTOM" && { marginBottom: 0 }),
+          ...(notificationCopy.position === "CENTER" && { opacity: 1 }),
+          ...(notificationCopy.position === "TOP" && { marginTop: 0 }),
+        }}
+        to={{
+          ...(notificationCopy.position === "BOTTOM" && {
+            marginBottom: animate ? -100 : 0,
+          }),
+          ...(notificationCopy.position === "CENTER" && {
+            opacity: animate ? 0 : 1,
+          }),
+          ...(notificationCopy.position === "TOP" && {
+            marginTop: animate ? -100 : 0,
+          }),
+        }}
+        config={{
+          duration: animationDuration,
+        }}
+      >
+        {(props) => (
+          <AnimatedView style={props}>
+            <NotificationItem {...notificationCopy} />
+          </AnimatedView>
+        )}
+      </Spring>
+    </View>
+  ) : null;
 };
 
 const styles = StyleSheet.create({

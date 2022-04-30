@@ -56,7 +56,8 @@
     "react-native-screens": "~3.10.1",
     "react-native-svg": "12.1.1",
     "react-native-vision-camera": "^2.13.1",
-    "react-native-web": "0.17.1"
+    "react-native-web": "0.17.1",
+    "react-spring": "^9.4.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",

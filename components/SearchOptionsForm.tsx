@@ -1,4 +1,5 @@
 import { Picker } from "@react-native-picker/picker";
+import { useTheme } from "@react-navigation/native";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { Formik } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
@@ -19,18 +20,20 @@ import {
   Region
 } from "../functions/src/util/apiTypes";
 import MultiSelectModal, { SelectObject } from "./MultiSelectModal";
-import { Box, Button, Text, useThemeColor } from "./Themed";
+import { Box, BoxProps, Button, Text } from "./Themed";
 
 export interface SearchOptionsFormProps extends ScrollViewProps {
   afterSubmit?: (values: DiscoverSearchOptions) => void;
+  onError?: (err: any) => void;
 }
 
 const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
-  afterSubmit,
+  afterSubmit = () => {},
+  onError = () => {},
   ...otherProps
 }) => {
-  const borderTopColor = useThemeColor({}, "borderColor");
   const [userContext] = useUserContext();
+  const { dark } = useTheme();
 
   const [initialValues, setInitialValues] = useState<DiscoverSearchOptions>({
     genres: [],
@@ -62,11 +65,9 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
             merge: true,
           }
         );
-
-        alert("Settings saved");
       } catch (e) {
         console.error(e);
-        alert("Failed to save settings");
+        onError(e);
       }
     },
     [userContext.uid]
@@ -114,22 +115,19 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
     );
   }
 
-  // ! TODO: Style this
   return (
     <>
       <Formik
         initialValues={Object.assign({}, Object.freeze(initialValues))}
         onSubmit={(values) => {
           {
-            handleFormSubmit(values).finally(
-              () => afterSubmit && afterSubmit(values)
-            );
+            handleFormSubmit(values).finally(() => afterSubmit(values));
           }
         }}
       >
         {({ handleSubmit, values, setFieldValue }) => (
           <>
-            <ScrollView showsVerticalScrollIndicator={false} {...otherProps}>
+            <ScrollView {...otherProps}>
               <FormField
                 label="Region:"
                 field={
@@ -137,7 +135,13 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
                     selectedValue={values.region}
                     onValueChange={(val) => setFieldValue("region", val)}
                     style={styles.picker}
-                    itemStyle={[styles.pickerItem, styles.formField]}
+                    itemStyle={[
+                      styles.pickerItem,
+                      styles.formField,
+                      {
+                        color: dark ? "#FFF" : "#000",
+                      },
+                    ]}
                   >
                     <Picker.Item label="Any" value={undefined} />
                     {Object.keys(Region).map((k) => (
@@ -164,16 +168,22 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
                       setFieldValue("releasedAfterYear", parseInt(v))
                     }
                     style={styles.picker}
-                    itemStyle={[styles.pickerItem, styles.formField]}
+                    itemStyle={[
+                      styles.pickerItem,
+                      styles.formField,
+                      {
+                        color: dark ? "#FFF" : "#000",
+                      },
+                    ]}
                   >
                     <Picker.Item label="Any" value={undefined} />
                     {Array(curYear - oldestYear + 1)
                       .fill(undefined)
                       .map((el, i) => (
                         <Picker.Item
-                          key={(oldestYear + i).toString()}
-                          label={(oldestYear + i).toString()}
-                          value={(oldestYear + i).toString()}
+                          key={(curYear - i).toString()}
+                          label={(curYear - i).toString()}
+                          value={(curYear - i).toString()}
                         />
                       ))}
                   </Picker>
@@ -181,10 +191,15 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
               />
               <FormField
                 field={
-                  <Button onPress={() => setModal(true)}>
-                    <Text>Select Categories</Text>
+                  <Button
+                    onPress={() => setModal(true)}
+                    darkColor="#000"
+                    lightColor="#EEE"
+                  >
+                    <Text>Pick</Text>
                   </Button>
                 }
+                label="Genres"
               />
               <MultiSelectModal
                 selection={Object.values(Genre)
@@ -202,13 +217,22 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
                     val.map((selection) => selection.value)
                   );
                 }}
+                submitButtonText="Update"
               />
             </ScrollView>
-            <View style={[styles.submitContainer, { borderTopColor }]}>
-              <Button onPress={() => handleSubmit()}>
-                <Text>Submit</Text>
-              </Button>
-            </View>
+            <Button
+              onPress={() => handleSubmit()}
+              lightColor="#1EEC64"
+              darkColor="#1EEC64"
+            >
+              <Text
+                style={styles.submitText}
+                lightColor="#FFF"
+                darkColor="#000"
+              >
+                Save
+              </Text>
+            </Button>
           </>
         )}
       </Formik>
@@ -229,33 +253,36 @@ const formatGenres = (genres: string[]): SelectObject[] => {
   }, []);
 };
 
-interface FormFieldProps {
+interface FormFieldProps extends BoxProps {
   label?: string;
   field: JSX.Element;
 }
 
-const FormField = ({ label, field }: FormFieldProps): JSX.Element => {
+const FormField = ({ label, field, style }: FormFieldProps): JSX.Element => {
   return (
-    <View style={styles.formFieldContainer}>
+    <Box lightColor="#FFF" style={[styles.formFieldContainer, style]}>
       {label ? <Text style={styles.formLabel}>{label}</Text> : null}
       <View style={styles.formField}>{field}</View>
-    </View>
+    </Box>
   );
 };
 
 const styles = StyleSheet.create({
   formFieldContainer: {
+    flex: 1,
     flexDirection: "row",
-    marginBottom: Styling.spacingMedium,
     alignItems: "center",
-    minWidth: 270,
+    padding: Styling.spacingLarge,
+    marginBottom: Styling.spacingSmall,
+  },
+  marginBottom: {
+    marginBottom: Styling.spacingMedium,
   },
   formLabel: {
-    flex: 5,
-    marginRight: Styling.spacingSmall,
+    flex: 1,
   },
   formField: {
-    flex: 3,
+    flex: 1,
     alignItems: "center",
   },
   picker: {
@@ -264,11 +291,12 @@ const styles = StyleSheet.create({
   },
   pickerItem: {
     fontSize: sizes.body,
+    fontFamily: "montserrat-medium",
   },
-  submitContainer: {
-    alignItems: "center",
-    paddingTop: Styling.spacingMedium,
-    borderTopWidth: 1,
+  submitText: {
+    fontFamily: "montserrat-bold",
+    textTransform: "uppercase",
+    textAlign: "center",
   },
 });
 
