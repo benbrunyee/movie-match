@@ -46,6 +46,7 @@ const ConnectPartnerModal = (
             ),
             type: "ERROR",
             position: "TOP",
+            autoHideMs: 1000,
           },
         });
         throw new SelfRequestError();
@@ -76,6 +77,7 @@ const ConnectPartnerModal = (
             ),
             type: "ERROR",
             position: "TOP",
+            autoHideMs: 1000,
           },
         });
         throw new DuplicateConnectionError();
@@ -111,6 +113,7 @@ const ConnectPartnerModal = (
             ),
             type: "ERROR",
             position: "TOP",
+            autoHideMs: 1000,
           },
         });
       }
@@ -128,6 +131,7 @@ const ConnectPartnerModal = (
               ),
               type: "SUCCESS",
               position: "TOP",
+              autoHideMs: 1000,
             },
           });
         } catch (e) {
@@ -147,6 +151,7 @@ const ConnectPartnerModal = (
                 ),
                 type: "ERROR",
                 position: "TOP",
+                autoHideMs: 1000,
               },
             });
             return;
@@ -170,6 +175,7 @@ const ConnectPartnerModal = (
             ),
             type: "ERROR",
             position: "TOP",
+            autoHideMs: 1000,
           },
         });
         return;
@@ -185,6 +191,7 @@ const ConnectPartnerModal = (
               ),
               type: "SUCCESS",
               position: "TOP",
+              autoHideMs: 1000,
             },
           });
         })
@@ -204,6 +211,7 @@ const ConnectPartnerModal = (
                 ),
                 type: "ERROR",
                 position: "TOP",
+                autoHideMs: 1000,
               },
             });
             return;

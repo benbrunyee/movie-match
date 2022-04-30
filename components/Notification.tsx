@@ -137,7 +137,9 @@ export const NotificationDisplay = () => {
     >
       <Spring
         from={{
-          // Only the TOP and BOTTOM notifications are animated
+          // Only the TOP and BOTTOM notifications are animated with position
+          // CENTER is animated with opacity
+          // TODO: Dynamic animation height
           ...(notificationCopy.position === "BOTTOM" && { marginBottom: 0 }),
           ...(notificationCopy.position === "CENTER" && { opacity: 1 }),
           ...(notificationCopy.position === "TOP" && { marginTop: 0 }),
