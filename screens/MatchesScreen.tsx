@@ -160,7 +160,6 @@ const MatchesScreen = ({
         data={matches}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          // ! TODO: Clicking same item again does not show modal
           <Pressable
             onPress={() => {
               setViewMovie(item);
