@@ -127,10 +127,11 @@ const LikedMoviesScreen = ({
 
   useFocusEffect(
     useCallback(() => {
-      if (!viewMovie) {
+      if (typeof viewMovie === "undefined") {
         // Only reload liked movies if we aren't coming from
         // the movie details dialog
         loadLikesMovies("PREPEND");
+      } else {
         setViewMovie(undefined);
       }
     }, [])

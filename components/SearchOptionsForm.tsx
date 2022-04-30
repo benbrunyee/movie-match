@@ -220,6 +220,9 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
                 submitButtonText="Update"
               />
             </ScrollView>
+            {
+              // ! TODO: Theme important buttons
+            }
             <Button
               onPress={() => handleSubmit()}
               lightColor="#1EEC64"

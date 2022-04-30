@@ -260,6 +260,9 @@ const ConnectPartnerModal = (
                   }
                   autoCorrect={false}
                 />
+                {
+                  // ! TODO: Theme important buttons
+                }
                 <Button
                   style={styles.sendButton}
                   onPress={() => !sentRequest && emailRequest(inputEmail)}

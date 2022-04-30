@@ -120,10 +120,13 @@ const MatchesScreen = ({
   useFocusEffect(
     useCallback(() => {
       // Don't reload if we are coming from movie details modal
-      if (!viewMovie) {
+      if (typeof viewMovie === "undefined") {
         // Don't flash loading if there are matches present
-        !matches.length && setIsLoading(true);
-        loadMatches("PREPEND").finally(() => setIsLoading(false));
+        matches.length === 0 && setIsLoading(true);
+        loadMatches("PREPEND").finally(() => {
+          isLoading && setIsLoading(false);
+        });
+      } else {
         setViewMovie(undefined);
       }
     }, [viewMovie])
@@ -157,6 +160,7 @@ const MatchesScreen = ({
         data={matches}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
+          // ! TODO: Clicking same item again does not show modal
           <Pressable
             onPress={() => {
               setViewMovie(item);
