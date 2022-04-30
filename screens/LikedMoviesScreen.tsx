@@ -66,7 +66,7 @@ const LikedMoviesScreen = ({
   const [lastLoaded, setLastLoaded] = useState<
     QueryDocumentSnapshot<DocumentData> | undefined
   >();
-  const [viewMovieId, setViewMovieId] = useState("");
+  const [viewMovie, setViewMovie] = useState<MovieBase | undefined>();
 
   const queryFromIndex = useCallback(() => {
     const loadLimit = 2;
@@ -127,22 +127,24 @@ const LikedMoviesScreen = ({
 
   useFocusEffect(
     useCallback(() => {
-      loadLikesMovies("PREPEND");
-      setViewMovieId("");
+      if (!viewMovie) {
+        // Only reload liked movies if we aren't coming from
+        // the movie details dialog
+        loadLikesMovies("PREPEND");
+        setViewMovie(undefined);
+      }
     }, [])
   );
 
   useEffect(() => {
-    if (viewMovieId) {
+    if (viewMovie) {
       const parentNav = navigation.getParent();
 
       if (parentNav) {
-        parentNav.navigate("MovieDetailsModal", {
-          movieId: viewMovieId,
-        });
+        parentNav.navigate("MovieDetailsModal", viewMovie);
       }
     }
-  }, [viewMovieId]);
+  }, [viewMovie]);
 
   if (isLoading) {
     return (
@@ -168,7 +170,7 @@ const LikedMoviesScreen = ({
           renderItem={({ item: movie }) => (
             <Pressable
               onPress={() => {
-                setViewMovieId(movie.id);
+                setViewMovie(movie);
               }}
             >
               <MoviePreview {...movie} />

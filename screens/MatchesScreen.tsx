@@ -58,7 +58,7 @@ const MatchesScreen = ({
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [userContext] = useUserContext();
-  const [viewMovieId, setViewMovieId] = useState("");
+  const [viewMovie, setViewMovie] = useState<MovieBase | undefined>();
 
   // ! TODO: Pagination here
   const loadMatches = useCallback(
@@ -119,20 +119,21 @@ const MatchesScreen = ({
   // Load the matched movies
   useFocusEffect(
     useCallback(() => {
-      setViewMovieId("");
-      // Don't flash loading if there are matches present
-      !matches.length && setIsLoading(true);
-      loadMatches("PREPEND").finally(() => setIsLoading(false));
-    }, [])
+      // Don't reload if we are coming from movie details modal
+      if (!viewMovie) {
+        // Don't flash loading if there are matches present
+        !matches.length && setIsLoading(true);
+        loadMatches("PREPEND").finally(() => setIsLoading(false));
+        setViewMovie(undefined);
+      }
+    }, [viewMovie])
   );
 
   useEffect(() => {
-    if (viewMovieId) {
-      navigation.navigate("MovieDetailsModal", {
-        movieId: viewMovieId,
-      });
+    if (viewMovie) {
+      navigation.navigate("MovieDetailsModal", viewMovie);
     }
-  }, [viewMovieId]);
+  }, [viewMovie]);
 
   if (isLoading) {
     return (
@@ -158,7 +159,7 @@ const MatchesScreen = ({
         renderItem={({ item }) => (
           <Pressable
             onPress={() => {
-              setViewMovieId(item.id);
+              setViewMovie(item);
             }}
           >
             <MoviePreview {...item} />

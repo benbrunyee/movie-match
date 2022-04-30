@@ -11,12 +11,13 @@ const MovieDetailsModal = ({
   navigation,
   route,
 }: RootStackScreenProps<"MovieDetailsModal">): JSX.Element => {
-  const movieId = route.params.movieId;
-  const [movie, setMovie] = useState<MovieBase | undefined>();
+  const [movie, setMovie] = useState<MovieBase | undefined>(
+    "movieId" in route.params ? undefined : route.params
+  );
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState("movieId" in route.params);
 
-  const loadMovies = useCallback(async (movieId: string) => {
+  const loadMovie = useCallback(async (movieId: string) => {
     try {
       const movie = await getDoc(doc(db, "movies", movieId));
       if (!movie.exists()) {
@@ -29,10 +30,14 @@ const MovieDetailsModal = ({
   }, []);
 
   useEffect(() => {
-    loadMovies(movieId).finally(() => {
-      setIsLoading(false);
-    });
-  }, [movieId]);
+    // If passed a movie then we fetch it, otherwise we
+    // just load the movie properties given
+    if ("movieId" in route.params) {
+      loadMovie(route.params.movieId).finally(() => {
+        setIsLoading(false);
+      });
+    }
+  }, [route.params]);
 
   if (isLoading) {
     return (
@@ -50,7 +55,7 @@ const MovieDetailsModal = ({
     );
   }
 
-  if (!(movieId && movie)) {
+  if (!movie) {
     return (
       <View style={styles.messageContainer}>
         <Text>No movie to load</Text>

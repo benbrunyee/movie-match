@@ -9,6 +9,7 @@ import {
   NavigatorScreenParams
 } from "@react-navigation/native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { MovieBase } from "./functions/src/util/apiTypes";
 
 declare global {
   namespace ReactNavigation {
@@ -19,7 +20,7 @@ declare global {
 export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
   NotFound: undefined;
-  MovieDetailsModal: { movieId: string };
+  MovieDetailsModal: MovieBase | { movieId: string };
   Login: undefined;
 };
 

@@ -88,10 +88,9 @@ const MovieCard = ({
         </View>
         <View style={styles.fill}>
           {
-            // TODO: This is currently not scrollable
-            // ! TODO: Implement view to see movie in detail
+            // TODO: This is currently not scrollable with the swipe cards
           }
-          <ScrollView style={styles.fill}>
+          <ScrollView style={styles.fill} showsVerticalScrollIndicator={true}>
             <Text variant="smallCaption" style={styles.description}>
               {movie.description}
             </Text>
