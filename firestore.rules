@@ -2,12 +2,6 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Deny by default
-    match /{document=**} {
-      allow read, write: if
-        false
-    }
-
     // Global functions
     function isAuth(request) {
       return request.auth != null
@@ -54,7 +48,7 @@ service cloud.firestore {
       allow create: if
         isAuth(request) &&
         hasUserObj(request.auth.uid) &&
-        isOwner(request, resource) &&
+        isOwner(request, request.resource) &&
         request.resource.data.keys().hasOnly(["movieId", "owner", "reaction"]) &&
         (
           request.resource.data.reaction == "LIKE" ||
@@ -69,7 +63,7 @@ service cloud.firestore {
       allow update: if
         isAuth(request) &&
         isOwner(request, resource) &&
-        request.resource.data.owner == resource.data.owner &&
+        isOwner(request, request.resource) &&
         request.resource.data.createdAt == resource.data.createdAt &&
         request.resource.data.keys().hasOnly(["movieId", "owner", "reaction"]) &&
         (
@@ -93,7 +87,11 @@ service cloud.firestore {
       }
       function checkSender(request) {
         let sender = get(/databases/$(database)/documents/users/$(request.resource.data.sender));
-        return sender != null && (!sender.data.keys().hasAny(["connectedUser"]) || sender.data.connectedUser != request.resource.data.receiver)
+        return (
+          exists(/databases/$(database)/documents/users/$(request.resource.data.sender)) &&
+          sender != null &&
+          (!sender.data.keys().hasAny(["connectedUser"]) || sender.data.connectedUser != request.resource.data.receiver)
+        )
       }
       function checkFields(request) {
         return request.resource.data.keys().hasOnly(["sender", "receiver", "status"])
@@ -103,8 +101,8 @@ service cloud.firestore {
         isAuth(request) &&
         checkFields(request) &&
         request.resource.data.status == "PENDING" &&
-        !isReceiver(request, resource) &&
-        isSender(request, resource) &&
+        !isReceiver(request, request.resource) &&
+        isSender(request, request.resource) &&
         hasUserObj(request.resource.data.receiver) &&
         hasUserObj(request.resource.data.sender) &&
         checkSender(request)
