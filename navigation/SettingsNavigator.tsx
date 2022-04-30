@@ -67,12 +67,14 @@ const SettingsNavigator = (
       screenListeners={{
         blur: clearNotifications,
       }}
+      screenOptions={{
+        header: (props) => <SettingsInnerHeader {...props} />,
+      }}
     >
       <SettingsStack.Screen
         name="SettingsScreen"
         component={SettingsScreen}
         options={{
-          header: (props) => <SettingsInnerHeader {...props} />,
           headerTitle: "Settings",
           headerRight: () => (
             <Pressable
@@ -89,13 +91,14 @@ const SettingsNavigator = (
       <SettingsStack.Screen
         name="SearchOptions"
         component={SearchOptionsScreen}
-        options={{ title: "Search Options", header: SettingsInnerHeader }}
+        options={{
+          headerTitle: "Search Options",
+        }}
       />
       <SettingsStack.Screen
         name="LikedMovies"
         component={LikedMoviesScreen}
         options={{
-          header: (props) => <SettingsInnerHeader {...props} />,
           headerTitle: "Liked Movies",
         }}
       />
@@ -103,7 +106,6 @@ const SettingsNavigator = (
         name="ConnectPartner"
         component={ConnectPartnerScreen}
         options={{
-          header: (props) => <SettingsInnerHeader {...props} />,
           headerTitle: "Connect",
         }}
       />
