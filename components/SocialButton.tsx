@@ -1,6 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, View, ViewProps } from "react-native";
+import { Pressable, StyleSheet, View, ViewProps } from "react-native";
 import Styling from "../constants/Styling";
 import { Text } from "./Themed";
 
@@ -21,12 +21,13 @@ const SocialButton = ({
   );
 };
 
-// ! TODO: Implement social oauth
+// TODO: Implement social oauth
 function GoogleButton({ style, ...otherProps }: View["props"]) {
   return (
-    <View
+    <Pressable
       {...otherProps}
       style={[styles.socialButton, styles.googleButton, style]}
+      onPress={async () => {}}
     >
       <FontAwesome
         name="google"
@@ -39,7 +40,7 @@ function GoogleButton({ style, ...otherProps }: View["props"]) {
           Sign in with google
         </Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

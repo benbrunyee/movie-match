@@ -32,4 +32,6 @@ export const db = getFirestore(app);
 DEV && connectFirestoreEmulator(db, origin, 8080);
 
 export const auth = getAuth(app);
+// Localize the OAuth the flow to the user's preferred language
+auth.languageCode = "it";
 DEV && connectAuthEmulator(auth, `http://${origin}:9099`);

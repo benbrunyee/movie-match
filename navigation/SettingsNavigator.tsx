@@ -4,21 +4,21 @@ import {
   createNativeStackNavigator,
   NativeStackHeaderProps
 } from "@react-navigation/native-stack";
-import { brand } from "expo-device";
 import React, { useCallback } from "react";
 import {
   Alert,
+  Platform,
   Pressable,
   StyleSheet,
   useWindowDimensions,
   View
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { ErrorText } from "../components/Notification";
 import { Box, Text } from "../components/Themed";
 import Colors from "../constants/Colors";
 import Styling from "../constants/Styling";
 import { useNotificationDispatch } from "../context/NotificationContext";
-import { useUserContext } from "../context/UserContext";
 import { auth } from "../firebase";
 import useColorScheme from "../hooks/useColorScheme";
 import ConnectPartnerScreen from "../screens/ConnectPartnerScreen";
@@ -33,15 +33,35 @@ const SettingsStack = createNativeStackNavigator<SettingsParamList>();
 const SettingsNavigator = (
   props: RootTabScreenProps<"Settings">
 ): JSX.Element => {
-  const [, setUserContext] = useUserContext();
   const notificationDispatch = useNotificationDispatch();
 
-  const signOut = useCallback(() => {
-    // Brand returns null if on web
-    if (!brand) {
-      // If web, just sign out
-      auth.signOut();
-      return;
+  const signOut = useCallback(async () => {
+    await auth.signOut();
+  }, []);
+
+  const signOutWrapper = useCallback(() => {
+    if (
+      !(
+        Platform.OS === "ios" ||
+        Platform.OS === "android" ||
+        Platform.OS === "macos"
+      )
+    ) {
+      // Just sign out straight away if not on mobile or macos
+      signOut().catch((err) => {
+        console.error(err);
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            item: ({ dismiss }) => (
+              <ErrorText onPress={dismiss}>Failed to sign out</ErrorText>
+            ),
+            autoHideMs: 1000,
+            position: "TOP",
+            type: "ERROR",
+          },
+        });
+      });
     }
 
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -50,10 +70,24 @@ const SettingsNavigator = (
       },
       {
         text: "Yes",
-        onPress: () => auth.signOut(),
+        onPress: () =>
+          signOut().catch((err) => {
+            console.error(err);
+            notificationDispatch({
+              type: "ADD",
+              item: {
+                item: ({ dismiss }) => (
+                  <ErrorText onPress={dismiss}>Failed to sign out</ErrorText>
+                ),
+                autoHideMs: 1000,
+                position: "TOP",
+                type: "ERROR",
+              },
+            });
+          }),
       },
     ]);
-  }, [setUserContext]);
+  }, [signOut]);
 
   const clearNotifications = useCallback(() => {
     notificationDispatch({
@@ -78,7 +112,7 @@ const SettingsNavigator = (
           headerTitle: "Settings",
           headerRight: () => (
             <Pressable
-              onPress={signOut}
+              onPress={signOutWrapper}
               style={({ pressed }) => ({
                 opacity: pressed ? 0.5 : 1,
               })}
