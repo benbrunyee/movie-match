@@ -279,6 +279,7 @@ export default function DiscoverScreen({
         cards={movies}
         keyExtractor={(movie) => movie.id}
         renderCard={(movie) => (
+          // ! TODO: Add Admob
           <MovieCard
             movie={movie}
             style={{ marginBottom: bottomBarHeight }}
