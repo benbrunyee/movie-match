@@ -1,9 +1,7 @@
-import * as admin from "firebase-admin";
 import {
   DocumentData,
   DocumentReference,
-  QueryDocumentSnapshot,
-  Transaction
+  QueryDocumentSnapshot
 } from "firebase-admin/firestore";
 import { Change, EventContext, logger } from "firebase-functions";
 import { firestore } from "..";
@@ -19,13 +17,60 @@ export default async (
     const receiver = before.receiver;
 
     try {
-      // ! TODO: Delete the old connection request entry (this is currently staying in the database as an "ACCEPTED" entry)
       await firestore.runTransaction(async (transaction) => {
-        transaction = await transactionRemoveUsersPartners(transaction, [
-          sender,
-          receiver,
-        ]);
+        const oldPartnerRefs: DocumentReference<DocumentData>[] = [];
 
+        // Run all the gets first and add to array if the previous connectedUser
+        // has a database object
+        for (const uid of [sender, receiver]) {
+          const userDoc = (
+            await transaction.get(firestore.collection("users").doc(uid))
+          ).data();
+
+          const connectedUserDoc = userDoc?.connectedUser
+            ? await transaction.get(
+                firestore.collection("users").doc(userDoc.connectedUser)
+              )
+            : undefined;
+
+          if (connectedUserDoc?.exists) {
+            console.log(connectedUserDoc.id);
+          }
+
+          connectedUserDoc?.exists && oldPartnerRefs.push(connectedUserDoc.ref);
+        }
+
+        // Find any old connectionRequest entries sent from either user
+        const conReqRef = firestore.collection("connectionRequests");
+        const oldSentAcceptedRequests = await conReqRef
+          .where("sender", "in", [sender, receiver])
+          .where("status", "==", "ACCEPTED")
+          .get();
+        const oldReceivedAcceptedRequests = await conReqRef
+          .where("receiver", "in", [sender, receiver])
+          .where("status", "==", "ACCEPTED")
+          .get();
+
+        // Delete the old sent and received "ACCEPTED" requests
+        for (const doc of [
+          ...oldSentAcceptedRequests.docs,
+          ...oldReceivedAcceptedRequests.docs,
+        ]) {
+          // Don't delete the doc that this update is in relation to
+          if (change.before.id === doc.id) {
+            continue;
+          }
+          transaction.delete(doc.ref);
+        }
+
+        // Remove the sender and/or receiver from the old partner's user entries
+        for (const ref of oldPartnerRefs) {
+          transaction.update(ref, {
+            connectedUser: null,
+          });
+        }
+
+        // Set the connectedUser for the sender and receiver
         transaction.update(firestore.collection("users").doc(sender), {
           connectedUser: receiver,
         });
@@ -38,41 +83,3 @@ export default async (
     }
   }
 };
-
-/**
- * Removes connected partners for a specified list of users
- * @param {admin.firestore.Transaction} transaction Firestore transaction
- * @param {string[]} uids Array of uids to clear connected partners for
- * @return {Promise<admin.firestore.Transaction>} Firestore transaction
- */
-async function transactionRemoveUsersPartners(
-  transaction: admin.firestore.Transaction,
-  uids: string[]
-): Promise<Transaction> {
-  const refsToBeUpdated: DocumentReference<DocumentData>[] = [];
-
-  // Run all the gets first and add to array if the connectedUser
-  // has a database object
-  for (const uid of uids) {
-    const userDoc = (
-      await transaction.get(firestore.collection("users").doc(uid))
-    ).data();
-
-    const connectedUserDoc = userDoc?.connectedUser
-      ? await transaction.get(
-          firestore.collection("users").doc(userDoc.connectedUser)
-        )
-      : undefined;
-
-    connectedUserDoc?.exists && refsToBeUpdated.push(connectedUserDoc.ref);
-  }
-
-  // Set the connectedUser to null for the older partners
-  for (const ref of refsToBeUpdated) {
-    transaction.update(ref, {
-      connectedUser: null,
-    });
-  }
-
-  return transaction;
-}

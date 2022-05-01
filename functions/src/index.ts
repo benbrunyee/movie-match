@@ -4,7 +4,6 @@ import funcDiscoverMovies from "./callable/discoverMovies";
 import funcGetPageCountForOptions from "./callable/getPageCountForOptions";
 import funcOnCreateMovieReaction from "./triggers/onCreateMovieReaction";
 import funcOnCreateUser from "./triggers/onCreateUser";
-import funcOnDeleteConnectionRequest from "./triggers/onDeleteConnectionRequest";
 import funcOnUpdateConnectionRequest from "./triggers/onUpdateConnectionRequest";
 import { callWrap } from "./util/common";
 
@@ -22,10 +21,6 @@ export const getPageCountForOptions = https.onCall(
 export const onUpdateConnectionRequest = db
   .document("connectionRequests/{id}")
   .onUpdate(funcOnUpdateConnectionRequest);
-
-export const onDeleteConnectionRequest = db
-  .document("connectionRequests/{id}")
-  .onDelete(funcOnDeleteConnectionRequest);
 
 export const onCreateMovieReaction = db
   .document("movieReactions/{id}")
