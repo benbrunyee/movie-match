@@ -44,7 +44,6 @@ export default async (
 ) => {
   const input = data;
 
-  // ! TODO: Don't show movies that have not yet been released
   const urlParams = await createUrlParams(input);
 
   logger.info(`URL Params for movie discovery: "${urlParams}"`);
@@ -347,6 +346,8 @@ export async function createUrlParams(
 ): Promise<string> {
   let urlParams = "";
 
+  const apiGenres = (await getGenreIds()).genres;
+
   if (searchOptions) {
     let searchOption: keyof typeof searchOptions;
     for (searchOption in searchOptions) {
@@ -357,9 +358,7 @@ export async function createUrlParams(
           continue;
         }
 
-        if (searchOption !== "genres") {
-          urlParams += `${URL_PARAMS[searchOption]}=${searchValue}&`;
-        } else {
+        if (searchOption === "genres") {
           if (
             searchValue &&
             Array.isArray(searchValue) &&
@@ -367,8 +366,7 @@ export async function createUrlParams(
           ) {
             urlParams += `${URL_PARAMS[searchOption]}=`;
 
-            // TODO: Await for an API call deep in a loop?!
-            const genres = (await getGenreIds()).genres.reduce<{
+            const genres = apiGenres.reduce<{
               [key: string]: MovieGenre;
             }>((r, genre) => {
               if (genre && genre.name) {
@@ -388,6 +386,12 @@ export async function createUrlParams(
 
             urlParams = urlParams.replace(/\|$/, "") + "&";
           }
+        } else if (searchOption === "releasedAfterYear") {
+          urlParams += `${URL_PARAMS[searchOption]}=${new Date(
+            `${searchValue}-01-01`
+          )}&`;
+        } else {
+          urlParams += `${URL_PARAMS[searchOption]}=${searchValue}&`;
         }
       }
     }
@@ -404,6 +408,14 @@ export async function createUrlParams(
 
   // Don't include videos
   urlParams += "include_video=false&";
+
+  // Don't include videos that have not yet been released
+  const today = new Date();
+  const formattedDate = `${today.getFullYear()}-${(
+    "0" +
+    (today.getMonth() + 1)
+  ).slice(-2)}-${("0" + today.getDate()).slice(-2)}`;
+  urlParams += `release_date.lte=${formattedDate}&`;
 
   urlParams = urlParams.replace(/&$/, "");
 
