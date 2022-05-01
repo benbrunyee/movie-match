@@ -19,6 +19,7 @@ export default async (
     const receiver = before.receiver;
 
     try {
+      // ! TODO: Delete the old connection request entry (this is currently staying in the database as an "ACCEPTED" entry)
       await firestore.runTransaction(async (transaction) => {
         transaction = await transactionRemoveUsersPartners(transaction, [
           sender,
