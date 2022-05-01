@@ -122,7 +122,7 @@ const MultiSelectModal = <T extends SelectObject>({
   const content = (
     <Box
       onTouchEnd={(e) => e.stopPropagation()}
-      style={styles.container}
+      style={[styles.container, styles.boxContainer]}
       lightColor="#FFF"
     >
       <ModalHeader
@@ -260,6 +260,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  boxContainer: {
+    borderRadius: Styling.borderRadius,
+    overflow: "hidden",
+  },
   outerPadding: {
     padding: Styling.spacingLarge,
   },
@@ -267,8 +271,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     backgroundColor: "rgba(0, 0, 0, 0.4)",
-    borderRadius: Styling.borderRadius,
-    overflow: "hidden",
   },
   menuItem: {
     flexDirection: "row",
