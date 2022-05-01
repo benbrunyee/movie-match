@@ -28,7 +28,10 @@ service cloud.firestore {
       allow update: if
         isAuth(request) &&
         isUsersObject(request, uid) &&
-        !request.resource.data.keys().hasAny(["connectedUser"])
+        (
+          !request.resource.data.keys().hasAny(["connectedUser"]) ||
+          request.resource.data.connectedUser == resource.data.connectedUser
+        )
       allow delete: if
         false
     }

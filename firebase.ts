@@ -1,8 +1,8 @@
 import Constants from "expo-constants";
 import { FirebaseOptions, initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, initializeFirestore } from "firebase/firestore";
-import { getFunctions } from "firebase/functions";
+import { connectAuthEmulator, getAuth } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore, initializeFirestore } from "firebase/firestore";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
 const DEV = process.env.NODE_ENV === "development";
 
@@ -23,15 +23,15 @@ const origin =
 const app = initializeApp(firebaseConfig);
 
 export const functions = getFunctions(app);
-// DEV && connectFunctionsEmulator(functions, origin, 5001);
+DEV && connectFunctionsEmulator(functions, origin, 5001);
 
 initializeFirestore(app, {
   ignoreUndefinedProperties: true,
 });
 export const db = getFirestore(app);
-// DEV && connectFirestoreEmulator(db, origin, 8080);
+DEV && connectFirestoreEmulator(db, origin, 8080);
 
 export const auth = getAuth(app);
 // Localize the OAuth the flow to the user's preferred language
 auth.languageCode = "it";
-// DEV && connectAuthEmulator(auth, `http://${origin}:9099`);
+DEV && connectAuthEmulator(auth, `http://${origin}:9099`);
