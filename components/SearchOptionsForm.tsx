@@ -57,9 +57,6 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
         await updateDoc(doc(db, "users", userContext.uid), {
           searchOptions: {
             ...values,
-            releasedAfterYear: values.releasedAfterYear
-              ? values.releasedAfterYear
-              : undefined,
           },
         });
 
