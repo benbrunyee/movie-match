@@ -6,7 +6,8 @@ import {
   DiscoverSearchOptions,
   Genre,
   MovieApiOutput,
-  MovieBase
+  MovieBase,
+  TMDBApiMovieVideosOutput
 } from "../util/apiTypes";
 import { stringify, TMDB_API_KEY, TMDB_API_URL } from "../util/common";
 
@@ -44,7 +45,6 @@ export default async (
   const input = data;
 
   // ! TODO: Don't show movies that have not yet been released
-  // ! TODO: Most movies being shown are not popular and some are YouTube videos
   const urlParams = await createUrlParams(input);
 
   logger.info(`URL Params for movie discovery: "${urlParams}"`);
@@ -69,7 +69,6 @@ export default async (
   logger.info(`Movies found: ${stringify(movies)}`);
 
   // Add them to the database
-  // TODO: Add movie trailers with YouTube API "{{TMDB_API_URL}}/movie/{{MOVIE_ID}}/videos" where type === "Trailer" & official === true
   const movieEntries = await addMoviesToDb(movies);
 
   return movieEntries;
@@ -258,33 +257,40 @@ async function addMoviesToDb(discoveredMovies: MovieApi): Promise<MovieBase[]> {
     {}
   );
 
-  const newMovies = (discoveredMovies.results || []).map<CreateMovieInput>(
-    (movie) => {
-      const movieGenres: Genre[] = [];
+  const newMovies = await Promise.all(
+    (discoveredMovies.results || []).map<Promise<CreateMovieInput>>(
+      async (movie) => {
+        const movieGenres: Genre[] = [];
 
-      for (const genreId of movie.genre_ids) {
-        const genreName = genreObj[genreId]?.name;
+        const youTubeTrailerKey = await getMovieTrailer(movie.id);
 
-        if (genreName && (Genre as any)[genreName]) {
-          movieGenres.push((Genre as any)[genreName]);
+        for (const genreId of movie.genre_ids) {
+          const genreName = genreObj[genreId]?.name;
+
+          if (genreName && (Genre as any)[genreName]) {
+            movieGenres.push((Genre as any)[genreName]);
+          }
         }
-      }
 
-      return {
-        identifier: movie.id,
-        genres: movieGenres,
-        description: movie.overview,
-        name: movie.title,
-        rating: movie.vote_average,
-        ratingCount: movie.vote_count,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        ...(movie.release_date && {
-          releaseYear: new Date(movie.release_date).getFullYear(),
-        }),
-        ...(movie.poster_path && { coverUri: movie.poster_path }),
-      };
-    }
+        return {
+          identifier: movie.id,
+          genres: movieGenres,
+          description: movie.overview,
+          name: movie.title,
+          rating: movie.vote_average,
+          ratingCount: movie.vote_count,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...(youTubeTrailerKey && {
+            youTubeTrailerKey,
+          }),
+          ...(movie.release_date && {
+            releaseYear: new Date(movie.release_date).getFullYear(),
+          }),
+          ...(movie.poster_path && { coverUri: movie.poster_path }),
+        };
+      }
+    )
   );
 
   const promises: Promise<MovieBase>[] = [];
@@ -308,6 +314,10 @@ async function addMoviesToDb(discoveredMovies: MovieApi): Promise<MovieBase[]> {
 
   const dbMovies = await Promise.all(promises).catch((e) => {
     logger.error(e);
+    logger.error(
+      "Failed to add movies into database, returning an empty array"
+    );
+    return [];
   });
 
   if (!dbMovies) {
@@ -319,9 +329,9 @@ async function addMoviesToDb(discoveredMovies: MovieApi): Promise<MovieBase[]> {
 
 /**
  * Calls TMDB for genres and their associated ID
- * @return {MovieGenreApi} Output from TMDB for genres
+ * @return {Promise<MovieGenreApi>} Output from TMDB for genres
  */
-async function getGenreIds() {
+async function getGenreIds(): Promise<MovieGenreApi> {
   return (await (
     await axios.get(`${TMDB_API_URL}/genre/movie/list?api_key=${TMDB_API_KEY}`)
   ).data) as MovieGenreApi;
@@ -389,10 +399,51 @@ export async function createUrlParams(
     searchOptions["includeAdult"] == null
   ) {
     // By default, don't include adult movies
-    urlParams += `${URL_PARAMS["includeAdult"]}=false`;
+    urlParams += `${URL_PARAMS["includeAdult"]}=false&`;
   }
+
+  // Don't include videos
+  urlParams += "include_video=false&";
 
   urlParams = urlParams.replace(/&$/, "");
 
   return urlParams;
+}
+
+/**
+ * Attempts to find a trailer for a given TMDB movie ID
+ * @param {number} movieId TMDB movie ID to get a trailer for
+ * @return {Promise<string | void>} YouTube key for movie trailer
+ */
+async function getMovieTrailer(movieId: number): Promise<string | undefined> {
+  const movieTrailerApi = `${TMDB_API_URL}/movie/${movieId}/videos?api_key=${TMDB_API_KEY}`;
+
+  logger.debug(`Attempting to find movie videos with URL: ${movieTrailerApi}`);
+
+  const videoResults = (await axios.get(movieTrailerApi))
+    .data as TMDBApiMovieVideosOutput;
+
+  if (
+    typeof videoResults.status_code !== "undefined" &&
+    videoResults.status_code !== 200
+  ) {
+    logger.error(`Failed to find movie videos: ${stringify(videoResults)}`);
+    logger.error("Returning 'void' as movie trailer");
+    return;
+  }
+
+  const trailer = (videoResults.results || []).find(
+    (entry) =>
+      entry.type === "Trailer" &&
+      entry.site === "YouTube" &&
+      entry.official === true &&
+      entry.key
+  );
+
+  if (!trailer) {
+    logger.debug(`Couldn't find YouTube trailer for movie: ${movieId}`);
+    return;
+  }
+
+  return trailer.key;
 }

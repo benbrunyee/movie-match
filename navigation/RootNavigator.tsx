@@ -3,6 +3,7 @@ import { useUserContext } from "../context/UserContext";
 import LoginScreen from "../screens/LoginScreen";
 import MovieDetailsModal from "../screens/MovieDetailsModal";
 import NotFoundScreen from "../screens/NotFoundScreen";
+import YouTubePlayerModal from "../screens/YouTubePlayerModal";
 import { RootStackParamList } from "../types";
 import BottomTabNavigator from "./BottomNavigator";
 
@@ -29,6 +30,12 @@ function RootNavigator() {
             <Stack.Screen
               name="MovieDetailsModal"
               component={MovieDetailsModal}
+            />
+          </Stack.Group>
+          <Stack.Group screenOptions={{ presentation: "transparentModal" }}>
+            <Stack.Screen
+              name="YouTubePlayerModal"
+              component={YouTubePlayerModal}
             />
           </Stack.Group>
         </>

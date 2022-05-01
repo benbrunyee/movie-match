@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { useTheme } from "@react-navigation/native";
+import { useNavigation, useTheme } from "@react-navigation/native";
 import { brand } from "expo-device";
 import React from "react";
 import {
@@ -8,6 +8,7 @@ import {
   PressableProps,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   View
 } from "react-native";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
@@ -16,9 +17,9 @@ import Styling from "../constants/Styling";
 import { MovieBase } from "../functions/src/util/apiTypes";
 import { IMAGE_PREFIX } from "../utils/movieApi";
 import CategoryLabel from "./CategoryLabel";
-import { Box, ContainerProps, Text } from "./Themed";
+import { Box, BoxProps, Text } from "./Themed";
 
-export interface MovieCardProps extends ContainerProps {
+export interface MovieCardProps extends BoxProps {
   movie: MovieBase;
   onCrossPress?: () => void;
   onCheckPress?: () => void;
@@ -33,6 +34,10 @@ const MovieCard = ({
   onRefreshPress,
   ...otherProps
 }: MovieCardProps): JSX.Element => {
+  const navigation = useNavigation();
+  const { dark } = useTheme();
+  const { height } = useWindowDimensions();
+
   return (
     <Box
       {...otherProps}
@@ -42,21 +47,48 @@ const MovieCard = ({
     >
       <View style={styles.background}>
         {movie.coverUri ? (
-          <Image
-            source={{
-              uri: IMAGE_PREFIX + movie.coverUri,
-            }}
-            resizeMode="cover"
-            style={styles.background}
-          />
+          <>
+            <Image
+              source={{
+                uri: IMAGE_PREFIX + movie.coverUri,
+              }}
+              resizeMode="cover"
+              style={styles.background}
+            />
+            <View style={styles.attributionLogo}>
+              {brand ? (
+                <TMDBLogo width="auto" height={25} opacity={0.3} />
+              ) : null}
+            </View>
+          </>
         ) : null}
         <CoverGradient />
-        <View style={styles.attributionLogo}>
-          {brand ? <TMDBLogo width="auto" height={25} opacity={0.3} /> : null}
-        </View>
+        {movie.youTubeTrailerKey ? (
+          <Pressable
+            onPress={() => {
+              console.log("pressed");
+              if (movie.youTubeTrailerKey) {
+                navigation.navigate("YouTubePlayerModal", {
+                  key: movie.youTubeTrailerKey,
+                });
+              }
+            }}
+            style={[styles.playCover, { bottom: height / 4 }]}
+          >
+            <Box style={[styles.playIcon]}>
+              <View style={styles.playIconContainer}>
+                <FontAwesome
+                  name="play"
+                  color={dark ? "#FFF" : "#000"}
+                  size={15}
+                />
+              </View>
+            </Box>
+          </Pressable>
+        ) : null}
       </View>
-      <View style={styles.fill} />
-      <View style={styles.fill} />
+      <View style={styles.fill} pointerEvents="none" />
+      <View style={styles.fill} pointerEvents="none" />
       <View style={styles.content}>
         <View style={[styles.titleContainer, styles.contentSection]}>
           <Text
@@ -264,6 +296,29 @@ const styles = StyleSheet.create({
     top: Styling.spacingLarge,
     height: 25,
     width: 40,
+  },
+  playCover: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    left: 0,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 2,
+  },
+  playIcon: {
+    padding: Styling.spacingMedium * 1.5,
+    borderRadius: 100,
+    opacity: 0.8,
+  },
+  playIconContainer: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 export default MovieCard;

@@ -21,6 +21,7 @@ export type RootStackParamList = {
   Root: NavigatorScreenParams<RootTabParamList> | undefined;
   NotFound: undefined;
   MovieDetailsModal: MovieBase | { movieId: string };
+  YouTubePlayerModal: { key: string };
   Login: undefined;
 };
 

@@ -8,7 +8,7 @@ export interface MovieBase {
   ratingCount?: number;
   description: string;
   genres: string[];
-  trailerUri?: string;
+  youTubeTrailerKey?: string;
   releaseYear?: number;
   updatedAt: Date;
   owner?: string;
@@ -20,7 +20,7 @@ export type CreateMovieInput = Partial<Pick<MovieBase, "id">> &
 export interface MovieReaction {
   movieId: string;
   owner: string;
-  reaction: "LIKE" | "DISLIKE"
+  reaction: "LIKE" | "DISLIKE";
 }
 
 export interface DiscoverSearchOptions {
@@ -64,7 +64,7 @@ export enum Genre {
   Western = "Western",
 }
 
-export interface TMDBApiOutput {
+export interface TMDBApiDiscoverOutput {
   page?: number;
   results?: MovieApiOutput[];
   total_results?: number;
@@ -89,4 +89,24 @@ export interface MovieApiOutput {
   vote_count: number;
   video: boolean;
   vote_average: number;
+}
+
+export interface TMDBApiMovieVideosOutput {
+  id?: number;
+  results?: MovieVideosApiOutput[];
+  status_message?: string;
+  status_code?: number;
+}
+
+export interface MovieVideosApiOutput {
+  iso_639_1: string;
+  iso_3166_1: string;
+  name: string;
+  key: string;
+  site: string;
+  size: number;
+  type: string;
+  official: boolean;
+  published_at: string;
+  id: string;
 }

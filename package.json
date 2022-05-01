@@ -57,6 +57,9 @@
     "react-native-svg": "12.1.1",
     "react-native-vision-camera": "^2.13.1",
     "react-native-web": "0.17.1",
+    "react-native-web-webview": "^1.0.2",
+    "react-native-webview": "11.15.0",
+    "react-native-youtube-iframe": "^2.2.2",
     "react-spring": "^9.4.4"
   },
   "devDependencies": {
