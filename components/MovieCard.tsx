@@ -24,6 +24,7 @@ export interface MovieCardProps extends BoxProps {
   onCrossPress?: () => void;
   onCheckPress?: () => void;
   onRefreshPress?: () => void;
+  isPartner?: boolean;
 }
 
 const MovieCard = ({
@@ -32,6 +33,7 @@ const MovieCard = ({
   onCrossPress,
   onCheckPress,
   onRefreshPress,
+  isPartner,
   ...otherProps
 }: MovieCardProps): JSX.Element => {
   const navigation = useNavigation();
@@ -66,7 +68,6 @@ const MovieCard = ({
         {movie.youTubeTrailerKey ? (
           <Pressable
             onPress={() => {
-              console.log("pressed");
               if (movie.youTubeTrailerKey) {
                 navigation.navigate("YouTubePlayerModal", {
                   key: movie.youTubeTrailerKey,
@@ -89,6 +90,13 @@ const MovieCard = ({
       </View>
       <View style={styles.fill} pointerEvents="none" />
       <View style={styles.fill} pointerEvents="none" />
+      {isPartner ? (
+        <Box style={styles.partnerStar}>
+          <View style={styles.partnerStarContainer}>
+            <FontAwesome name="star" size={8} color="#FFD700" />
+          </View>
+        </Box>
+      ) : null}
       <View style={styles.content}>
         <View style={[styles.titleContainer, styles.contentSection]}>
           <Text
@@ -237,7 +245,7 @@ const styles = StyleSheet.create({
     left: 0,
   },
   content: {
-    flex: 1.4,
+    flex: 1.45,
     paddingHorizontal: Styling.spacingLarge,
   },
   contentSection: {
@@ -264,6 +272,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     flexWrap: "wrap",
+  },
+  partnerStar: {
+    borderRadius: 100,
+    padding: Styling.spacingSmall / 1.2,
+    alignSelf: "center",
+    borderWidth: 1,
+    borderColor: "#FFD700",
+  },
+  partnerStarContainer: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    justifyContent: "center",
+    alignItems: "center",
   },
   description: {
     textAlign: "justify",

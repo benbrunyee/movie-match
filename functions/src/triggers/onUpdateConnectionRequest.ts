@@ -33,10 +33,6 @@ export default async (
               )
             : undefined;
 
-          if (connectedUserDoc?.exists) {
-            console.log(connectedUserDoc.id);
-          }
-
           connectedUserDoc?.exists && oldPartnerRefs.push(connectedUserDoc.ref);
         }
 
