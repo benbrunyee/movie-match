@@ -1,7 +1,7 @@
 import axios from "axios";
 import { https, logger } from "firebase-functions";
 import { DiscoverSearchOptions, TMDBApiOutput } from "../util/apiTypes";
-import { MOVIE_API_KEY, MOVIE_API_URL, stringify } from "../util/common";
+import { stringify, TMDB_API_KEY, TMDB_API_URL } from "../util/common";
 import { createUrlParams } from "./discoverMovies";
 
 export default async (
@@ -12,7 +12,7 @@ export default async (
 
   logger.debug(`URL Params for determing page count: "${urlParams}"`);
 
-  const discoverUrl = `${MOVIE_API_URL}/discover/movie?api_key=${MOVIE_API_KEY}${
+  const discoverUrl = `${TMDB_API_URL}/discover/movie?api_key=${TMDB_API_KEY}${
     urlParams ? `&${urlParams}` : ""
   }`;
 

@@ -8,7 +8,7 @@ import {
   MovieApiOutput,
   MovieBase
 } from "../util/apiTypes";
-import { MOVIE_API_KEY, MOVIE_API_URL } from "../util/common";
+import { stringify, TMDB_API_KEY, TMDB_API_URL } from "../util/common";
 
 export interface MovieApi {
   page?: number;
@@ -47,13 +47,13 @@ export default async (
   // ! TODO: Most movies being shown are not popular and some are YouTube videos
   const urlParams = await createUrlParams(input);
 
-  logger.debug(`URL Params for movie discovery: "${urlParams}"`);
+  logger.info(`URL Params for movie discovery: "${urlParams}"`);
 
-  const discoverUrl = `${MOVIE_API_URL}/discover/movie?api_key=${MOVIE_API_KEY}${
+  const discoverUrl = `${TMDB_API_URL}/discover/movie?api_key=${TMDB_API_KEY}${
     urlParams ? `&${urlParams}` : ""
   }`;
 
-  logger.debug(`URL Request: ${discoverUrl}`);
+  logger.info(`Discover URL Request: ${discoverUrl}`);
 
   // Get the movies
   const movies = await (context.auth?.uid
@@ -63,12 +63,10 @@ export default async (
       ).data as Promise<MovieApi>));
 
   if (typeof movies.success !== "undefined" && !movies.success) {
-    throw new Error(
-      `Failed to discover movies: ${JSON.stringify(movies, null, 2)}`
-    );
+    throw new Error(`Failed to find movies: ${stringify(movies)}`);
   }
 
-  logger.debug(`Movies found: ${JSON.stringify(movies, null, 2)}`);
+  logger.info(`Movies found: ${stringify(movies)}`);
 
   // Add them to the database
   const movieEntries = await addMoviesToDb(movies);
@@ -103,69 +101,81 @@ async function getNewMovies(
   let url = initialUrl;
   let attempt = 0;
   let maxPages: number | undefined = undefined;
+  let trendingPage = 1;
+  let useTrending = false;
   const triedPages: number[] = [];
 
   logger.debug(
     "Attempting to find movies that the user has not already reacted to"
   );
 
+  // TODO: Make this more efficient
   while (!validMovies) {
     attempt += 1;
 
-    if (attempt >= 50) {
-      throw new Error("Tried 50 times to find new movies.");
+    if (
+      useTrending ||
+      (typeof maxPages !== "undefined" && triedPages.length === maxPages)
+    ) {
+      if (!useTrending) {
+        logger.warn(
+          "Could not find movies after trying all pages, going to try and find trending movies now"
+        );
+      }
+
+      useTrending = true;
+
+      logger.debug(`Using page: ${trendingPage} for trending API`);
+
+      const trendingUrl = `${TMDB_API_URL}/trending/movie/week?api_key=${TMDB_API_KEY}&page=${trendingPage}`;
+
+      logger.info(`Calling API, attempt number: ${attempt}`);
+      logger.info(`Calling URL: ${trendingUrl}`);
+      movies = (await (await axios.get(trendingUrl)).data) as MovieApi;
+      trendingPage += 1;
+    } else {
+      // If not the first attempt, then alter the page for the API call
+      if (attempt > 1) {
+        logger.debug("Using a random page for next api call");
+        const page = generateRandomNumber(
+          1,
+          // Use the max page from the first loop API call
+          // If that is undefined then we just get the 1st page as that will then set "maxPages"
+          maxPages || 1
+        );
+        logger.debug(`Page to be used for next API call: ${page}`);
+
+        const newParams = await createUrlParams({
+          ...searchOptions,
+          page,
+        });
+
+        url = `${url.replace(/\?.*/, "")}?api_key=${TMDB_API_KEY}${
+          newParams ? `&${newParams}` : ""
+        }`;
+
+        triedPages.push(page);
+      }
+
+      logger.info(`Calling API, attempt number: ${attempt}`);
+      logger.info(`Calling URL: ${url}`);
+      movies = (await (await axios.get(url)).data) as MovieApi;
     }
 
-    if (typeof maxPages !== "undefined" && triedPages.length === maxPages) {
-      // ! TODO: Return movies out of their selection
-      throw new Error(
-        "Tried all available pages. Cannot find undiscovered movies"
-      );
-    }
-
-    // If not the first attempt, then alter the page for the API call
-    if (attempt > 1) {
-      logger.debug("Using a random page for next api call");
-      const page = generateRandomNumber(
-        1,
-        // Use the max page from the first loop API call
-        // If that is undefined then we just get the 1st page as that will then set "maxPages"
-        maxPages || 1
-      );
-      logger.debug(`Page to be used for next API call: ${page}`);
-
-      const newParams = await createUrlParams({
-        ...searchOptions,
-        page,
-      });
-
-      url = `${url.replace(/\?.*/, "")}?api_key=${MOVIE_API_KEY}${
-        newParams ? `&${newParams}` : ""
-      }`;
-
-      triedPages.push(page);
-    }
-
-    logger.debug(`Calling API, attempt number: ${attempt}`);
-    logger.debug(`Calling URL: ${url}`);
-    movies = (await (await axios.get(url)).data) as MovieApi;
-
-    logger.debug(`Output from Movie API: ${JSON.stringify(movies, null, 2)}`);
+    logger.debug(`Output from Movie API: ${stringify(movies)}`);
 
     if (movies.total_pages && typeof maxPages === "undefined") {
       maxPages = movies.total_pages;
     }
 
     if (typeof movies.success !== "undefined" && !movies.success) {
-      throw new Error(
-        `Failed to discover movies: ${JSON.stringify(movies, null, 2)}`
-      );
+      throw new Error(`Failed to find trending movies: ${stringify(movies)}`);
     }
 
     const firstMovieIdentifier = movies?.results?.[0]?.id;
 
     if (!firstMovieIdentifier) {
-      logger.debug("Could not find first movie ID... Continuing");
+      logger.warn("Could not find first movie ID... Continuing");
       continue;
     }
 
@@ -236,9 +246,7 @@ async function hasUserReacted(
  * @param {MovieApi} discoveredMovies Output from TMDB
  * @return {Promise<MovieBase[]>} Firestore docs for the movies specified
  */
-async function addMoviesToDb(
-  discoveredMovies: MovieApi
-): Promise<MovieBase[]> {
+async function addMoviesToDb(discoveredMovies: MovieApi): Promise<MovieBase[]> {
   const genreFetch = await getGenreIds();
 
   const genreObj = genreFetch.genres.reduce<{ [key: number]: MovieGenre }>(
@@ -314,9 +322,7 @@ async function addMoviesToDb(
  */
 async function getGenreIds() {
   return (await (
-    await axios.get(
-      `${MOVIE_API_URL}/genre/movie/list?api_key=${MOVIE_API_KEY}`
-    )
+    await axios.get(`${TMDB_API_URL}/genre/movie/list?api_key=${TMDB_API_KEY}`)
   ).data) as MovieGenreApi;
 }
 
@@ -351,10 +357,13 @@ export async function createUrlParams(
           ) {
             urlParams += `${URL_PARAMS[searchOption]}=`;
 
+            // TODO: Await for an API call deep in a loop?!
             const genres = (await getGenreIds()).genres.reduce<{
               [key: string]: MovieGenre;
             }>((r, genre) => {
-              r[genre.name] = genre;
+              if (genre && genre.name) {
+                r[genre.name] = genre;
+              }
               return r;
             }, {});
 

@@ -1,7 +1,7 @@
 import { https } from "firebase-functions";
 
-export const MOVIE_API_URL = "https://api.themoviedb.org/3";
-export const MOVIE_API_KEY = "0dd0cb2ac703e890ab3573c95612498a";
+export const TMDB_API_URL = "https://api.themoviedb.org/3";
+export const TMDB_API_KEY = "0dd0cb2ac703e890ab3573c95612498a";
 
 export interface WrapOptions {
   authRoute?: boolean;

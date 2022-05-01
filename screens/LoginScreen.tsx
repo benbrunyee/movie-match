@@ -19,7 +19,6 @@ import DarkBackground from "../assets/images/login/background-dark.png";
 import LightBackground from "../assets/images/login/background-light.png";
 import LinearBar from "../components/LinearBar";
 import Seperator from "../components/Seperator";
-import SocialButton from "../components/SocialButton";
 import {
   Logo,
   Text as DefaultText,
@@ -213,10 +212,10 @@ const LoginScreen = ({
           {
             // Social buttons
           }
-          <View style={styles.contentSection}>
+          {/* <View style={styles.contentSection}>
             <SocialButton type="APPLE" style={styles.socialButton} />
             <SocialButton type="GOOGLE" style={styles.socialButton} />
-          </View>
+          </View> */}
         </View>
         {
           // Error message
