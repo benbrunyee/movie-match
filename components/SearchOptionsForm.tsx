@@ -117,7 +117,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
 
   if (isLoading) {
     return (
-      <Box>
+      <Box style={styles.messageContainer}>
         <Text variant="title">Loading...</Text>
       </Box>
     );
@@ -125,7 +125,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
 
   if (error) {
     return (
-      <Box>
+      <Box style={styles.messageContainer}>
         <Text variant="body">Failed to load</Text>
       </Box>
     );
@@ -272,12 +272,18 @@ const FormField = ({ label, field, style }: FormFieldProps): JSX.Element => {
 };
 
 const styles = StyleSheet.create({
+  messageContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   formFieldContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     padding: Styling.spacingLarge,
     marginBottom: Styling.spacingSmall,
+    borderRadius: Styling.borderRadius,
   },
   marginBottom: {
     marginBottom: Styling.spacingMedium,

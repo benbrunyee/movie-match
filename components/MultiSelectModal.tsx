@@ -120,7 +120,11 @@ const MultiSelectModal = <T extends SelectObject>({
   const onSearchChange = useCallback(debounce(searchChangeHandler, 300), []);
 
   const content = (
-    <Box onTouchEnd={(e) => e.stopPropagation()} style={styles.container} lightColor="#FFF">
+    <Box
+      onTouchEnd={(e) => e.stopPropagation()}
+      style={styles.container}
+      lightColor="#FFF"
+    >
       <ModalHeader
         value={searchValue}
         onChangeText={(val) => {
@@ -238,7 +242,11 @@ const ModalHeader = ({
   const borderBottomColor = useThemeColor({}, "borderColor");
 
   return (
-    <Box {...otherProps} style={[styles.header, { borderBottomColor }, style]} lightColor="#FFF">
+    <Box
+      {...otherProps}
+      style={[styles.header, { borderBottomColor }, style]}
+      lightColor="#FFF"
+    >
       <TextInput
         placeholder="Search..."
         value={value}
@@ -259,6 +267,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     backgroundColor: "rgba(0, 0, 0, 0.4)",
+    borderRadius: Styling.borderRadius,
+    overflow: "hidden",
   },
   menuItem: {
     flexDirection: "row",
