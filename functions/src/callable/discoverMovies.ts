@@ -69,6 +69,7 @@ export default async (
   logger.info(`Movies found: ${stringify(movies)}`);
 
   // Add them to the database
+  // TODO: Add movie trailers with YouTube API "{{TMDB_API_URL}}/movie/{{MOVIE_ID}}/videos" where type === "Trailer" & official === true
   const movieEntries = await addMoviesToDb(movies);
 
   return movieEntries;
@@ -326,7 +327,6 @@ async function getGenreIds() {
   ).data) as MovieGenreApi;
 }
 
-// ! TODO: Genres should be "or" not "and"
 /**
  * Creates URL params from search options provided
  * @param {DiscoverSearchOptions} searchOptions Search options to convert into URL params
@@ -369,13 +369,14 @@ export async function createUrlParams(
 
             urlParams += searchValue.reduce<string>((r, genreName) => {
               if (genreName && genres[genreName.toString()]) {
-                r += `${genres[genreName.toString()].id},`;
+                // Use a PIPE to signal for "or" logic
+                r += `${genres[genreName.toString()].id}|`;
               }
 
               return r;
             }, "");
 
-            urlParams = urlParams.replace(/,$/, "") + "&";
+            urlParams = urlParams.replace(/\|$/, "") + "&";
           }
         }
       }
