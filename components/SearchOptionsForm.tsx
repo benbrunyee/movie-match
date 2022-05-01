@@ -1,6 +1,6 @@
 import { Picker } from "@react-native-picker/picker";
 import { useTheme } from "@react-navigation/native";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { Formik } from "formik";
 import React, { useCallback, useEffect, useState } from "react";
 import {
@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { sizes } from "../constants/Font";
 import Styling from "../constants/Styling";
+import { useNotificationDispatch } from "../context/NotificationContext";
 import { useUserContext } from "../context/UserContext";
 import { db } from "../firebase";
 import {
@@ -21,6 +22,7 @@ import {
 } from "../functions/src/util/apiTypes";
 import CTAButton from "./CTAButton";
 import MultiSelectModal, { SelectObject } from "./MultiSelectModal";
+import { ErrorText, SuccessText } from "./Notification";
 import { Box, BoxProps, Button, Text } from "./Themed";
 
 export interface SearchOptionsFormProps extends ScrollViewProps {
@@ -30,11 +32,11 @@ export interface SearchOptionsFormProps extends ScrollViewProps {
 
 const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   afterSubmit = () => {},
-  onError = () => {},
   ...otherProps
 }) => {
   const [userContext] = useUserContext();
   const { dark } = useTheme();
+  const notificationDispatch = useNotificationDispatch();
 
   const [initialValues, setInitialValues] = useState<DiscoverSearchOptions>({
     genres: [],
@@ -52,23 +54,39 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
   const handleFormSubmit = useCallback(
     async (values: DiscoverSearchOptions) => {
       try {
-        await setDoc(
-          doc(db, "users", userContext.uid),
-          {
-            searchOptions: {
-              ...values,
-              releasedAfterYear: values.releasedAfterYear
-                ? values.releasedAfterYear
-                : undefined,
-            },
+        await updateDoc(doc(db, "users", userContext.uid), {
+          searchOptions: {
+            ...values,
+            releasedAfterYear: values.releasedAfterYear
+              ? values.releasedAfterYear
+              : undefined,
           },
-          {
-            merge: true,
-          }
-        );
+        });
+
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            type: "SUCCESS",
+            item: ({ dismiss }) => (
+              <SuccessText onPress={dismiss}>Settings saved</SuccessText>
+            ),
+            position: "TOP",
+            autoHideMs: 1000,
+          },
+        });
       } catch (e) {
         console.error(e);
-        onError(e);
+        notificationDispatch({
+          type: "ADD",
+          item: {
+            type: "ERROR",
+            item: ({ dismiss }) => (
+              <ErrorText onPress={dismiss}>Failed to save settings</ErrorText>
+            ),
+            position: "TOP",
+            autoHideMs: 1000,
+          },
+        });
       }
     },
     [userContext.uid]
