@@ -387,9 +387,7 @@ export async function createUrlParams(
             urlParams = urlParams.replace(/\|$/, "") + "&";
           }
         } else if (searchOption === "releasedAfterYear") {
-          urlParams += `${URL_PARAMS[searchOption]}=${new Date(
-            `${searchValue}-01-01`
-          )}&`;
+          urlParams += `${URL_PARAMS[searchOption]}=${searchValue}-01-01&`;
         } else {
           urlParams += `${URL_PARAMS[searchOption]}=${searchValue}&`;
         }

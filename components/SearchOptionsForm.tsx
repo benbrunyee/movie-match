@@ -55,9 +55,7 @@ const SearchOptionsForm: React.FC<SearchOptionsFormProps> = ({
     async (values: DiscoverSearchOptions) => {
       try {
         await updateDoc(doc(db, "users", userContext.uid), {
-          searchOptions: {
-            ...values,
-          },
+          searchOptions: values,
         });
 
         notificationDispatch({
